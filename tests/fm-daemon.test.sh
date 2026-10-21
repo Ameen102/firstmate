@@ -1890,6 +1890,67 @@ test_fresh_start_keeps_existing_classified_position() {
   pass "a fresh daemon start leaves a marker with a classified position alone"
 }
 
+test_fresh_start_skips_unreadable_marker() {
+  local dir state marker before
+  dir=$(make_supercase seed-unreadable-marker)
+  state="$dir/state"
+  history_log "$state/old-t5.status"
+  seen_through "$state" old-t5
+  printf 'failed: unclassified tail\n' >> "$state/old-t5.status"
+  marker="$state/.subsuper-seen-status-old-t5"
+  before=$(cat "$marker")
+  chmod 200 "$marker"
+  if [ -r "$marker" ]; then
+    chmod 600 "$marker"
+    pass "seeding of an unreadable marker skipped because permissions cannot deny reads"
+    return
+  fi
+  seed_status_seen_markers "$state"
+  chmod 600 "$marker"
+  [ "$(cat "$marker")" = "$before" ] \
+    || fail "seeding replaced the classified position of a marker it could not read"
+  pass "a fresh daemon start leaves a marker it cannot read alone"
+}
+
+# The seeding step only matters at the single call site a real daemon executes,
+# so drive the daemon executable itself: history that predates its start must not
+# enter the escalation buffer, while a line appended after it must.
+test_fresh_start_daemon_bounds_history_at_startup() {
+  local dir state fakebin pid snapshot i
+  dir=$(make_supercase seed-daemon-startup)
+  state="$dir/state"; fakebin="$dir/fakebin"
+  snapshot="$dir/escalations.snapshot"
+  history_log "$state/old-t9.status"
+  afk_enter "$state"
+  PATH="$fakebin:$PATH" FM_STATE_OVERRIDE="$state" \
+    FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=fakepane \
+    FM_DAEMON_PRIMARY_HARNESS=claude FM_POLL=1 FM_SIGNAL_GRACE=1 \
+    FM_HOUSEKEEPING_TICK=0 FM_HEARTBEAT_SCAN_SECS=0 \
+    FM_STALE_ESCALATE_SECS=999999 FM_ESCALATE_BATCH_SECS=999999 \
+    "$DAEMON" > "$dir/daemon.out" 2> "$dir/daemon.err" &
+  pid=$!
+  i=0
+  while [ ! -e "$state/.subsuper-last-scan" ] && [ "$i" -lt 100 ]; do
+    sleep 0.2; i=$((i + 1))
+  done
+  printf 'failed: brand new failure\n' >> "$state/old-t9.status"
+  i=0
+  while ! grep -Fq 'brand new failure' "$state/.subsuper-escalations" 2>/dev/null \
+    && [ "$i" -lt 100 ]; do
+    sleep 0.2; i=$((i + 1))
+  done
+  cat "$state/.subsuper-escalations" > "$snapshot" 2>/dev/null || : > "$snapshot"
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+  [ -e "$state/.subsuper-last-scan" ] \
+    || fail "the daemon never ran its catch-all scan: $(cat "$dir/daemon.err")"
+  grep -F 'brand new failure' "$snapshot" >/dev/null \
+    || fail "the daemon did not escalate a line appended after its start: $(cat "$snapshot")"
+  grep -F 'old failure' "$snapshot" >/dev/null \
+    && fail "the daemon replayed status history that predates its start: $(cat "$snapshot")"
+  pass "a real daemon start bounds existing status history and still escalates later lines"
+}
+
 test_heartbeat_scan_dedup() {
   local dir state
   dir=$(make_supercase scan-dedup)
@@ -3641,6 +3702,8 @@ test_fresh_start_bounds_status_history_without_marker
 test_fresh_start_bounds_unclassified_marker
 test_fresh_start_resumes_at_main_presentation_cursor
 test_fresh_start_keeps_existing_classified_position
+test_fresh_start_skips_unreadable_marker
+test_fresh_start_daemon_bounds_history_at_startup
 test_handle_wake_routes_self_and_escalate
 test_needs_decision_queued_row_escalates_once_as_the_decision
 test_captain_held_decision_owned_row_is_self_handled

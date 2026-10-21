@@ -694,13 +694,17 @@ mark_status_seen() {  # <state> <task> <captured-end-offset> <captured-identity>
 # one, since lines past it were never shown to anyone, and the current end of the
 # file otherwise. A marker that already holds a classified position is untouched.
 seed_status_seen_markers() {  # <state>
-  local state=$1 f task size ident end
+  local state=$1 f task size ident end marker
   for f in "$state"/*.status; do
     [ -f "$f" ] && [ -r "$f" ] && [ ! -L "$f" ] || continue
     task=$(basename "$f"); task="${task%.status}"
     size=$(_fm_status_file_size "$f") || continue
     size=${size//[[:space:]]/}
     case "$size" in ''|*[!0-9]*|0) continue ;; esac
+    marker=$(_seen_status_path "$state" "$task")
+    if [ -e "$marker" ] || [ -L "$marker" ]; then
+      [ -f "$marker" ] && [ -r "$marker" ] && [ ! -L "$marker" ] || continue
+    fi
     [ "$(status_seen_offset "$state" "$task")" = 0 ] || continue
     ident=$(_fm_open_decisions_file_ident "$f") || continue
     end=$(status_presentation_cursor_offset "$f") || end=0
