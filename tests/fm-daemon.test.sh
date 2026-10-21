@@ -1912,6 +1912,19 @@ test_fresh_start_skips_unreadable_marker() {
   pass "a fresh daemon start leaves a marker it cannot read alone"
 }
 
+test_fresh_start_skips_unusable_presentation_cursor() {
+  local dir state
+  dir=$(make_supercase seed-unusable-cursor)
+  state="$dir/state"
+  history_log "$state/old-t6.status"
+  printf 'old-t6\tstrong:1:2\tnot-a-number\n' > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F 'old failure' "$state/.subsuper-escalations" >/dev/null \
+    || fail "an unusable presentation cursor silently skipped unread status history"
+  pass "a fresh daemon start leaves a status log alone when the presentation cursor is unusable"
+}
+
 # The seeding step only matters at the single call site a real daemon executes,
 # so drive the daemon executable itself: history that predates its start must not
 # enter the escalation buffer, while a line appended after it must.
@@ -3703,6 +3716,7 @@ test_fresh_start_bounds_unclassified_marker
 test_fresh_start_resumes_at_main_presentation_cursor
 test_fresh_start_keeps_existing_classified_position
 test_fresh_start_skips_unreadable_marker
+test_fresh_start_skips_unusable_presentation_cursor
 test_fresh_start_daemon_bounds_history_at_startup
 test_handle_wake_routes_self_and_escalate
 test_needs_decision_queued_row_escalates_once_as_the_decision

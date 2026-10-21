@@ -707,7 +707,7 @@ seed_status_seen_markers() {  # <state>
     fi
     [ "$(status_seen_offset "$state" "$task")" = 0 ] || continue
     ident=$(_fm_open_decisions_file_ident "$f") || continue
-    end=$(status_presentation_cursor_offset "$f") || end=0
+    end=$(status_presentation_cursor_offset "$f") || continue
     case "$end" in ''|*[!0-9]*) end=0 ;; esac
     if [ "$end" -eq 0 ] || [ "$end" -gt "$size" ]; then end=$size; fi
     mark_status_seen "$state" "$task" "$end" "$ident" \
