@@ -1803,6 +1803,93 @@ test_escalate_batch_age_uses_first_append() {
   pass "batch flush measures max-delay from the first append, not the last"
 }
 
+# A fresh daemon start used to replay every finished task's whole history: an
+# absent or never-classified seen marker reads position 0, so the first catch-all
+# scan joined every captain-relevant line ever appended into one giant digest.
+history_log() {  # <file>
+  local i
+  : > "$1"
+  for i in 1 2 3 4 5; do
+    printf 'needs-decision [key=old%s]: old question %s\nresolved [key=old%s]: answered\nfailed: old failure %s\n' \
+      "$i" "$i" "$i" "$i" >> "$1"
+  done
+}
+
+scan_once() {  # <state>
+  : > "$1/.subsuper-escalations"
+  rm -f "$1/.subsuper-last-scan"
+  FM_STATE_OVERRIDE="$1" housekeeping "$1"
+}
+
+test_fresh_start_bounds_status_history_without_marker() {
+  local dir state
+  dir=$(make_supercase seed-no-marker)
+  state="$dir/state"
+  history_log "$state/old-t1.status"
+  scan_once "$state"
+  grep -F "old failure 1" "$state/.subsuper-escalations" >/dev/null \
+    || fail "fixture no longer reproduces the replay: an absent marker should replay history"
+  rm -f "$state"/.subsuper-seen-status-*
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  [ ! -s "$state/.subsuper-escalations" ] \
+    || fail "a fresh start replayed old status history: $(cat "$state/.subsuper-escalations")"
+  printf 'failed: brand new failure\n' >> "$state/old-t1.status"
+  scan_once "$state"
+  grep -F "brand new failure" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line appended after the fresh start was not escalated"
+  grep -F "old failure" "$state/.subsuper-escalations" >/dev/null \
+    && fail "the new-line digest still carried old history"
+  pass "a fresh daemon start bounds an unmarked status history and still escalates new lines"
+}
+
+test_fresh_start_bounds_unclassified_marker() {
+  local dir state
+  dir=$(make_supercase seed-unclassified-marker)
+  state="$dir/state"
+  history_log "$state/old-t2.status"
+  printf 'v2\t%s\t-' "$(status_observed_signature "$state/old-t2.status")" \
+    > "$state/.subsuper-seen-status-old-t2"
+  [ "$(status_seen_offset "$state" old-t2)" = 0 ] || fail "an unclassified marker should read position 0"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  [ ! -s "$state/.subsuper-escalations" ] \
+    || fail "an unclassified marker replayed old status history: $(cat "$state/.subsuper-escalations")"
+  pass "a fresh daemon start bounds a status history whose marker was never classified"
+}
+
+test_fresh_start_resumes_at_main_presentation_cursor() {
+  local dir state ident mid
+  dir=$(make_supercase seed-cursor)
+  state="$dir/state"
+  history_log "$state/old-t3.status"
+  mid=$(log_size "$state/old-t3.status")
+  printf 'failed: never presented\n' >> "$state/old-t3.status"
+  ident=$(_fm_open_decisions_file_ident "$state/old-t3.status")
+  printf 'old-t3\t%s\t%s\n' "$ident" "$mid" > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "never presented" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line past the main session's presentation cursor was dropped"
+  grep -F "old failure" "$state/.subsuper-escalations" >/dev/null \
+    && fail "lines before the presentation cursor were replayed"
+  pass "a fresh daemon start resumes at the main session's presentation cursor"
+}
+
+test_fresh_start_keeps_existing_classified_position() {
+  local dir state
+  dir=$(make_supercase seed-keeps-position)
+  state="$dir/state"
+  printf 'failed: first\n' > "$state/old-t4.status"
+  seen_through "$state" old-t4
+  printf 'failed: unclassified tail\n' >> "$state/old-t4.status"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "unclassified tail" "$state/.subsuper-escalations" >/dev/null \
+    || fail "seeding moved a marker that already held a classified position"
+  pass "a fresh daemon start leaves a marker with a classified position alone"
+}
+
 test_heartbeat_scan_dedup() {
   local dir state
   dir=$(make_supercase scan-dedup)
@@ -3550,6 +3637,10 @@ test_housekeeping_orca_persistent_stale_resolves_terminal
 test_escalate_batches_into_one_digest
 test_escalate_batch_age_uses_first_append
 test_heartbeat_scan_dedup
+test_fresh_start_bounds_status_history_without_marker
+test_fresh_start_bounds_unclassified_marker
+test_fresh_start_resumes_at_main_presentation_cursor
+test_fresh_start_keeps_existing_classified_position
 test_handle_wake_routes_self_and_escalate
 test_needs_decision_queued_row_escalates_once_as_the_decision
 test_captain_held_decision_owned_row_is_self_handled

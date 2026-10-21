@@ -686,6 +686,31 @@ mark_status_seen() {  # <state> <task> <captured-end-offset> <captured-identity>
     "$1/$2.status" "$3" "$4"
 }
 
+# Bound every status log that has no usable classified position at the daemon's
+# fresh start, so the catch-all scan escalates only lines appended from here on.
+# Without this an absent, unclassified, or identity-mismatched marker reads 0 and
+# the first scan replays the whole history of every finished task as one digest.
+# The start point is the main session's recorded presentation offset when it has
+# one, since lines past it were never shown to anyone, and the current end of the
+# file otherwise. A marker that already holds a classified position is untouched.
+seed_status_seen_markers() {  # <state>
+  local state=$1 f task size ident end
+  for f in "$state"/*.status; do
+    [ -f "$f" ] && [ -r "$f" ] && [ ! -L "$f" ] || continue
+    task=$(basename "$f"); task="${task%.status}"
+    size=$(_fm_status_file_size "$f") || continue
+    size=${size//[[:space:]]/}
+    case "$size" in ''|*[!0-9]*|0) continue ;; esac
+    [ "$(status_seen_offset "$state" "$task")" = 0 ] || continue
+    ident=$(_fm_open_decisions_file_ident "$f") || continue
+    end=$(status_presentation_cursor_offset "$f") || end=0
+    case "$end" in ''|*[!0-9]*) end=0 ;; esac
+    if [ "$end" -eq 0 ] || [ "$end" -gt "$size" ]; then end=$size; fi
+    mark_status_seen "$state" "$task" "$end" "$ident" \
+      || log "could not bound status log $task at its start position"
+  done
+}
+
 # Advance the offset for every task a per-wake classification escalated, so the
 # catch-all scan does not re-escalate the same events within HEARTBEAT_SCAN_SECS.
 # An ERROR row names a task whose log could not be classified and carries the
@@ -2091,6 +2116,7 @@ fm_super_main() {
   afk_active "$STATE" && afk_status="on"
   log "daemon starting (pid $$); target=$TARGET; target_source=$target_source; backend=$BACKEND; backend_source=$backend_source; afk=$afk_status; inject_skip='${FM_INJECT_SKIP:-$INJECT_SKIP_DEFAULT}'; stale_escalate=${FM_STALE_ESCALATE_SECS:-$STALE_ESCALATE_SECS_DEFAULT}s; batch=${FM_ESCALATE_BATCH_SECS:-$ESCALATE_BATCH_SECS_DEFAULT}s"
   migrate_watcher_pause_markers "$STATE"
+  seed_status_seen_markers "$STATE"
 
   # --- shutdown: flush buffered escalations, reap child, release lock -------
   local WATCHER_PID="" CUR_TMP=""
