@@ -13,8 +13,7 @@ metadata:
 # quota-array-dispatch
 
 This skill is the single owner of the completion-aware profile-array selection procedure.
-`AGENTS.md` section 4 owns the always-loaded intake boundary, load trigger, malformed-config refusal, every-candidate accounting, and strongest-reasoning/tie safety rules.
-Those refusal, accounting, and safety rules are now carried verbatim in "Always-loaded boundary rules" below, so section 4 itself keeps only the intake boundary and load trigger.
+`AGENTS.md` section 4 owns only the always-loaded intake boundary and load trigger.
 `harness-adapters` owns harness verification, model/provider discovery, and effort fallback.
 `quota-axi` remains data-only: it publishes `spendPriority` as a comparable scalar and never recommends, selects, ranks, or infers a route.
 Do not add a daemon, opaque composite score, routing wrapper, hard-coded model-specific policy, or producer-side route recommendation.

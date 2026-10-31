@@ -90,10 +90,3 @@ If any dependency or unlanded work exists, stop and report it before changing an
 Never issue a raw removal command from Firstmate.
 Once that preflight confirms none of the above and the captain's approval is concrete, AGENTS.md hard rule 1's captain-approved project operation exception authorizes firstmate to remove the clone directly and update its registry entry to match.
 When a clone has already been removed through an approved removal, or the registry is provably stale because no clone exists, remove its registry line so navigation matches reality.
-
-## Load trigger
-
-Moved verbatim from `AGENTS.md` section 13; the description line above carries the same condition.
-
-- `project-management` - load before adding, creating, removing, or initializing a project.
-  Cloning or registering a project is add intake and uses the same trigger.
