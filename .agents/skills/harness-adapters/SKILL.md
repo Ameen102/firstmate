@@ -93,3 +93,9 @@ A new tool remains undispatchable until the `verify` plan, its harness entry, ev
   }
 }
 ```
+
+## Load trigger
+
+Moved verbatim from `AGENTS.md` section 13; the description line above carries the same condition.
+
+- `harness-adapters` - load before spawning or recovering a crewmate or secondmate, handling a trust dialog, sending a harness-specific skill invocation, interrupting or exiting an agent, resuming an exited agent, or verifying a new harness adapter.

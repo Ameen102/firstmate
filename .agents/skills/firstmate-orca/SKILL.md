@@ -90,3 +90,9 @@ Keep Orca smoke tests focused on lifecycle plumbing:
 6. Restore the previous backend selection if Orca was selected only for the smoke test.
 
 Do not mix a backend smoke test with unrelated feature work.
+
+## Load trigger
+
+Moved verbatim from `AGENTS.md` section 13; the description line above carries the same condition.
+
+- `firstmate-orca` - load before switching to Orca, spawning or supervising Orca-backed work, smoke-testing Orca backend behavior, debugging Orca task state, or reconciling Orca-backed task metadata.

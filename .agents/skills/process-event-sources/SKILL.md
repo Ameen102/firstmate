@@ -126,3 +126,10 @@ Say these boundaries plainly wherever the behavior is described.
 
 A wake is not news by itself.
 Report what the source actually produced and what it changes, never the event line, the result path, or the runner.
+
+## Custom `state/<id>.check.sh` polls
+
+A custom check is firstmate's own slow poll for one task; the watcher runs it only from a registered, hash-validated snapshot and rejects every unregistered check without execution.
+
+For any custom `state/<id>.check.sh` you write yourself, keep it an ordinary single-link mode-`0700` file, print one line only when firstmate should wake, print nothing otherwise, finish before `FM_CHECK_TIMEOUT`, then bind its current bytes with `bin/fm-check-register.sh <id>` before the watcher may execute it.
+Retire a custom check only through `bin/fm-check-unregister.sh <id>` (or `bin/fm-teardown.sh` for a spawned task); never hand-compose an `rm` with `$STATE`/`$ID`.
