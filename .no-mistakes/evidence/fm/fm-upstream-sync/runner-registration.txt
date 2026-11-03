@@ -1,0 +1,10 @@
+$ bin/fm-test-run.sh --list-families | grep pure-contract-unit
+pure-contract-unit
+$ bin/fm-test-run.sh --list --family pure-contract-unit | grep skills-verifier
+tests/skills-verifier.test.sh
+$ bin/fm-test-run.sh --check-coverage
+FM_TEST_COVERAGE ok total=319 parallel=26 parallel_max_ms=814249 parallel_imbalance_ms=552 parallel_unhinted=0 serial=277 serial_shards=11 serial_unhinted=38 serial_max_ms=1151893 serial_budget_ms=1200000 herdr=16
+rc=0
+$ bin/fm-doc-audience-check.sh
+fm-doc-audience-check: ok surfaces=142 local_links=1151
+rc=0

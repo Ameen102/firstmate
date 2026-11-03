@@ -1,0 +1,38 @@
+=== root: upstream 78c69df2 ===
+  state ios                      rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  route ios                      rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  capture ios                    rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  observe ios                    rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  key ios Enter                  rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  send ios hi                    rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  sync ios                       rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  update ios                     rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  relaunch ios claude - -        rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  launch ios claude - - herdr    rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  bogus                          rc=1 home=STUB: . ./state  | error: unknown command: bogus
+  state                          rc=2 home=STUB: . ./state  | Host-local lifecycle control for the remote secondmate home selected by fm-on.
+  -- state then retire (the user-visible harm):
+  state ios                      rc=1 home=STUB: . ./state  | error: remote home is not a seeded secondmate home
+  retire ios rc=1 | error: remote home is not a seeded secondmate home
+=== root: HEAD db66a6fc ===
+  state ios                      rc=1 home=absent | error: remote home is not a seeded secondmate home
+  route ios                      rc=1 home=absent | error: remote home is not a seeded secondmate home
+  capture ios                    rc=1 home=absent | error: remote home is not a seeded secondmate home
+  observe ios                    rc=1 home=absent | error: remote home is not a seeded secondmate home
+  key ios Enter                  rc=1 home=absent | error: remote home is not a seeded secondmate home
+  send ios hi                    rc=1 home=absent | error: remote home is not a seeded secondmate home
+  sync ios                       rc=1 home=absent | error: remote home is not a seeded secondmate home
+  update ios                     rc=1 home=absent | error: remote home is not a seeded secondmate home
+  relaunch ios claude - -        rc=1 home=absent | error: remote home is not a seeded secondmate home
+  launch ios claude - - herdr    rc=1 home=absent | error: remote home is not a seeded secondmate home
+  bogus                          rc=1 home=absent | error: unknown command: bogus
+  state                          rc=2 home=absent | Host-local lifecycle control for the remote secondmate home selected by fm-on.
+  -- state then retire (the user-visible harm):
+  state ios                      rc=1 home=absent | error: remote home is not a seeded secondmate home
+  retire ios rc=0 | already-retired: ios
+=== adversarial on HEAD: pre-existing homes must survive ===
+pre-existing empty home after probe: kept
+populated home after probe: ./data/secondmates.md ./state/keep 
+symlink home after probe: link-kept target=kept
+dangling symlink home: rc=1 link-kept
+home populated mid-probe: marker kept

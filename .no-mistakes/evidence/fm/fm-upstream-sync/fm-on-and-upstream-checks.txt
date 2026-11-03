@@ -1,0 +1,84 @@
+=== FM_DATA_OVERRIDE pre-seed route via fm-on (documented record) ===
+-- documented remote form, by id and by alias:
+  fm-on probehost fm-remote-doctor.sh --backend rex -> rc=0 | 
+    ssh-argv: [-o] [ForwardAgent=no] [-o] [ClearAllForwardings=yes] [-o] [SendEnv=-*] [-o] [ServerAliveInterval=15] [-o] [ServerAliveCountMax=3] [--] [my-alias] [fm-remote-entrypoint.sh] [1] [L3Nydi9mbQ==] [L3Nydi9ob21lcy9hYnNlbnQ=] [Zm0tcmVtb3RlLWRvY3Rvci5zaAAtLW
+  fm-on my-alias fm-remote-doctor.sh --backend rex -> rc=0 | 
+    ssh-argv: [-o] [ForwardAgent=no] [-o] [ClearAllForwardings=yes] [-o] [SendEnv=-*] [-o] [ServerAliveInterval=15] [-o] [ServerAliveCountMax=3] [--] [my-alias] [fm-remote-entrypoint.sh] [1] [L3Nydi9mbQ==] [L3Nydi9ob21lcy9hYnNlbnQ=] [Zm0tcmVtb3RlLWRvY3Rvci5zaAAtLW
+-- no override: real registry names no route:
+  rc=1 | error: no remote secondmate or SSH alias matches 'probehost'; ssh calls=       0
+-- adversarial: local-form record skipped:
+  fm-on probehost fm-remote-doctor.sh -> rc=1 | error: no remote secondmate or SSH alias matches 'probehost'
+-- adversarial: empty scope:
+  fm-on probehost fm-remote-doctor.sh -> rc=1 | error: malformed secondmate registry entry: - probehost - s (host: my-alias; root: /srv/fm; home: /srv/homes/absent; sco
+-- adversarial: empty summary:
+  fm-on probehost fm-remote-doctor.sh -> rc=1 | error: malformed secondmate registry entry: - probehost -  (host: my-alias; root: /srv/fm; home: /srv/homes/absent; scop
+real registry byte-identical
+
+=== Upstream fix check 1: fm-remote-home-seed --no-projects under /bin/bash 3.2 ===
+GNU bash, version 3.2.57(1)-release (arm64-apple-darwin25)
+seed rc=1
+error: no filled charter at /tmp/fmprobe.so0QOd/seedhome/data/mate/brief.md; set FM_SECONDMATE_CHARTER or scaffold one first
+unbound-variable errors: 0
+c562be1a fix: support stock macOS Bash 3.2 paths (#3732)
+
+ bin/fm-remote-home-seed.sh | 2 +-
+
+=== Upstream fix check 2: no timeout on PATH ===
+mechanism=perl
+bound-rc=124
+fast-rc=255
+mechanism=bash
+bound-rc=124
+
+=== Upstream fix check 3: status_seen_offset on absent marker ===
+}
+
+# The byte offset in <task>'s status log through which this daemon has
+# successfully classified content, or 0 when it has no usable position.
+# A position rather than an event line prevents both a later routine append from
+# hiding earlier events and repeated event text from suppressing a new occurrence.
+# An absent, malformed, identity-mismatched, or legacy marker reads 0, so the
+# whole log is classified and uncertainty prefers a duplicate over event loss.
+status_seen_offset() {  # <state> <task>
+  status_presentation_marker_offset "$(_seen_status_path "$1" "$2")" "$1/$2.status"
+}
+
+# Commit <task>'s successfully classified endpoint, so the heartbeat catch-all
+# scan does not re-read events already handled by the per-wake or scan path.
+mark_status_seen() {  # <state> <task> <captured-end-offset> <captured-identity>
+  status_presentation_marker_commit "$(_seen_status_path "$1" "$2")" \
+    "$1/$2.status" "$3" "$4"
+}
+
+# Advance the offset for every task a per-wake classification escalated, so the
+# catch-all scan does not re-escalate the same events within HEARTBEAT_SCAN_SECS.
+# An ERROR row names a task whose log could not be classified and carries the
+# observed file signature.
+# Recording that signature bounds the report while leaving its classification
+# position unchanged, so readable recovery resumes from the last proven byte.
+mark_escalated_seen() {  # <state> <captured-endpoint-file>
+  local state=$1 capture=$2 task endpoint ident rc=0
+  [ -f "$capture" ] || return 1
+  while IFS=$(printf '\t') read -r task endpoint ident; do
+    [ -n "$task" ] || continue
+    if [ "$task" = ERROR ]; then
+--- c562be1a^ (before fix): /bin/bash seed --no-projects rc=0; 'unbound variable' lines=1; ssh calls=       0
+/tmp/fmprobe.so0QOd/pre/bin/fm-remote-home-seed.sh: line 190: PROJECT_NAMES[@]: unbound variable
+--- HEAD: /bin/bash seed --no-projects rc=0; 'unbound variable' lines=0; ssh calls=       2
+
+home=alias:/srv/h
+--- timeout lib, fast command with minimal PATH
+mechanism=bash
+fast-rc=124
+mechanism=perl
+fast-rc=0
+--- timeout lib under stock macOS PATH and forced bash fallback
+PATH=/usr/bin:/bin override=none mechanism=perl type-P-timeout=none
+  fast-rc=0 (want 0)
+  bound-rc=124 (want 124) elapsed=1s
+  own-exit-rc=7 (want 7)
+PATH=/usr/bin:/bin override=bash mechanism=bash type-P-timeout=none
+  fast-rc=0 (want 0)
+  bound-rc=124 (want 124) elapsed=2s
+  own-exit-rc=7 (want 7)
+--- status replay on fresh start: log bytes=      75 marker present=no status_seen_offset=0 (0 = whole history re-read)

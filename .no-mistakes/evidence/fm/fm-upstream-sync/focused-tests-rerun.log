@@ -1,0 +1,147 @@
+FM_TEST_BEGIN 2026-11-03T02:46:50Z tests/fm-remote-secondmate-trace-context.test.sh family=secondmate expected_gate_skip=none
+ok - disabled: a remote-routed second mate records and receives no carrier and stays enabled-off end to end
+ok - enabled: a remote-routed second mate receives one carrier in its pane, identical to the parent's recorded identity, before launch
+ok - relaunch: a remote-routed second mate keeps one stable identity across restarts
+ok - boundary: each remote-routed second mate roots its own trace and never adopts the spawning environment's carrier
+ok - allowlist: the remote receiver accepts exactly the declared inherited-material set, including the enablement flag
+ok - delivery: a parent-supplied carrier is accepted only for a secondmate launch and only as a strict W3C value
+ALL TESTS PASSED
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-rebase: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-applypatch: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-auto-gc: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-merge-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/sendemail-validate: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/applypatch-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/prepare-commit-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-checkout: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-applypatch: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-rewrite: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/commit-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-push: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-merge: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-rebase: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-applypatch: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-auto-gc: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-merge-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/sendemail-validate: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/applypatch-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/prepare-commit-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-checkout: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-applypatch: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-rewrite: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/commit-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-push: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-merge: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n: Directory not empty
+FM_TEST_END 2026-11-03T02:51:10Z tests/fm-remote-secondmate-trace-context.test.sh exit=0 duration_ms=260725 gate_skip=false
+FM_TEST_BEGIN 2026-11-03T02:51:10Z tests/fm-remote-secondmate-parent-binding.test.sh family=standalone expected_gate_skip=none
+ok - remote provisioning publishes durable parent state before its completion marker
+ok - a remote secondmate's finished worker cleans up when the remote code root's own .env looked relay-active
+ok - a remote secondmate's finished worker cleans up when only an ambient exported token looked relay-active
+ok - a remote secondmate's finished worker cleans up with no relay signal anywhere
+ok - a remote secondmate's own committed relay token still refuses cleanup
+ok - remote secondmate publication refuses targets outside its home
+ALL TESTS PASSED
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-rebase: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-applypatch: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-auto-gc: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-merge-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/sendemail-validate: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/applypatch-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/prepare-commit-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-checkout: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-applypatch: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-rewrite: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/commit-msg: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-push: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-merge: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-commit: Permission denied
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home: Directory not empty
+rm: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ: Directory not empty
+FM_TEST_END 2026-11-03T02:53:24Z tests/fm-remote-secondmate-parent-binding.test.sh exit=0 duration_ms=133739 gate_skip=false
+FM_TEST_SUMMARY total=2 failed=0 skipped_gate=0 duration_ms=394802
+FM_TEST_SUMMARY_FAMILY family=secondmate count=1 duration_ms=260725 failed=0
+FM_TEST_SUMMARY_FAMILY family=standalone count=1 duration_ms=133739 failed=0
+FM_TEST_SLOWEST rank=1 script=tests/fm-remote-secondmate-trace-context.test.sh duration_ms=260725
+FM_TEST_SLOWEST rank=2 script=tests/fm-remote-secondmate-parent-binding.test.sh duration_ms=133739
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-rebase: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-applypatch: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-auto-gc: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-merge-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/sendemail-validate: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/applypatch-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/prepare-commit-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-checkout: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-applypatch: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-rewrite: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/commit-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-push: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/post-merge: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks/pre-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route/ios.git-hooks: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state/parent-route: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home/state: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ/remote-home: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp/fm-remote-parent-binding.1V6QEZ: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2/tmp: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w2: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-rebase: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-applypatch: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-auto-gc: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-merge-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/sendemail-validate: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/applypatch-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/prepare-commit-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-checkout: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-applypatch: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-rewrite: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/commit-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-push: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/post-merge: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks/pre-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route/ios.git-hooks: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state/parent-route: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home/state: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-rebase: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-applypatch: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-auto-gc: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-merge-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/sendemail-validate: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/applypatch-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/prepare-commit-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-checkout: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-applypatch: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-rewrite: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/commit-msg: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-push: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/post-merge: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks/pre-commit: Permission denied
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route/ios2.git-hooks: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state/parent-route: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2/state: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n/remote-home-2: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp/fm-remote-trace-context.mTor2n: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1/tmp: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM/w1: Directory not empty
+rm: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-test-run.qRmaOM: Directory not empty
+rerun rc=1 395s
