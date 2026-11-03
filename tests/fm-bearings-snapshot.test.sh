@@ -1640,6 +1640,43 @@ test_lanes_are_opt_in_and_carry_current_state_age_and_linear() {
   pass "lanes are opt-in and carry current state, event age, open items, and registry Linear references"
 }
 
+test_child_lane_links_only_its_own_project() {
+  local home mate fakebin lanes
+  home=$(make_home child-linear)
+  fakebin=$(make_fakebin "$home")
+  write_fixture "$home"
+  mate=$(fixture_mate_home "$home")
+  printf -- '- mate - fixture domain, Linear project MATE-1 (home: %s; scope: fixture work; projects: alpha, beta; added 2026-07-11)\n' \
+    "$mate" > "$home/data/secondmates.md"
+  printf -- '- alpha [no-mistakes] - see https://linear.app/acme/project/alpha-1 (added 2026-07-11)\n- beta [no-mistakes] - no tracker (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  fm_write_meta "$home/state/mate.meta" \
+    "window=firstmate:fm-mate" \
+    "worktree=$mate" \
+    "project=$mate" \
+    "harness=codex" \
+    "kind=secondmate" \
+    "mode=secondmate" \
+    "home=$mate" \
+    "projects=alpha,beta"
+  rm -f "$mate/state/mate.meta" "$mate/state/mate.status"
+  printf '## In flight\n' > "$mate/data/backlog.md"
+  seed_working_child "$mate" beta-child "beta work" beta
+  seed_working_child "$mate" alpha-child "alpha work" alpha
+  printf '\n## Queued\n\n## Done\n' >> "$mate/data/backlog.md"
+
+  lanes=$(run "$home" "$fakebin" --json --fields lanes --all-secondmates | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate/beta-child")
+    | .repo == "beta" and .linear_url == null and .linear_label == null
+  ' >/dev/null || fail "a child lane borrowed another Linear entry: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate/alpha-child")
+    | .repo == "alpha" and .linear_url == "https://linear.app/acme/project/alpha-1"
+  ' >/dev/null || fail "a child lane lost its own project Linear link: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate") | .linear_label == "MATE-1"
+  ' >/dev/null || fail "the mate lane lost its own registry Linear reference: $lanes"
+  pass "a child lane links only its own project and the mate lane keeps its own reference"
+}
+
 test_snapshot_rows_name_their_project() {
   local home mate fakebin json lanes
   home=$(make_home row-repos)
@@ -3511,5 +3548,6 @@ fm_test_run \
   test_pr_repository_cap_and_expansion \
   test_per_repository_pr_cap_is_disclosed \
   test_lanes_are_opt_in_and_carry_current_state_age_and_linear \
+  test_child_lane_links_only_its_own_project \
   test_snapshot_rows_name_their_project \
   test_projection_and_toon_fail_closed

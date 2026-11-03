@@ -881,6 +881,37 @@ EOF
   pass "refresh composes a fleet with a live task and a landed row"
 }
 
+test_refresh_never_recards_a_call_whose_task_landed() {
+  local home data board out pr
+  home=$(make_home refresh-landed-call)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  pr="https://github.com/example/sample/pull/9"
+  write_held_backlog "$home" wait-pr
+  write_valid_payload "$data"
+  jq --arg pr "$pr" '.captains_call = [
+        {"key":"wait-pr","type":"decision","repo":"sample","title":"Wait for the PR","pr_url":$pr,
+         "options":[{"value":"yes","label":"Yes"}]}
+      ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+  out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
+  extract_payload "$board" | jq -e '[.captains_call[].key] == ["wait-pr"]' >/dev/null \
+    || fail "the seed build lost the authored card: $(extract_payload "$board")"
+
+  printf -- '- [x] wait-pr - Waited work %s (repo: sample) (kind: ship) (merged 2026-07-10)\n' "$pr" \
+    >> "$home/data/backlog.md"
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "the first refresh kept a landed call: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed: $out"
+  assert_contains "$out" "unchanged" "the landed call changed the board again: $out"
+  out=$(run_board "$home" refresh 2>&1) || fail "the later refresh failed: $out"
+  assert_not_contains "$out" "dropped-landed-card" "the landed call was recarded before being dropped: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "a later refresh brought the landed call back: $(extract_payload "$board")"
+  pass "refresh never recards a call whose task landed"
+}
+
 test_refresh_survives_blank_status_notes() {
   local home board out line kind text
   home=$(make_home refresh-blank-note)
@@ -1000,6 +1031,7 @@ test_path_is_stable_and_home_scoped
 test_build_refuses_a_malformed_lane
 test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open
 test_refresh_composes_live_tasks_and_landed_rows
+test_refresh_never_recards_a_call_whose_task_landed
 test_refresh_survives_blank_status_notes
 test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board
 test_refresh_publishes_the_board_file_without_lavish_axi

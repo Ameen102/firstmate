@@ -88,6 +88,8 @@
 # linear_url and linear_label are read from the project or secondmate registry
 # line itself - the first https://linear.app URL, else the name after
 # `Linear project` - with no Linear API call, and a name alone yields no URL.
+# A secondmate child with a known project reads only that project's line; the
+# mate's own line and project list serve only a lane with no specific project.
 #
 # Flags:
 #   (default)        compact projection with bounded remote-ledger collection, TOON
@@ -816,7 +818,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
                  linear_url:$mate_linear.url, linear_label:$mate_linear.label}),
                ($m.active_children[]?
                 | (.repo | base_name) as $repo
-                | (lane_linear_for([$repo] + [$m.id] + $projects)) as $linear
+                | (if $repo != null then lane_linear_for([$repo]) else $mate_linear end) as $linear
                 | {id:($m.id + "/" + .id), owner:$m.id, kind:(.kind // "ship"),
                    name:((.name // "") as $name
                          | (if (($name | type) == "string" and ($name | test("[^[:space:]]")))

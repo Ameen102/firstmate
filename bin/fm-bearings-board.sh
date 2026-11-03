@@ -522,10 +522,12 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
       then . else null end;
     . as $snap
     | ([$snap.in_flight[].id]) as $live_ids
+    | ([$snap.landed[].id]) as $landed_ids
     | ([$snap.decisions_open[]
         | . as $row
         | ($row.id | ltrimstr($row.owner + "/")) as $task
         | select($task | slug)
+        | select(($landed_ids | index($task)) == null)
         | {key:$task, type:"decision", repo:null,
            title:($row.summary | text_or($task)),
            decide:"Answer in your own words",
