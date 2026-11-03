@@ -260,9 +260,9 @@ Fleet supervision is an always-loaded operational contract; `docs/architecture.m
 
 - Whenever work is under way, keep exactly one live supervision cycle using the emitted protocol for this primary harness.
 - Relay may require that same live cycle with no fleet work.
-- Do not substitute another harness's wait shape, use shell `&`, an inline `sleep`, or a harness monitor loop to wait on a worker or a poll, or create a second cycle when a healthy one already exists; end the turn and let the cycle deliver the next wake.
+- Do not substitute another harness's wait shape, use shell `&`, an inline `sleep`, or a harness monitor loop to wait on a worker or a poll, or create a second cycle when a healthy one already exists; wait only in the shape the emitted protocol prescribes.
 - For every actionable wake, follow the ordinary-wake continuation in the emitted protocol; use its repair action only when the live cycle is missing or failed.
-- A guard or drain reporting the watcher down beyond its grace window means the cycle has failed: run the emitted repair action before any steer, spawn, teardown, or other fleet mutation, and never tell the captain startup or supervision is clean while it is down.
+- A guard or drain reporting the watcher down beyond its grace window means the cycle has failed: a session holding the fleet lock runs the emitted repair action before any steer, spawn, teardown, or other fleet mutation, a lock-refused read-only session only reports the lapse per section 3, and neither tells the captain startup or supervision is clean while it is down.
 - No turn ends blind while work is under way, including turns described as holding or waiting.
 
 - At the start of every wake-handling turn, drain the durable wake queue before peeking, reading beyond the reason line, steering, or starting work.
@@ -296,7 +296,7 @@ Never broadly kill watchers, especially never `pkill -f bin/fm-watch.sh`, becaus
 A forced repair must use the home-scoped owner path emitted by supervision instructions.
 
 - Guard warnings do not replace the contract.
-- Queued wakes must be presented before other action and acknowledged only after handling: a `queued wakes pending` warning from any guarded script means stop, drain, and handle before the relaunch, spawn, steer, or teardown you were about to run.
+- Queued wakes must be presented before other action and acknowledged only after handling: in a session holding the fleet lock, a `queued wakes pending` warning from any guarded script means stop, drain, and handle before the relaunch, spawn, steer, or teardown you were about to run, while a lock-refused read-only session leaves the queue untouched per section 3.
 - Stale liveness must be repaired through the emitted protocol, and the worktree-tangle warning must be resolved without touching unlanded work.
 - The spawn assertion and generated ship brief must both enforce that project work starts in an isolated disposable worktree, never the primary checkout.
 - Harness-aware turn-end guards are structural backstops, not permission to omit the live cycle.
