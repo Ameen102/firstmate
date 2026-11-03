@@ -2615,6 +2615,30 @@ crew_is_paused() {  # <id>
   [ "$(crew_absorb_class "$1")" = paused ]
 }
 
+# 0 if crew <id>'s authoritative current state AGREES its own declared wait is
+# still running: a declared external-wait pause, or a parked crew whose parked
+# gate no human owes an answer for. A parked ask-user gate is deliberately not
+# agreement - that is a decision firstmate must surface - so a wait that reached
+# one keeps its recheck.
+# Same cost and caveat as crew_absorb_class: one fm-crew-state.sh read, which may
+# make a bounded no-mistakes call, so callers take it only on a due recheck and
+# never on every poll.
+crew_wait_agrees() {  # <id>
+  local id=$1 line state
+  [ -n "$id" ] || return 1
+  line=$("$FM_CREW_STATE_BIN" "$id" 2>/dev/null) || true
+  case "$line" in state:*) ;; *) return 1 ;; esac
+  state=${line#state: }; state=${state%% *}
+  case "$state" in
+    paused) return 0 ;;
+    parked)
+      crew_gate_awaits_human_decision "$id" >/dev/null 2>&1 && return 1
+      return 0
+      ;;
+  esac
+  return 1
+}
+
 # The one spelling of the verdict component that says a parked gate's answer is
 # owed by a HUMAN. bin/fm-crew-state.sh mints it (nm_gate_awaits_human_decision
 # owns the derivation: the findings table's `action` column, read by position);

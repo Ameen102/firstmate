@@ -175,7 +175,7 @@ test_own_work_wait_keeps_first_alert_then_long_cadence() {
     done
 
     # Both the unchanged declaration and its first alert must be older than
-    # the 240s cadence for a forgotten wait to get its bounded recheck.
+    # the 240s cadence for a recheck to come due at all.
     set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
     PATH="$fakebin:$PATH" FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" \
       FM_FAKE_TMUX_CURRENT_COMMAND=grok \
@@ -183,9 +183,34 @@ test_own_work_wait_keeps_first_alert_then_long_cadence() {
       watch_bg "$state" "$fakebin" "$dir/long-cadence.out" env \
         FM_STALE_ESCALATE_SECS=1 FM_PAUSE_RESURFACE_SECS=240
     pid=$!
+    # The first alert already reached firstmate for this exact declaration and the
+    # crew still reports the same wait, so the due recheck has nothing new in it:
+    # it is absorbed rather than queued (pause_recheck_settled).
+    # Two cycles: the first settles the churned pane back into its stable-hash
+    # path, the second decides the due recheck.
+    wait_poll_cycle "$state" "$pid" || { reap "$pid"; fail "$wait_kind re-alarmed a wait firstmate already has: $(cat "$dir/long-cadence.out")"; }
+    wait_poll_cycle "$state" "$pid" || { reap "$pid"; fail "$wait_kind re-alarmed a wait firstmate already has: $(cat "$dir/long-cadence.out")"; }
+    [ ! -s "$dir/long-cadence.out" ] || { reap "$pid"; fail "$wait_kind printed a recheck firstmate already has"; }
+    [ ! -s "$state/.wake-queue" ] || { reap "$pid"; fail "$wait_kind queued a recheck firstmate already has"; }
+    grep -F 'absorbed stale recheck' "$state/.watch-triage.log" >/dev/null \
+      || { reap "$pid"; fail "$wait_kind did not record the absorbed recheck in the triage log"; }
+    reap "$pid"
+    ack_stopped_cycle "$state" || fail "could not acknowledge $wait_kind absorbed recheck"
+
+    # Past the ceiling the same wait still reaches firstmate once, so a wait
+    # nobody ever closes cannot rot invisibly. The ceiling is measured from the
+    # last wake, not from the last absorption.
+    set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+    set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-woken-$key"
+    PATH="$fakebin:$PATH" FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" \
+      FM_FAKE_TMUX_CURRENT_COMMAND=grok \
+      FM_FAKE_CREW_STATE='state: paused · source: status-log · waiting for own work' \
+      watch_bg "$state" "$fakebin" "$dir/ceiling.out" env \
+        FM_STALE_ESCALATE_SECS=1 FM_PAUSE_RESURFACE_SECS=240 FM_PAUSE_ABSORB_CEILING_SECS=400
+    pid=$!
     wait_for_exit "$pid" 100 || { reap "$pid"; fail "$wait_kind never rechecked on the long cadence"; }
-    grep -F 'awaiting external' "$dir/long-cadence.out" >/dev/null || fail "$wait_kind recheck lost its pause reason"
-    grep -F 'possible wedge' "$dir/long-cadence.out" >/dev/null && fail "$wait_kind recheck became a wedge"
+    grep -F 'awaiting external' "$dir/ceiling.out" >/dev/null || fail "$wait_kind recheck lost its pause reason"
+    grep -F 'possible wedge' "$dir/ceiling.out" >/dev/null && fail "$wait_kind recheck became a wedge"
   done
   # Disconfirming control: an idle worker with no declaration must still alarm.
   dir=$(make_case own-work-undeclared); state="$dir/state"; fakebin="$dir/fakebin"
@@ -331,6 +356,70 @@ test_exited_declared_pause_is_bounded_but_live_gate_surfaces() {
   [ "$wakes" -eq 0 ] || fail "acknowledged external-decision surface replayed $wakes wakes"
   [ "$bare" -eq 0 ] || fail "acknowledged external-decision bare stale remained queued"
   pass "exited declared-pause and captain-held panes use bounded pause cadence while a live decision gate still surfaces once"
+}
+
+# --- a declared pause's rechecks are absorbed, then one wakes at the ceiling ----
+# The 2026-11-03 audit: 21 of 48 main-session turns were stale wakes for workers
+# parked on a declared external wait or simply waiting. A wait that still stands,
+# with its crew still reporting it, has nothing new to say at every cadence tick,
+# so the recheck is absorbed and logged; one wake still fires per
+# FM_PAUSE_ABSORB_CEILING_SECS, measured from the last wake, so a wait nobody ever
+# closes cannot rot invisibly.
+test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
+  local dir state fakebin out capture_file statusf window key sig pid
+  dir=$(make_case pause-ceiling); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"; capture_file="$dir/pane.txt"; statusf="$state/held.status"
+  window="test:fm-ceiling"; key=$(printf '%s' "$window" | tr ':/.' '___')
+  printf 'idle, holding for the CI rerun' > "$capture_file"
+  printf 'window=%s\nkind=ship\nharness=grok\nbackend=tmux\n' "$window" > "$state/held.meta"
+  printf 'paused: waiting on the CI rerun of run 1234\n' > "$statusf"
+  sig=$(seen_sig "$statusf"); printf '%s' "$sig" > "$state/.seen-held_status"
+  printf '%s' "$(hash_text 'idle, holding for the CI rerun')" > "$state/.hash-$key"
+  printf '1\n' > "$state/.count-$key"
+  export FM_FAKE_CREW_STATE='state: paused · source: status-log · waiting on the CI rerun'
+
+  # Round 1: the declaration is past the cadence and has never been rechecked, so
+  # this recheck reaches firstmate and records the wake it belongs to.
+  set_mtime "$(( $(date +%s) - 500 ))" "$statusf"
+  watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+  pid=$!
+  wait_for_exit "$pid" 100 || fail "a never-rechecked declared pause did not re-surface"
+  grep -F 'awaiting external' "$out" >/dev/null || fail "the first pause recheck lost its declared-wait reason"
+  [ -e "$state/.paused-woken-$key" ] || fail "a pause recheck that reached firstmate recorded no wake"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the first pause recheck"
+
+  # Round 2: same declaration, crew state still waiting, wake younger than the
+  # ceiling. The due recheck is absorbed - no queue, no exit, one triage line.
+  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+  printf 'idle, holding for the CI rerun (token 2)' > "$capture_file"
+  : > "$out"
+  watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+  pid=$!
+  if ! wait_poll_cycle "$state" "$pid" || ! wait_poll_cycle "$state" "$pid"; then
+    reap "$pid"; fail "a settled pause recheck woke firstmate again inside the ceiling: $(cat "$out")"
+  fi
+  [ ! -s "$out" ] || { reap "$pid"; fail "a settled pause recheck printed a wake reason"; }
+  [ ! -s "$state/.wake-queue" ] || { reap "$pid"; fail "a settled pause recheck queued a wake"; }
+  grep -F 'absorbed stale recheck' "$state/.watch-triage.log" >/dev/null \
+    || { reap "$pid"; fail "an absorbed pause recheck was not recorded in the triage log"; }
+  reap "$pid"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the absorbed pause recheck"
+
+  # Round 3: the wake this declaration already produced is older than the
+  # ceiling, so the same recheck reaches firstmate once more. A forgotten wait
+  # cannot rot invisibly.
+  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-woken-$key"
+  printf 'idle, holding for the CI rerun (token 3)' > "$capture_file"
+  : > "$out"
+  watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1 \
+    FM_PAUSE_ABSORB_CEILING_SECS=400
+  pid=$!
+  wait_for_exit "$pid" 100 || fail "a declared pause past the absorption ceiling never re-surfaced"
+  grep -F 'awaiting external' "$out" >/dev/null || fail "the ceiling recheck lost its declared-wait reason"
+  grep -F 'possible wedge' "$out" >/dev/null && fail "a declared pause was mislabeled a possible wedge"
+  unset FM_FAKE_CREW_STATE
+  pass "a settled declared pause absorbs its rechecks, and one still wakes at the ceiling"
 }
 
 # A dead worker reaches handle_paused_stale rather than the live fallback above.
@@ -510,8 +599,14 @@ test_live_declared_wait_churn_honors_the_resurface_throttle() {
     [ "$wakes" -eq 0 ] || fail "[$name] replacement wait re-alarmed $wakes time(s) inside its own re-surface window"
 
     # End of the window: the wait must re-surface exactly once, on the same plain
-    # identity as before, so absorbing churn never becomes silence.
+    # identity as before, so absorbing churn never becomes silence. A declared
+    # paused: wait is additionally held to the pause ceiling, measured from its
+    # last wake, so this case ages that record past the ceiling too - the
+    # captain-held wait in the same loop has no ceiling and re-surfaces on the
+    # plain cadence.
     set_mtime "$(( $(date +%s) - 2000 ))" "$throttle"
+    [ ! -e "$state/.paused-woken-$key" ] \
+      || set_mtime "$(( $(date +%s) - 90000 ))" "$state/.paused-woken-$key"
     printf 'parked, elapsed 5s' > "$capture_file"
     parked_watch_round "$state" "$fakebin" "$out" "$capture_file" "$window" exit \
       || fail "[$name] a parked worker did not re-surface once its re-surface window elapsed"
@@ -1474,6 +1569,7 @@ fm_test_run \
   test_nonterminal_stale_paused_absorbed_then_resurfaced \
   test_exited_declared_pause_is_bounded_but_live_gate_surfaces \
   test_own_work_wait_keeps_first_alert_then_long_cadence \
+  test_pause_recheck_absorption_is_bounded_by_the_ceiling \
   test_absorbed_replacement_wait_does_not_inherit_the_old_throttle \
   test_live_declared_wait_churn_honors_the_resurface_throttle \
   test_live_paused_until_controls_recheck_time \

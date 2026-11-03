@@ -967,6 +967,72 @@ test_wedge_threshold_validating_run_is_off_until_armed() {
   pass "with config/wedge-defer-validating absent a running validation keeps the unchanged ladder, wording and reads"
 }
 
+# --- an idle wedge alarm for a delivery firstmate already has is absorbed ------
+# A worker that already delivered - and whose own newest line firstmate has
+# already presented - is not a wedge candidate: its pane is quiet because there
+# is nothing left to do. The 2026-11-03 audit counted 11 idle-wedge alarms on one
+# such worker. This stays a DEFERRAL: the bounded recheck cadence still surfaces
+# it, and a line that stops declaring a wait escalates on the unchanged ladder.
+test_wedge_threshold_defers_to_a_presented_delivery() {
+  local dir state fakebin out capture window key n
+  local verdict='state: unknown · source: none · no current-state source available'
+  window="test:fm-wedge"; key=$(printf '%s' "$window" | tr ':/.' '___')
+  dir=$(wedge_threshold_fixture delivered-presented \
+    'done [at=1793700000]: PR https://example.test/pull/7 checks green' 0 500)
+  state="$dir/state"; fakebin="$dir/fakebin"; out="$dir/watch.out"; capture="$dir/pane.txt"
+  n=1
+  while [ "$n" -le 3 ]; do
+    wedge_threshold_round "$state" "$fakebin" "$out" "$capture" "$window" "$verdict" absorb \
+      || fail "a presented delivery wedge-escalated at threshold $n: $(cat "$out")"
+    n=$((n + 1))
+  done
+  [ "$(wedge_stale_wakes "$state" "$window")" -eq 0 ] \
+    || fail "a presented delivery queued a wedge wake: $(cat "$state/.wake-queue")"
+  grep -F 'possible wedge' "$out" >/dev/null \
+    && fail "a presented delivery was reported as a possible wedge"
+  [ ! -e "$state/.wedge-escalations-$key" ] \
+    || fail "a presented delivery counted $(cat "$state/.wedge-escalations-$key") wedge escalation(s)"
+  grep -F 'settled status' "$state/.watch-triage.log" >/dev/null \
+    || fail "an absorbed idle wedge for a presented delivery was not recorded in the triage log"
+  pass "an idle wedge alarm for a delivery already presented is absorbed and logged, never escalated"
+}
+
+# The disconfirming half: a quiet worker whose newest line does NOT account for
+# its silence - no declared wait, no presented delivery - is still a wedge, and a
+# blocker or failure line is never treated as settled. Genuine stalls, decisions
+# and failures must keep waking firstmate.
+test_wedge_still_escalates_for_a_genuine_stall() {
+  local dir state fakebin out capture window key n spec name log
+  window="test:fm-wedge"; key=$(printf '%s' "$window" | tr ':/.' '___')
+  # Two rounds for the non-terminal line, one for a captain-relevant line: an
+  # unchanged terminal hash has already been surfaced once its escalation fired,
+  # so the second sight is inert by the pre-existing terminal rule, not by this
+  # absorb.
+  for spec in \
+    'undeclared|2|working: implementing the change' \
+    'blocker|1|blocked: the pipeline agent died twice with no findings' \
+    'failure|1|failed: validation stopped on a daemon error'
+  do
+    name=${spec%%|*}; spec=${spec#*|}
+    rounds=${spec%%|*}; log=${spec#*|}
+    dir=$(wedge_threshold_fixture "stall-$name" "$log" 0 500)
+    state="$dir/state"; fakebin="$dir/fakebin"; out="$dir/watch.out"; capture="$dir/pane.txt"
+    n=1
+    while [ "$n" -le "$rounds" ]; do
+      wedge_threshold_round "$state" "$fakebin" "$out" "$capture" "$window" \
+        'state: unknown · source: none · no current-state source available' exit \
+        || fail "a $name stall stopped waking firstmate at threshold $n: $(cat "$out")"
+      ack_stopped_cycle "$state" || fail "could not acknowledge the $name escalation"
+      grep -F "possible wedge, escalation $n" "$out" >/dev/null \
+        || fail "a $name stall lost escalation $n: $(cat "$out")"
+      n=$((n + 1))
+    done
+    grep -F 'settled status' "$state/.watch-triage.log" >/dev/null 2>&1 \
+      && fail "a $name stall was wrongly absorbed as settled"
+  done
+  pass "an undeclared stall, a blocker and a failure each keep the unchanged wedge escalation"
+}
+
 if [ -n "${FM_TEST_ONLY:-}" ]; then
   "$FM_TEST_ONLY"
   exit 0
@@ -985,4 +1051,6 @@ fm_test_run \
   test_wedge_defer_refuses_a_half_filled_wait_record \
   test_wedge_threshold_defers_to_an_executing_validation_run \
   test_wedge_threshold_escalates_when_no_run_is_executing \
-  test_wedge_threshold_validating_run_is_off_until_armed
+  test_wedge_threshold_validating_run_is_off_until_armed \
+  test_wedge_threshold_defers_to_a_presented_delivery \
+  test_wedge_still_escalates_for_a_genuine_stall
