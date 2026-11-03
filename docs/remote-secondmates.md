@@ -247,7 +247,7 @@ A local-form record is skipped, so the throwaway file must use the remote form, 
 The summary and `scope:` must be non-empty, and `projects:` may be empty.
 The absent home path may have only one missing leaf, so its parent directory must already exist.
 
-That run is read-only.
+The doctor run without `--fix` is read-only.
 It takes these steps:
 
 1. It prints the exact `PATH` its own entrypoint launch produced.
