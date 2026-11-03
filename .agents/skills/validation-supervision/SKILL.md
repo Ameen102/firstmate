@@ -35,3 +35,4 @@ The worker reports the PR when CI first becomes green rather than waiting for me
 
 Before escalating or deciding a failed CI step (a `ci-transient` finding, or any CI lane that stopped without running), run `bin/fm-ci-rerun-transient.sh --pr <number> -R <owner/repo>`; its header owns detection, the per-head limit of 3, and exit statuses.
 `rerun N` means wait for the rerun; `none` means the failure is real and goes through the ordinary decision unchanged; `exhausted` means escalate the finding with that evidence.
+`error: ...` decides nothing: retry once the named run completes or the named failure clears, and never read it as a real failure.
