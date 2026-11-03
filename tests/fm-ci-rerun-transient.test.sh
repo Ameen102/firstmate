@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Behavioral coverage for bin/fm-ci-rerun-transient.sh with a fake gh: transient
 # jobs rerun one per run and count per head before the request, real failures and
-# superseded runs are ignored, in-progress runs defer, the limit yields
-# "exhausted", a new head starts over, and a missing option value is a usage error.
+# superseded runs are ignored, all-skipped runs supersede nothing, in-progress
+# runs defer, the limit yields "exhausted", a new head starts over, and a missing
+# option value is a usage error.
 set -u
 
 # shellcheck source=tests/lib.sh
@@ -42,6 +43,7 @@ TRANSIENT2='{"id":2,"conclusion":"cancelled","runner_name":null,"steps":[]}'
 FAILED='{"id":3,"conclusion":"failure","runner_name":"r","steps":[{"n":1}]}'
 STARTED='{"id":4,"conclusion":"cancelled","runner_name":"r","steps":[{"n":1}]}'
 QUEUED='{"id":1,"conclusion":null,"runner_name":"","steps":[]}'
+SKIPPED='{"id":5,"conclusion":"skipped","runner_name":"","steps":[]}'
 
 run() { : > "$CALLS"; "$SCRIPT" --pr 9 -R o/r; }
 post() { printf 'POST repos/o/r/actions/jobs/%s/rerun' "$1"; }
@@ -97,6 +99,30 @@ test_superseded_run_is_never_rerun() {
   assert_equals "rerun 1" "$out" "the newest run of another workflow still qualifies"
   assert_equals "$(post 2)" "$(cat "$CALLS")" "only the other workflow's transient job is rerun"
   pass "only the newest run per workflow on the head is considered"
+}
+
+test_all_skipped_run_supersedes_nothing() {
+  local out st
+  export FAKE_SHA=sha-label
+  local both='{"id":101,"workflow_id":1,"status":"completed"},{"id":100,"workflow_id":1,"status":"completed"}'
+  set_runs "$both"
+  set_jobs 100 "$TRANSIENT1"
+  set_jobs 101 "$SKIPPED" "$SKIPPED"
+  out=$(run)
+  assert_equals "rerun 1" "$out" "an all-skipped label run does not mask the transient lane"
+  assert_equals "$(post 1)" "$(cat "$CALLS")" "the older run's transient job is rerun"
+  set_runs '{"id":101,"workflow_id":1,"status":"completed"},{"id":100,"workflow_id":1,"status":"in_progress"}'
+  set_jobs 100 "$QUEUED" "$FAILED"
+  out=$(run); st=$?
+  assert_contains "$out" "error: run 100 still in progress" "an all-skipped run does not hide the active rerun"
+  assert_equals 1 "$st" "deferral behind an all-skipped run exits 1"
+  set_runs "$both"
+  set_jobs 100 "$TRANSIENT1"
+  set_jobs 101 "$SKIPPED" "$FAILED"
+  out=$(run)
+  assert_equals none "$out" "a partly skipped newer run still supersedes"
+  assert_equals "" "$(cat "$CALLS")" "a superseded run stays untouched"
+  pass "a run whose jobs all skipped supersedes nothing"
 }
 
 test_one_job_per_run_per_call() {
@@ -187,6 +213,7 @@ test_missing_option_value_is_usage_error() {
 fm_test_run \
   test_transient_rerun_bounded_per_head \
   test_superseded_run_is_never_rerun \
+  test_all_skipped_run_supersedes_nothing \
   test_one_job_per_run_per_call \
   test_count_precedes_request \
   test_in_progress_defers \

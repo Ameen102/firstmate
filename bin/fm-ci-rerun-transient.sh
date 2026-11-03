@@ -13,6 +13,8 @@
 # started, are never touched. --run resolves the run's PR and then behaves as
 # --pr. Only the newest run per workflow on the PR's current head is considered,
 # so a lane cancelled by a newer push or a same-head supersession is left alone.
+# A run whose jobs all skipped executes nothing (a non-full-ci label event) and
+# supersedes nothing, so it is passed over.
 #
 # The attempt count lives in $FM_HOME/state/ci-rerun/<repo>-pr<N>-<head>.count
 # (FM_HOME defaults to this code root), so a new head starts at zero and the
@@ -73,14 +75,17 @@ if [ -r "$count_file" ]; then n=$(cat "$count_file" 2>/dev/null); fi
 case "$n" in '' | *[!0-9]*) n=0 ;; esac
 
 runs=$(gh api "repos/$repo/actions/runs?head_sha=$sha&per_page=100" --jq \
-  '.workflow_runs | group_by(.workflow_id) | map(max_by(.id)) | .[] | "\(.id):\(.status)"') || fail "cannot list runs"
-jobs=''
+  '.workflow_runs | sort_by(-.id) | .[] | "\(.id):\(.workflow_id):\(.status)"') || fail "cannot list runs"
+jobs='' seen=''
 for entry in $runs; do
-  r=${entry%%:*}
+  IFS=: read -r r wf status <<<"$entry"
+  case " $seen " in *" $wf "*) continue ;; esac
   j=$(gh api "repos/$repo/actions/runs/$r/jobs?per_page=100" --jq \
-    'first(.jobs[] | select(.conclusion == "cancelled" and ((.runner_name // "") == "") and ((.steps // []) | length) == 0) | .id)') \
+    'if ([.jobs[].conclusion] | unique) == ["skipped"] then "skipped" else first(.jobs[] | select(.conclusion == "cancelled" and ((.runner_name // "") == "") and ((.steps // []) | length) == 0) | .id) end') \
     || fail "cannot list jobs of run $r"
-  if [ "${entry#*:}" != completed ] && { [ -n "$j" ] || [ "$n" -gt 0 ]; }; then
+  [ "$j" != skipped ] || continue
+  seen="$seen $wf"
+  if [ "$status" != completed ] && { [ -n "$j" ] || [ "$n" -gt 0 ]; }; then
     fail "run $r still in progress, retry when complete"
   fi
   [ -z "$j" ] || jobs="$jobs $j"
