@@ -1386,7 +1386,9 @@ test_watcher_exits_on_state_teardown_during_startup() {
     [ -e "$state/.watch.lock/watcher-path" ] && kill -STOP "$pid" 2>/dev/null && { stopped=1; break; }
   done
   [ "$stopped" -eq 1 ] || fail "watcher never finished claiming its lock: $(cat "$out")"
-  rm -rf "$state"
+  # Rename rather than delete: a detached helper the watcher already started can
+  # still be writing here, which would fail an rm -rf and leave the same directory.
+  mv "$state" "$state.torn-down"
   mkdir -p "$state"
   kill -CONT "$pid" 2>/dev/null || true
   # wait_for_exit returns the watcher's own status, or TERMs a watcher that

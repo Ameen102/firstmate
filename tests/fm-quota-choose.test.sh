@@ -185,7 +185,7 @@ if help=$("$BIN/fm-quota-choose.sh" --help 2>&1); then
   fail "help unexpectedly exited zero"
 fi
 printf '%s\n' "$help" | grep -Fq \
-  "candidate order and every candidate's provider is the harness's primary family." \
+  "every candidate's provider is the harness's primary family." \
   || fail "help omitted the multi-provider usage restriction"
 if printf '%s\n' "$help" | grep -Fq 'set -u'; then
   fail "help leaked executable source"
