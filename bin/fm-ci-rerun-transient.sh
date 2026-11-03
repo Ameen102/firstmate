@@ -27,9 +27,9 @@
 #                       escalate the finding
 #   none        exit 0  no transient job; any failure is real, escalate unchanged
 #   error: ...  exit 1  nothing is decided; retry. A run still in progress (holding
-#                       a transient job, or with this head already rerun) or a read
-#                       or count-write failure starts and counts nothing; a failed
-#                       rerun request has spent its attempt.
+#                       a transient job, with no job resolved yet, or with this head
+#                       already rerun) or a read or count-write failure starts and
+#                       counts nothing; a failed rerun request has spent its attempt.
 # Usage errors exit 2.
 #
 # Callers: a worker or firstmate runs this before escalating a CI-gate failure
@@ -81,14 +81,14 @@ for entry in $runs; do
   IFS=: read -r r wf status <<<"$entry"
   case " $seen " in *" $wf "*) continue ;; esac
   j=$(gh api "repos/$repo/actions/runs/$r/jobs?per_page=100" --jq \
-    'if ([.jobs[].conclusion] | unique) == ["skipped"] then "skipped" else first(.jobs[] | select(.conclusion == "cancelled" and ((.runner_name // "") == "") and ((.steps // []) | length) == 0) | .id) end') \
+    'if ([.jobs[].conclusion] | unique) == ["skipped"] then "skipped" elif any(.jobs[]; (.conclusion // "skipped") != "skipped" or (.runner_name // "") != "") | not then "unresolved" else first(.jobs[] | select(.conclusion == "cancelled" and ((.runner_name // "") == "") and ((.steps // []) | length) == 0) | .id) end') \
     || fail "cannot list jobs of run $r"
   [ "$j" != skipped ] || continue
   seen="$seen $wf"
   if [ "$status" != completed ] && { [ -n "$j" ] || [ "$n" -gt 0 ]; }; then
     fail "run $r still in progress, retry when complete"
   fi
-  [ -z "$j" ] || jobs="$jobs $j"
+  case $j in '' | unresolved) ;; *) jobs="$jobs $j" ;; esac
 done
 [ -n "$jobs" ] || { echo none; exit 0; }
 

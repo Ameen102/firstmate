@@ -125,6 +125,30 @@ test_all_skipped_run_supersedes_nothing() {
   pass "a run whose jobs all skipped supersedes nothing"
 }
 
+test_unresolved_run_defers() {
+  local out st jobs_state
+  export FAKE_SHA=sha-starting
+  set_jobs 100 "$TRANSIENT1"
+  set_runs '{"id":101,"workflow_id":1,"status":"queued"},{"id":100,"workflow_id":1,"status":"completed"}'
+  for jobs_state in "" "$QUEUED" "$SKIPPED,$QUEUED"; do
+    echo "{\"jobs\":[$jobs_state]}" > "$FAKE_DIR/jobs-101.json"
+    out=$(run); st=$?
+    assert_contains "$out" "error: run 101 still in progress" "unresolved newer run defers: [$jobs_state]"
+    assert_equals 1 "$st" "unresolved newer run exits 1"
+    assert_equals "" "$(cat "$CALLS")" "unresolved newer run starts no rerun"
+  done
+  set_jobs 101 "$SKIPPED" "$SKIPPED"
+  out=$(run)
+  assert_equals "rerun 1" "$out" "the deferral counted nothing and clears once the run resolves"
+  export FAKE_SHA=sha-nojobs
+  set_runs '{"id":101,"workflow_id":1,"status":"completed"}'
+  set_jobs 101
+  out=$(run)
+  assert_equals none "$out" "a completed run with no jobs has nothing to rerun"
+  assert_equals "" "$(cat "$CALLS")" "a completed run with no jobs starts no rerun"
+  pass "a live run whose jobs have not resolved defers instead of masking older runs"
+}
+
 test_one_job_per_run_per_call() {
   local out
   export FAKE_SHA=sha-two
@@ -214,6 +238,7 @@ fm_test_run \
   test_transient_rerun_bounded_per_head \
   test_superseded_run_is_never_rerun \
   test_all_skipped_run_supersedes_nothing \
+  test_unresolved_run_defers \
   test_one_job_per_run_per_call \
   test_count_precedes_request \
   test_in_progress_defers \
