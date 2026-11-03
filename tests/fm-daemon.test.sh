@@ -1935,8 +1935,8 @@ test_fresh_start_daemon_bounds_history_at_startup() {
   snapshot="$dir/escalations.snapshot"
   history_log "$state/old-t9.status"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_STATE_OVERRIDE="$state" \
-    FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=fakepane \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_STATE_OVERRIDE="$state" \
+    FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=firstmate:supervisor \
     FM_DAEMON_PRIMARY_HARNESS=claude FM_POLL=1 FM_SIGNAL_GRACE=1 \
     FM_HOUSEKEEPING_TICK=0 FM_HEARTBEAT_SCAN_SECS=0 \
     FM_STALE_ESCALATE_SECS=999999 FM_ESCALATE_BATCH_SECS=999999 \
