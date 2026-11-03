@@ -425,6 +425,47 @@ parked_watch_round() {  # <state> <fakebin> <out> <capture> <window> <exit|absor
   return 0
 }
 
+# --- a parked worker that wakes to poll its wait must not re-alarm ------------
+# A worker that wakes hourly to poll its declared wait turns the pane busy without
+# lifting the wait. Clearing the re-surface throttle on that flip re-alarmed the
+# same wait on the next idle pane, once per poll instead of once per long cadence.
+# The wait outlives the cadence here, so nothing but the throttle can hold it.
+test_busy_flip_keeps_the_declared_wait_throttle() {
+  local dir state fakebin out capture_file statusf window key throttle wakes back
+  dir=$(make_case paused-busy-flip); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"; capture_file="$dir/pane.txt"; statusf="$state/parked.status"
+  window="test:fm-parked"
+  printf 'window=%s\nkind=ship\nharness=grok\nbackend=tmux\n' "$window" > "$state/parked.meta"
+  printf 'paused: waiting on the external release\n' > "$statusf"
+  back=$(( $(date +%s) - 2000 ))
+  if [ "$(uname)" = Darwin ]; then touch -mt "$(date -r "$back" '+%Y%m%d%H%M.%S')" "$statusf"
+  else touch -m -d "@$back" "$statusf"; fi
+  printf '%s' "$(seen_sig "$statusf")" > "$state/.seen-parked_status"
+  key=$(printf '%s' "$window" | tr ':/.' '___')
+  throttle="$state/.paused-resurfaced-$key"
+
+  printf 'parked' > "$capture_file"
+  printf '%s' "$(hash_text parked)" > "$state/.hash-$key"
+  printf '1\n' > "$state/.count-$key"
+  parked_watch_round "$state" "$fakebin" "$out" "$capture_file" "$window" exit \
+    || fail "the first sight of the parked worker did not surface"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the first surface"
+  [ -e "$throttle" ] || fail "the first surface recorded no throttle"
+
+  # The worker wakes to poll, then parks again on the same declaration.
+  printf 'polling the release Ctrl+c:cancel' > "$capture_file"
+  parked_watch_round "$state" "$fakebin" "$out" "$capture_file" "$window" absorb \
+    || fail "the watcher exited while the parked worker polled"
+  [ -e "$throttle" ] || fail "a busy flip cleared the throttle while the same wait stands"
+  printf 'parked again' > "$capture_file"
+  parked_watch_round "$state" "$fakebin" "$out" "$capture_file" "$window" absorb \
+    || fail "the same declared wait re-alarmed after the worker polled"
+  wakes=$(awk -F '\t' -v w="$window" '$3 == "stale" && $4 == w { n++ } END { print n + 0 }' \
+    "$state/.wake-queue" 2>/dev/null || echo 0)
+  [ "$wakes" -eq 0 ] || fail "the same declared wait re-alarmed $wakes time(s) inside the cadence"
+  pass "a parked worker that wakes to poll its declared wait keeps the once-per-cadence recheck"
+}
+
 # --- a live worker parked on a declared wait: pane churn must not re-alarm ----
 # The 2026-08/09 alarm loop, in both observed forms - a worker parked on the
 # CAPTAIN (captain-held, five consecutive alarms) and one parked on the PIPELINE
@@ -1476,6 +1517,7 @@ fm_test_run \
   test_own_work_wait_keeps_first_alert_then_long_cadence \
   test_absorbed_replacement_wait_does_not_inherit_the_old_throttle \
   test_live_declared_wait_churn_honors_the_resurface_throttle \
+  test_busy_flip_keeps_the_declared_wait_throttle \
   test_live_paused_until_controls_recheck_time \
   test_open_captain_call_bounds_stale_churn \
   test_stale_churn_without_a_captain_call_still_alarms \

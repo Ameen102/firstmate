@@ -16,6 +16,8 @@
 # beyond FM_PAUSE_RESURFACE_SECS cannot extend the ordinary recheck cadence, and
 # while an away record (state/.afk-contract, never quiet mode's) exists an
 # item held for the captain is never rechecked at all, in either posture.
+# A home that opts in with config/wake-judge also lets Jev absorb the narrow status
+# batches signal_wake_judge_routine admits, and any doubt surfaces the wake.
 # While state/.afk exists, the daemon owns triage and this watcher queues and exits
 # on every wake. Printed reason lines:
 #   signal: <file>...      status/turn-end signals, surfaced when a listed status
@@ -714,6 +716,74 @@ inbox_steer_check() {  # <window> <task>
       wake "$reason"
       ;;
   esac
+}
+
+# 0 (benign/absorb) when a home that opted in with config/wake-judge gets a clear
+# routine verdict from Jev (bin/fm-wake-judge.sh) on this batch; 1 otherwise.
+# Everything here runs in bash before any model sees the wake, and only these
+# batches are ever asked about:
+#   - No file carries a decision-owned class, and every file is a task's status
+#     log with new lines, or the turn-end of a task whose log is also in the batch.
+#     A bare turn-end has no words to judge and stays the swallowed-finish guard's.
+#   - A worker's new lines are only working, resolved, note, or paused, and the
+#     newest is paused: it stopped and said what it is waiting on.
+#   - A secondmate, whose idle endpoint is healthy, may also carry a done that
+#     answers a correlated request, with no [key=...] and no URL.
+# So a needs-decision, blocked, failed, ready PR, or keyed outcome is never asked
+# about and always surfaces, whatever Jev would say. A status line is only ever
+# deferred here, not lost: the next drain still presents it. The seen commit in the
+# caller's absorb branch keeps one span to one question. NOT a pure read: a routine
+# verdict marks the batch surfaced so the heartbeat backstop does not re-raise it.
+signal_wake_judge_routine() {  # <file> ...
+  [ -e "$CONFIG/wake-judge" ] || return 1
+  [ -z "${FM_SIGNAL_NEEDS_DECISION_FILES// /}" ] || return 1
+  local f task span line verb newest secondmate lines evidence='' verdict endpoint ident
+  for f in "$@"; do
+    case "$f" in
+      *.turn-ended)
+        case " $* " in *" ${f%.turn-ended}.status "*) continue ;; *) return 1 ;; esac
+        ;;
+      *.status) ;;
+      *) return 1 ;;
+    esac
+    { [ -f "$f" ] && [ ! -L "$f" ]; } || return 1
+    task=$(basename "$f" .status)
+    secondmate=1
+    grep -qxF 'kind=secondmate' "$STATE/$task.meta" 2>/dev/null && secondmate=0
+    span=$(tail -c +"$(( $(fm_wake_signal_seen_size "$STATE" "$f") + 1 ))" "$f" 2>/dev/null) || return 1
+    newest=''; lines=0
+    while IFS= read -r line; do
+      [ -n "$line" ] || continue
+      lines=$((lines + 1))
+      [ "$lines" -le 12 ] || return 1
+      status_line_verb "$line" verb
+      case "$verb" in
+        working|resolved|note|"${FM_CLASSIFY_PAUSED_VERB:-$FM_CLASSIFY_PAUSED_VERB_DEFAULT}") ;;
+        done)
+          [ "$secondmate" -eq 0 ] || return 1
+          case "$line" in *'[key='*|*'://'*) return 1 ;; *corr=*) ;; *) return 1 ;; esac
+          ;;
+        *) return 1 ;;
+      esac
+      newest=$line
+      evidence="$evidence$task: ${line:0:300}"$'\n'
+    done <<<"$span"
+    [ -n "$newest" ] || return 1
+    [ "$secondmate" -eq 0 ] || status_is_paused "$newest" || return 1
+  done
+  [ -n "$evidence" ] || return 1
+  if verdict=$(printf '%s' "$evidence" | FM_HOME="$FM_HOME" FM_CONFIG_OVERRIDE="$CONFIG" "$SCRIPT_DIR/fm-wake-judge.sh" 2>/dev/null); then
+    triage_log "$verdict, absorbed signal:$*"
+    while IFS=$(printf '\t') read -r f endpoint ident; do
+      [ -n "$f" ] || continue
+      mark_surfaced "$f" "$endpoint" "$ident" || true
+    done <<EOF
+$FM_SIGNAL_SURFACE_ENDPOINTS
+EOF
+    return 0
+  fi
+  triage_log "${verdict:-wake-judge: no verdict}, surfaced signal:$*"
+  return 1
 }
 
 # 0 (benign/absorb) if EVERY task in a no-verb "signal:" wake has positive work
@@ -2632,6 +2702,21 @@ clear_pause_tracking() {  # <window-key>
   clear_stale_hash_tracking "$key"
 }
 
+# A pane that turned busy resets the pause bookkeeping, but while the worker's own
+# wait declaration still stands the re-surface throttle stays: it bounds the
+# DECLARATION, and a parked worker that wakes to poll its wait turns busy without
+# lifting it. Clearing it here would re-surface that wait on the next idle pane,
+# whose status age is already past the cadence, once per poll of the worker's.
+clear_pause_tracking_busy() {  # <window-key> <task>
+  local key=$1 task=$2
+  if status_is_paused_or_captain_held "$(status_declared_wait_line "$STATE/$task.status")"; then
+    rm -f "$STATE/.paused-$key" "$STATE/.paused-rechecked-$key"
+    clear_stale_hash_tracking "$key"
+  else
+    clear_pause_tracking "$key"
+  fi
+}
+
 # Reconcile a declared pause or captain-held status with authoritative crew state.
 # After fm-crew-state has fallen back to stopped or unknown, paused classification is
 # recovered only for a confidently dead ordinary crew, or for a secondmate, whose
@@ -4176,6 +4261,9 @@ EOF
     # busy state has no verified semantic source, bounded so it cannot defer that
     # task's turn-ends forever. Absorb stays evidence-driven: with neither proof the
     # wake surfaces exactly as before.
+    # Last and costliest, a home that opted in with config/wake-judge may ask Jev
+    # about the narrow batches signal_wake_judge_routine admits; a wake it does not
+    # clearly call routine surfaces exactly as before.
     # Actionable -> enqueue, advance .seen-* markers, exit. Benign (a no-verb wake
     # whose crew is still executing) in always-on mode -> advance the markers so it
     # will not re-fire, log, and keep blocking without enqueuing. Both evidence
@@ -4198,8 +4286,9 @@ EOF
     # passes it to handle_wake (see the comment above handle_wake in
     # bin/fm-supervise-daemon.sh).
     # shellcheck disable=SC2086  # same space-separated status-path list
-    if afk_present || [ "$signal_actionable" -eq 0 ] \
-      || { ! signal_crew_provably_working $files && ! signal_turnend_panes_churned $files; }; then
+    if afk_present || { { [ "$signal_actionable" -eq 0 ] \
+      || { ! signal_crew_provably_working $files && ! signal_turnend_panes_churned $files; }; } \
+      && ! signal_wake_judge_routine $files; }; then
       while IFS=$(printf '\t') read -r sf sig f; do
         [ -n "$sf" ] || continue
         file_reason="$reason"
@@ -4477,7 +4566,7 @@ EOF
         # recorded it, or the re-surface throttle it depends on would be erased and
         # the pause would re-surface every poll instead of once per long cadence.
         if [ "$paused_bound" -ne 0 ] && [ -e "$pf" ] && { [ "$n" -ge 2 ] || ! status_is_paused_or_captain_held "$(status_declared_wait_line "$STATE/$(window_to_task "$w" "$STATE").status")"; }; then
-          clear_pause_tracking "$key"
+          clear_pause_tracking_busy "$key" "$(window_to_task "$w" "$STATE")"
         fi
       fi
     else
@@ -4509,7 +4598,7 @@ EOF
       elif [ "$paused_bound" -ne 0 ] && [ -e "$pf" ]; then
         # Same rule as the stable-hash branch: never clear pause bookkeeping the
         # declared-pause cadence recorded on this very poll.
-        clear_pause_tracking "$key"
+        clear_pause_tracking_busy "$key" "$task"
       fi
     fi
   done < <(recorded_windows)

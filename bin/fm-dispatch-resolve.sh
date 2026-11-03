@@ -150,6 +150,8 @@ CONFIG="${FM_CONFIG_OVERRIDE:-$FM_HOME/config}"
 . "$SCRIPT_DIR/fm-brief-heading-lib.sh"
 # shellcheck source=bin/fm-credential-source-lib.sh
 . "$SCRIPT_DIR/fm-credential-source-lib.sh"
+# shellcheck source=bin/fm-never-send-lib.sh
+. "$SCRIPT_DIR/fm-never-send-lib.sh"
 
 CONFIDENCE_FLOOR=0.6
 TS_MODEL=jev-latest
@@ -410,35 +412,19 @@ never_send_off() {
 
 # Checks the endpoint and every string the final request body carries,
 # including strings inside JSON text such as OpenAI's serialized input, so no
-# text reaches the network unchecked. grep's own stderr is discarded because
-# it can echo the pattern.
+# text reaches the network unchecked. Whitespace collapses so a value the brief
+# wraps across lines or spaces differently still matches.
 never_send_check() {
-  local list value n=0 rc
+  local problem
   [ -e "$NEVER_SEND_PATH" ] || [ -L "$NEVER_SEND_PATH" ] || return 0
   { [ -f "$NEVER_SEND_PATH" ] && [ -r "$NEVER_SEND_PATH" ]; } \
     || never_send_off "$NEVER_SEND_PATH is not a readable regular file"
-  # Collapse whitespace runs on both sides so a value the brief wraps across
-  # lines or spaces differently still matches
   jq -r --arg endpoint "$ENDPOINT" '
     $endpoint, (.. | strings | ., (try (fromjson | .. | strings) catch empty))
     | gsub("\\s+"; " ")' <<<"$BODY" > "$SEND_TEXT" 2>/dev/null \
     || never_send_off "could not extract the request text to check"
-  list=$(jq -Rr 'gsub("\\s+"; " ")' "$NEVER_SEND_PATH" 2>/dev/null) \
-    || never_send_off "could not read $NEVER_SEND_PATH"
-  while IFS= read -r value; do
-    n=$((n + 1))
-    value=${value# }
-    value=${value% }
-    case "$value" in
-      ''|'#'*) continue ;;
-    esac
-    grep -qiF -e "$value" "$SEND_TEXT" 2>/dev/null; rc=$?
-    case "$rc" in
-      0) never_send_off "brief text matches $NEVER_SEND_PATH line $n" ;;
-      1) ;;
-      *) never_send_off "could not check the request text against $NEVER_SEND_PATH line $n" ;;
-    esac
-  done <<<"$list"
+  problem=$(fm_never_send_problem "$NEVER_SEND_PATH" "$SEND_TEXT" "brief text") \
+    || never_send_off "$problem"
 }
 
 # Send Jev only the task-specific sections bin/fm-brief.sh scaffolds, plus a

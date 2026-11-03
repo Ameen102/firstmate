@@ -11,7 +11,7 @@ Start with the directory layout, then use the setting reference for the behavior
 | Task windows and worker tools | [Runtime backend](#runtime-backend-configbackend--fm_backend) and [harness support](#harness-support) |
 | Worker permissions, accounts, or environment | [Codex approval review](#codex-automatic-approval-review), [Claude permission mode](#claude-permission-mode-configclaude-permission-mode), [Codex permission mode](#codex-permission-mode-configcodex-permission-mode), [persistent managed-policy failover](#persistent-managed-policy-failover), [worker account pin](#worker-account-pin-configclaude-account-configpi-account), [worker tool exclusions](#worker-tool-exclusions-configcrew-exclude-tools), [worker launch environment](#worker-launch-environment-configlaunch-env-allowlist), and its [Orca environment source](#orca-environment-source-configlaunch-env-tmux-session) |
 | Backlog, preferences, and memory | [Backlog backend](#backlog-backend-taskstoml--configbacklog-backend), [captain preferences](#captain-preferences-datacaptainmd--datacaptain-sharedmd), [external memory tiers](#external-memory-tiers-memory-layering-section), [record export](#record-export-configrecord-export-root), and [startup memory budget](#startup-memory-budget-configstartup-memory-budget) |
-| Supervision and presentation | [Pi supervision branch](#pi-supervision-branch), [supervision host](#supervision-host-configsupervision-host), [Codex native Stop park](#codex-native-stop-park-configcodex-stop-park), [warm-cache compaction](#warm-cache-compaction-configwarm-compact), and [Calm preference](#calm-preference-configcalm) |
+| Supervision and presentation | [Pi supervision branch](#pi-supervision-branch), [supervision host](#supervision-host-configsupervision-host), [Codex native Stop park](#codex-native-stop-park-configcodex-stop-park), [warm-cache compaction](#warm-cache-compaction-configwarm-compact), [wake judge](#wake-judge-configwake-judge), and [Calm preference](#calm-preference-configcalm) |
 | Persistent secondmates | [Secondmate routes](#secondmate-routes-datasecondmatesmd) |
 | Review bots on owned GitHub pull requests | [Contribution review bots](#contribution-review-bots-configcontribution-review-bots) |
 | Per-run overrides and tuning | [Environment variables](#environment-variables) |
@@ -958,6 +958,26 @@ The bound is required rather than cosmetic because churn and pane staleness read
 
 The flag is a home-local supervision-noise preference and is not inherited by secondmate homes, which run their own crew mix.
 [`architecture.md`](architecture.md) owns the triage contract and `bin/fm-watch.sh`'s `signal_turnend_panes_churned` owns the exact evidence and fail-closed boundaries.
+
+## Wake judge (config/wake-judge)
+
+The optional local, gitignored `config/wake-judge` presence flag lets the watcher ask TypeSafe's Jev whether a narrow class of status wake needs a supervisor turn.
+Creating it is the consent to send those status lines to TypeSafe, so a key alone never turns it on.
+The key comes from `TYPESAFE_API_KEY` in the environment, else this home's `.env`, the same reads typed dispatch resolution makes; with neither the feature stays off.
+`config/dispatch-never-send` applies, and a match sends nothing and surfaces the wake.
+
+Only a batch that passes the deterministic gate in `bin/fm-watch.sh`'s `signal_wake_judge_routine` is ever asked about:
+
+- A worker that stopped with a newly declared `paused:` wait, whose other new lines are only `working`, `resolved`, or `note`.
+- A secondmate whose new lines are only those, or a `done` answering a correlated request with no key and no URL.
+
+A decision, a block, a failure, a ready pull request, a keyed outcome, and a bare turn-end never reach Jev and surface as they would without the flag.
+A routine verdict at confidence 0.9 or above absorbs the wake, and any other answer, error, or timeout surfaces it; `bin/fm-wake-judge.sh` owns that contract.
+An absorbed line is deferred rather than lost: the next drain still presents an unread answer, and open decisions are unaffected.
+A worker's unusual pane state still reaches the supervisor through the stale path, which the judge never touches.
+Each question adds under a second of model time to that one poll and at most four seconds on a failure.
+`state/.watch-triage.log` records every verdict, so `grep -c 'wake-judge: routine' state/.watch-triage.log` counts the turns it saved.
+The flag is home-local and not inherited by secondmate homes.
 
 ## Parked-gate wait deferral (config/wedge-defer-parked-gate)
 
@@ -3330,7 +3350,7 @@ FM_DISPATCH_PROVIDER=   # typesafe, openrouter, systemone, or openai; absent pre
 FM_DISPATCH_MODEL=      # explicit model for the selected provider; required for openrouter, systemone, and openai
 FM_DISPATCH_BASE_URL=   # http(s) base of a System One-compatible host; required for systemone
 FM_DISPATCH_API_KEY=    # optional systemone key; absent sends no Authorization header
-TYPESAFE_API_KEY=       # typesafe dispatch key, from the environment, .env, or the declared credential source ("Typed dispatch resolution")
+TYPESAFE_API_KEY=       # typesafe dispatch key, from the environment, .env, or the declared credential source ("Typed dispatch resolution"); the wake judge reads only the first two ("Wake judge")
 OPENROUTER_API_KEY=     # OpenRouter dispatch key, from the environment, .env, or the declared credential source
 OPENAI_API_KEY=         # OpenAI dispatch key, from the environment or .env
 FMX_DISCORD_REPLY_MAX_CHARS=1900   # Discord reply per-message split budget; values below 50 clamp to 50, values above 2000 reset to 1900
