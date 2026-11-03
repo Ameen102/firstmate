@@ -1829,8 +1829,8 @@ printf 'pending remote steer\n' > "$PARENT/state/ios.inbox/001.msg"
 printf 'handled remote steer\n' > "$PARENT/state/ios.inbox/handled/002.msg"
 grep '^- ios ' "$PARENT/data/secondmates.md" > "$TMP_ROOT/remote-route.saved"
 # An unrelated record sorting after every ios record must survive the cleanup.
-UNRELATED_PENDING="$PARENT/state/pending-replies/zzzz-unrelated"
-printf 'schema=fm-pending-reply.v1\ncorr_id=zzzz-unrelated\ntask_id=other\nphase=resolved\n' > "$UNRELATED_PENDING"
+UNRELATED_PENDING="$PARENT/state/pending-replies/ffffffffffffffff"
+printf 'schema=fm-pending-reply.v1\ncorr_id=ffffffffffffffff\ntask_id=other\nphase=resolved\n' > "$UNRELATED_PENDING"
 FM_FAKE_SSH_MODE=retire-lost-slot remote_env "$ROOT/bin/fm-teardown.sh" ios \
   > "$TMP_ROOT/teardown-serialized.out" 2> "$TMP_ROOT/teardown-serialized.err" &
 teardown_pid=$!
