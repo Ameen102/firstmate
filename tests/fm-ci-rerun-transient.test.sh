@@ -3,7 +3,7 @@
 # jobs rerun one per run and count per head before the request, real failures and
 # superseded runs are ignored, all-skipped runs supersede nothing, in-progress
 # runs defer, the limit yields "exhausted", a new head starts over, and a missing
-# option value is a usage error.
+# required option or option value is a usage error.
 set -u
 
 # shellcheck source=tests/lib.sh
@@ -213,9 +213,9 @@ test_in_progress_defers() {
   pass "in-progress runs defer rather than report none"
 }
 
-test_missing_option_value_is_usage_error() {
+test_missing_option_is_usage_error() {
   local args pid i st
-  for args in "--pr" "--run" "--pr 9 -R"; do
+  for args in "" "--pr" "--pr 9 -R" "--pr 9" "-R o/r" "--run 5 -R o/r"; do
     # shellcheck disable=SC2086
     "$SCRIPT" $args >/dev/null 2>&1 &
     pid=$!
@@ -231,7 +231,7 @@ test_missing_option_value_is_usage_error() {
     wait "$pid"; st=$?
     assert_equals 2 "$st" "'$args' exits 2"
   done
-  pass "a value-taking option as the last argument is a usage error"
+  pass "--pr and -R are required and unknown options are usage errors"
 }
 
 fm_test_run \
@@ -242,4 +242,4 @@ fm_test_run \
   test_one_job_per_run_per_call \
   test_count_precedes_request \
   test_in_progress_defers \
-  test_missing_option_value_is_usage_error
+  test_missing_option_is_usage_error

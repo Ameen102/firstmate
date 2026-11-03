@@ -3,16 +3,16 @@
 # was assigned, a bounded number of times per PR head, before anyone is asked.
 #
 # Usage:
-#   fm-ci-rerun-transient.sh (--pr <number> | --run <run-id>) [-R <owner/repo>]
+#   fm-ci-rerun-transient.sh --pr <number> -R <owner/repo>
 #
 # A transient lane is a job on the PR's current head whose conclusion is
 # cancelled, whose runner_name is empty and which ran no steps: GitHub never
 # gave it a machine. Only those jobs are rerun, at most one job per run per
 # call because GitHub refuses a second rerun while the run is active; the next
 # call takes the next job. Real failures, and jobs cancelled after a runner
-# started, are never touched. --run resolves the run's PR and then behaves as
-# --pr. Only the newest run per workflow on the PR's current head is considered,
-# so a lane cancelled by a newer push or a same-head supersession is left alone.
+# started, are never touched. Only the newest run per workflow on the PR's current
+# head is considered, so a lane cancelled by a newer push or a same-head
+# supersession is left alone.
 # A run whose jobs all skipped executes nothing (a non-full-ci label event) and
 # supersedes nothing, so it is passed over.
 #
@@ -40,32 +40,23 @@ set -u
 max=3
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 state_dir=${FM_STATE_OVERRIDE:-${FM_HOME:-$root}/state}/ci-rerun
-pr='' run='' repo=''
+pr='' repo=''
 
-usage() { echo "usage: fm-ci-rerun-transient.sh (--pr N | --run ID) [-R owner/repo]" >&2; exit 2; }
+usage() { echo "usage: fm-ci-rerun-transient.sh --pr N -R owner/repo" >&2; exit 2; }
 
 while [ $# -gt 0 ]; do
   case $1 in
     --pr) [ $# -ge 2 ] || usage; pr=$2; shift 2 ;;
-    --run) [ $# -ge 2 ] || usage; run=$2; shift 2 ;;
     -R) [ $# -ge 2 ] || usage; repo=$2; shift 2 ;;
     -h | --help) sed -n '2,/^set -u/p' "$0" | sed '$d'; exit 0 ;;
     *) usage ;;
   esac
 done
-{ [ -n "$pr" ] || [ -n "$run" ]; } || { echo "usage: need --pr or --run" >&2; exit 2; }
-case "$pr$run" in *[!0-9]*) echo "usage: --pr/--run take a number" >&2; exit 2 ;; esac
-if [ -n "$pr" ] && [ -n "$run" ]; then echo "usage: give --pr or --run, not both" >&2; exit 2; fi
+{ [ -n "$pr" ] && [ -n "$repo" ]; } || usage
+case "$pr" in *[!0-9]*) echo "usage: --pr takes a number" >&2; exit 2 ;; esac
 
 fail() { echo "error: $*"; exit 1; }
 
-if [ -z "$repo" ]; then
-  repo=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null) || fail "cannot resolve repo; pass -R"
-fi
-if [ -z "$pr" ]; then
-  pr=$(gh api "repos/$repo/actions/runs/$run" --jq '.pull_requests[0].number // empty') || fail "cannot read run $run"
-  [ -n "$pr" ] || fail "run $run has no pull request"
-fi
 sha=$(gh api "repos/$repo/pulls/$pr" --jq .head.sha) || fail "cannot read PR $pr"
 [ -n "$sha" ] || fail "no head sha for PR $pr"
 
