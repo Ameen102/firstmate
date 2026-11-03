@@ -686,15 +686,19 @@ mark_status_seen() {  # <state> <task> <captured-end-offset> <captured-identity>
     "$1/$2.status" "$3" "$4"
 }
 
-# Bound every status log that has no usable classified position at the daemon's
-# fresh start, so the catch-all scan escalates only lines appended from here on.
+# Bound every status log at the daemon's fresh start, so the catch-all scan
+# escalates only lines nobody has been shown yet.
 # Without this an absent, unclassified, or identity-mismatched marker reads 0 and
-# the first scan replays the whole history of every finished task as one digest.
-# The start point is the main session's recorded presentation offset when it has
-# one, since lines past it were never shown to anyone, and the current end of the
-# file otherwise. A marker that already holds a classified position is untouched.
+# the first scan replays the whole history of every finished task as one digest,
+# while a marker left by an earlier away session replays what the main session has
+# presented since then.
+# The start point is the later of the marker's classified position and the main
+# session's recorded presentation offset, so a marker already ahead of the cursor
+# stays put, and a marker with no recorded cursor stays put rather than skip lines
+# nobody has presented.
+# A log with neither position starts at the current end of the file.
 seed_status_seen_markers() {  # <state>
-  local state=$1 f task size ident end marker
+  local state=$1 f task size ident end marker classified
   for f in "$state"/*.status; do
     [ -f "$f" ] && [ -r "$f" ] && [ ! -L "$f" ] || continue
     task=$(basename "$f"); task="${task%.status}"
@@ -705,11 +709,12 @@ seed_status_seen_markers() {  # <state>
     if [ -e "$marker" ] || [ -L "$marker" ]; then
       [ -f "$marker" ] && [ -r "$marker" ] && [ ! -L "$marker" ] || continue
     fi
-    [ "$(status_seen_offset "$state" "$task")" = 0 ] || continue
+    classified=$(status_seen_offset "$state" "$task")
     ident=$(_fm_open_decisions_file_ident "$f") || continue
     end=$(status_presentation_cursor_offset "$f") || continue
     case "$end" in ''|*[!0-9]*) end=0 ;; esac
-    if [ "$end" -eq 0 ] || [ "$end" -gt "$size" ]; then end=$size; fi
+    if [ "$classified" -eq 0 ] && [ "$end" -eq 0 ]; then end=$size; fi
+    [ "$end" -gt "$classified" ] || continue
     mark_status_seen "$state" "$task" "$end" "$ident" \
       || log "could not bound status log $task at its start position"
   done

@@ -1890,6 +1890,46 @@ test_fresh_start_keeps_existing_classified_position() {
   pass "a fresh daemon start leaves a marker with a classified position alone"
 }
 
+test_fresh_start_advances_marker_behind_presentation_cursor() {
+  local dir state ident presented
+  dir=$(make_supercase seed-marker-behind-cursor)
+  state="$dir/state"
+  printf 'failed: classified by an earlier away session\n' > "$state/old-t7.status"
+  seen_through "$state" old-t7
+  printf 'failed: already presented by main\n' >> "$state/old-t7.status"
+  presented=$(log_size "$state/old-t7.status")
+  printf 'failed: never presented\n' >> "$state/old-t7.status"
+  ident=$(_fm_open_decisions_file_ident "$state/old-t7.status")
+  printf 'old-t7\t%s\t%s\n' "$ident" "$presented" > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "already presented by main" "$state/.subsuper-escalations" >/dev/null \
+    && fail "a marker behind the presentation cursor replayed lines main already presented"
+  grep -F "never presented" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line past the presentation cursor was dropped"
+  pass "a fresh daemon start advances a stale marker to the main session's presentation cursor"
+}
+
+test_fresh_start_keeps_marker_ahead_of_presentation_cursor() {
+  local dir state ident presented
+  dir=$(make_supercase seed-marker-ahead-of-cursor)
+  state="$dir/state"
+  printf 'failed: presented by main\n' > "$state/old-t8.status"
+  presented=$(log_size "$state/old-t8.status")
+  printf 'failed: classified while away\n' >> "$state/old-t8.status"
+  seen_through "$state" old-t8
+  printf 'failed: unclassified tail\n' >> "$state/old-t8.status"
+  ident=$(_fm_open_decisions_file_ident "$state/old-t8.status")
+  printf 'old-t8\t%s\t%s\n' "$ident" "$presented" > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "classified while away" "$state/.subsuper-escalations" >/dev/null \
+    && fail "seeding moved a marker back to a presentation cursor behind it"
+  grep -F "unclassified tail" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line past the classified position was dropped"
+  pass "a fresh daemon start keeps a marker that is already ahead of the presentation cursor"
+}
+
 test_fresh_start_skips_unreadable_marker() {
   local dir state marker before
   dir=$(make_supercase seed-unreadable-marker)
@@ -3715,6 +3755,8 @@ test_fresh_start_bounds_status_history_without_marker
 test_fresh_start_bounds_unclassified_marker
 test_fresh_start_resumes_at_main_presentation_cursor
 test_fresh_start_keeps_existing_classified_position
+test_fresh_start_advances_marker_behind_presentation_cursor
+test_fresh_start_keeps_marker_ahead_of_presentation_cursor
 test_fresh_start_skips_unreadable_marker
 test_fresh_start_skips_unusable_presentation_cursor
 test_fresh_start_daemon_bounds_history_at_startup
