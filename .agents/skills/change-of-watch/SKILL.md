@@ -40,8 +40,6 @@ Not yours: do not touch it, and forward the request to its owner as in "Captain 
 2. Flip the item's owner line to the other firstmate and set the since-date.
 3. Send the note into the other firstmate's inbox, running `fm-inbox.sh note` in that firstmate's home over SSH.
    `note` writes a durable record and appends one wake, so the receiver is woken and the note survives a crash.
-   Pass `--request-id handoff-<item>-<UTC timestamp>`, fresh for each handover, with any character of `<item>` outside `A-Za-z0-9._:-` replaced by `-`.
-   Reuse that id only to resend the same handover after an unconfirmed delivery: a repeat returns `replay` instead of a second note.
 
 Command shapes (body on stdin avoids shell quoting of multi-line text):
 
@@ -53,23 +51,27 @@ ssh omarchy 'cd /home/ameen/firstmate && FM_HOME=/home/ameen/firstmate bin/fm-in
 ssh mac 'cd /Users/ameen/firstmate && FM_HOME=/Users/ameen/firstmate bin/fm-inbox.sh note --request-id <request-id> -' < note.txt
 ```
 
+Give every note sent through this shape its own `--request-id <kind>-<item>-<UTC timestamp>`, with `<kind>` one of `handoff`, `accepted`, `ask`, or `forward`, and any character of `<item>` outside `A-Za-z0-9._:-` replaced by `-`.
+Reuse an id only to resend that same note after an unconfirmed delivery: a repeat returns `replay` and discards the new body.
+
 `FM_HOME` selects whose `state/` and `data/` receive the note; set it explicitly to the receiver's home so the note can never land in the sender's own inbox.
 The note is delivered only when the command exits 0 and prints `firstmate will pick this up at its next check.`; `queued <id>` or `replay <id>` alone is not proof, because the record can be saved without the wake.
 Step 2 already flipped the owner line before this send, so if the command exits non-zero, flip the owner line back and tell the captain.
 
 ## 4. Receiving
 
-Read the note when its `check: captain inbox note` wake arrives, then acknowledge it with `bin/fm-inbox.sh drain --ack <id>`.
-Reply `accepted <item>` into the sender's inbox with the same stdin command shape and a fresh request id built the same way, `accepted-<item>-<UTC timestamp>`, then take over the item.
+Read the note when its `check: captain inbox note` wake arrives.
+Reply `accepted <item>` into the sender's inbox with the same stdin command shape, then take over the item.
 Re-file each open captain decision listed in the note as your own hold in your home with `bin/fm-captain-hold.sh hold <task-id> --title <title> --reason <reason>`, adding the decision's deferral date as `--until <date>` when the note carries one; the sender then closes its own copy as `handed over to <receiver>` through `bin/fm-captain-hold.sh answer <task-id> --decision-file <path>` with the file stating the handover, so the captain's later answer goes to you.
 When that re-file is refused because the task id is already closed, re-file under `<id>-<handover date>` and name that id in the accept reply; the sender closes its own copy only after the accept reply confirms the re-file.
 The owner line is already flipped by the sender; confirm it names you before acting.
-Anything unclear: ask back through the sender's inbox; never guess.
+Anything unclear: ask back through the sender's inbox with the same stdin command shape; never guess.
+Acknowledge the note with `bin/fm-inbox.sh drain --ack <id>` only after the reply and re-files are done, so an interruption leaves it pending for re-handling.
 
 ## 5. Captain messages
 
 The captain may talk to either firstmate.
-A request for something you do not own is forwarded to the owner through its inbox, and you tell the captain which firstmate has it.
+A request for something you do not own is forwarded to the owner through its inbox with the same stdin command shape, and you tell the captain which firstmate has it.
 
 ## 6. Second mates
 
