@@ -516,6 +516,7 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
     def slug: type == "string" and test("^[A-Za-z0-9._-]{1,128}$");
     def text_or($fallback):
       if type == "string" and test("[^[:space:]]") then . else $fallback end;
+    def pull_url: type == "string" and test("^https://[^[:space:]]+/pull/[0-9]+$");
     def filed_or_null:
       if type == "string"
         and (try (((. + "T00:00:00Z") | fromdateiso8601 | strftime("%Y-%m-%d")) == .) catch false)
@@ -523,6 +524,7 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
     . as $snap
     | ([$snap.in_flight[].id]) as $live_ids
     | ([$snap.landed[].id]) as $landed_ids
+    | ([$snap.recorded_prs[] | select(.url | pull_url) | {key:.id, value:.url}] | from_entries) as $recorded_prs
     | ([$snap.decisions_open[]
         | . as $row
         | ($row.id | ltrimstr($row.owner + "/")) as $task
@@ -532,16 +534,21 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
            title:($row.summary | text_or($task)),
            decide:"Answer in your own words",
            options:[], allow_freeform:true, close:"release"}
-          + (if $row.owner == "(main)" then {} else {about:("Second mate: " + $row.owner)} end)]
+          + (if $row.owner == "(main)" then
+               (if $recorded_prs[$task] then {pr_url:$recorded_prs[$task]} else {} end)
+             else {about:("Second mate: " + $row.owner)} end)]
        | unique_by(.key)) as $open_cards
     | ([$open_cards[].key]) as $open_keys
+    | ([$open_cards[] | select(.pr_url) | {key, value:.pr_url}] | from_entries) as $open_prs
     | ([($prior[0].captains_call // [])[]
         | select(
             (.type == "decision" and (.key as $key | $open_keys | index($key)) != null)
             or (.type == "merge" and ((.key | ltrimstr("merge.")) as $task
                 | any($live_ids[]; . == $task or endswith("/" + $task))))
             or (.type == "credential"))
-        | .options |= map(select(.value != "reconcile"))]) as $kept
+        | .options |= map(select(.value != "reconcile"))
+        | if .type == "decision" and .pr_url == null and $open_prs[.key]
+          then .pr_url = $open_prs[.key] else . end]) as $kept
     | ([$kept[].key]) as $kept_keys
     | ([$snap.gates[]
         | (.id | gsub("[^A-Za-z0-9._-]"; "-") | ltrimstr("-") | rtrimstr("-") | .[:128]) as $id
@@ -558,7 +565,7 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
             state:(.state | text_or("unknown")), doing:(.doing | text_or("-"))}],
        landed:[$snap.landed[]
          | {id, repo, what:(.id as $id | .what | text_or($id)), owner}
-           + (if ((.artifact // "") | test("^https://[^[:space:]]+/pull/[0-9]+$")) then {pr_url:.artifact} else {} end)],
+           + (if (.artifact | pull_url) then {pr_url:.artifact} else {} end)],
        charted:$charted[:20],
        charted_more:([$charted[20:][] | select(.kind != "warning")] | length),
        charted_warning_more:([$charted[20:][] | select(.kind == "warning")] | length),
@@ -603,7 +610,7 @@ command_refresh() {
   # not lose its card here.
   FM_BEARINGS_DECISIONS=${FM_BEARINGS_DECISIONS:-1000} \
     "$SCRIPT_DIR/fm-bearings-snapshot.sh" --json --fields lanes \
-      --all-in-flight --all-secondmates --all-queued > "$tmpdir/snapshot.json" \
+      --all-in-flight --all-secondmates --all-queued --all-recorded-prs > "$tmpdir/snapshot.json" \
     || fail "cannot read the fleet snapshot"
   : > "$tmpdir/prior.json"
   if [ -f "$board" ]; then
@@ -613,10 +620,19 @@ command_refresh() {
   compose_refresh_payload "$tmpdir/snapshot.json" "$tmpdir/prior.json" > "$tmpdir/payload.json" \
     || fail "cannot compose the board payload"
   if [ "$if_live" = 1 ] \
-    && [ "$(payload_fingerprint "$tmpdir/payload.json")" = "$(payload_fingerprint "$tmpdir/prior.json")" ]; then
+    && effective_payload "$tmpdir/payload.json" "$tmpdir/effective.json" 2>/dev/null \
+    && [ "$(payload_fingerprint "$tmpdir/effective.json")" = "$(payload_fingerprint "$tmpdir/prior.json")" ]; then
     printf 'unchanged\n'
     return 0
   fi
+  jq -r --slurpfile snap "$tmpdir/snapshot.json" --slurpfile composed "$tmpdir/payload.json" '
+    (.captains_call // [])[]
+    | .key as $key
+    | select($composed[0].captains_call | any(.key == $key) | not)
+    | "dropped-landed-card: \($key) (\(
+        if ($snap[0].landed | any(.id == $key)) then "structured subject already landed"
+        else "no longer an open captain call" end))"
+  ' "$tmpdir/prior.json" >&2 || fail "cannot read the prior board cards"
   command_build "$tmpdir/payload.json"
 }
 

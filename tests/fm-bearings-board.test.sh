@@ -900,6 +900,7 @@ test_refresh_never_recards_a_call_whose_task_landed() {
   printf -- '- [x] wait-pr - Waited work %s (repo: sample) (kind: ship) (merged 2026-07-10)\n' "$pr" \
     >> "$home/data/backlog.md"
   out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: wait-pr" "the first refresh did not name the dropped card: $out"
   extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
     || fail "the first refresh kept a landed call: $(extract_payload "$board")"
 
@@ -910,6 +911,69 @@ test_refresh_never_recards_a_call_whose_task_landed() {
   extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
     || fail "a later refresh brought the landed call back: $(extract_payload "$board")"
   pass "refresh never recards a call whose task landed"
+}
+
+write_held_task_with_pr() {  # <home> <task-id> <pr-url-or-empty>
+  mkdir -p "$1/projects/$2"
+  fm_write_meta "$1/state/$2.meta" \
+    "window=sample:fm-$2" \
+    "worktree=$1/projects/$2" \
+    "project=sample" \
+    "harness=claude" \
+    "kind=ship" \
+    "mode=no-mistakes" \
+    ${3:+"pr=$3"}
+}
+
+test_refresh_never_recards_a_call_whose_pr_landed_under_another_task() {
+  local home data board out pr
+  home=$(make_home refresh-landed-other-id)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  pr="https://github.com/example/sample/pull/9"
+  write_held_backlog "$home" wait-pr
+  write_held_task_with_pr "$home" wait-pr "$pr"
+  write_valid_payload "$data"
+  jq --arg pr "$pr" '.captains_call = [
+        {"key":"wait-pr","type":"decision","repo":"sample","title":"Wait for the PR","pr_url":$pr,
+         "options":[{"value":"yes","label":"Yes"}]}
+      ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+  out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
+
+  printf -- '- [x] ship-it - Shipped work %s (repo: sample) (kind: ship) (merged 2026-07-10)\n' "$pr" \
+    >> "$home/data/backlog.md"
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: wait-pr" "the first refresh did not name the dropped card: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "the first refresh kept a landed call: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: wait-pr" "the second refresh did not name the dropped card: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "the second refresh brought the landed call back: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed: $out"
+  assert_contains "$out" "unchanged" "the dropped call rewrote the live board: $out"
+  pass "refresh never recards a call whose PR landed under another task"
+}
+
+test_refresh_gives_an_open_call_its_recorded_pr() {
+  local home board out pr
+  home=$(make_home refresh-recorded-pr)
+  board="$home/.lavish/bearings-board.html"
+  pr="https://github.com/example/sample/pull/11"
+  write_held_backlog "$home" wait-pr
+  write_held_task_with_pr "$home" wait-pr ""
+  out=$(run_board "$home" refresh 2>&1) || fail "the first refresh failed: $out"
+  extract_payload "$board" | jq -e '.captains_call[] | select(.key == "wait-pr") | has("pr_url") | not' >/dev/null \
+    || fail "a call with no recorded PR gained one: $(extract_payload "$board")"
+
+  write_held_task_with_pr "$home" wait-pr "$pr"
+  out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
+  extract_payload "$board" | jq -e --arg pr "$pr" '
+    .captains_call[] | select(.key == "wait-pr") | .pr_url == $pr and .close == "release"
+  ' >/dev/null || fail "a carded call did not gain its recorded PR: $(extract_payload "$board")"
+  pass "refresh gives an open call its recorded PR"
 }
 
 test_refresh_survives_blank_status_notes() {
@@ -1032,6 +1096,8 @@ test_build_refuses_a_malformed_lane
 test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open
 test_refresh_composes_live_tasks_and_landed_rows
 test_refresh_never_recards_a_call_whose_task_landed
+test_refresh_never_recards_a_call_whose_pr_landed_under_another_task
+test_refresh_gives_an_open_call_its_recorded_pr
 test_refresh_survives_blank_status_notes
 test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board
 test_refresh_publishes_the_board_file_without_lavish_axi
