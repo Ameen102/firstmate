@@ -59,7 +59,7 @@ Use `gh-axi` rather than raw `gh` for GitHub, `chrome-devtools-axi` for browser 
 `docs/configuration.md` is the single owner of the top-level operational-home layout and configuration schemas; each producing script's header and help own exact child fields and mutation mechanics.
 `FM_HOME` selects an instance's private `data/`, `state/`, `config/`, and `projects/`, while scripts continue to come from their tracked code root.
 Each secondmate has a persistent isolated `FM_HOME`, including its own state, backlog, projects, and session lock.
-Only `bin/fm-send.sh` fails closed without an explicit `FM_HOME`, so a steer cannot silently resolve against another home; other home-scoped helpers default to the code root, so export `FM_HOME` before every helper call when you run in a secondmate or worktree home.
+Some helpers, including `bin/fm-send.sh`, refuse without an explicit `FM_HOME`; many others silently default to the code root, so export `FM_HOME` before every helper call when you run in a secondmate or worktree home.
 
 Tracked files hold shared instructions and tooling; `data/` holds durable private fleet records; `state/` holds runtime records and append-only status events; `config/` holds local operating choices; and `projects/` contains clones that are read-only to firstmate except under hard rule 1's concrete captain-approved project operation exception.
 
