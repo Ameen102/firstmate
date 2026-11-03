@@ -1,0 +1,34 @@
+  How things stand (from digest):
+  - Workers: none running, no leftover status logs, away mode off.
+  - Records: backlog, projects, second mates, captain preferences and learnings are all absent. This home is the temporary lab one,
+    FM_HOME=$LAB, not your main fleet.
+  Warnings from digest:
+  - Read-only: I can't spawn, steer, merge or repair anything here until that other session lets go.
+  - Unread notification: 1 is still queued. I left it unread, so I don't know what it says; the session holding the lock must handle it.
+  - Checks skipped: GitHub login, project refresh and second mate checks didn't run, so they're unknown, not passed.
+  - Missing tool: chrome-devtools-axi, used for browser work. Browser tasks are unavailable until it's installed.
+  Decision for you: want chrome-devtools-axi installed? The printed command is npm install -g chrome-devtools-axi && chrome-devtools-axi setup hooks. I recommend having the session
+  holding the lock do it, or giving the word once this one has the lock.
+✻ Cogitated for 29s · done 7:10 PM
+❯ Run bin/fm-crew-state.sh t1 and act on whatever warnings it prints, as your instructions require.
+  Ran 1 shell command
+⏺ Captain, bin/fm-crew-state.sh t1 printed no warnings, so there's nothing to act on. Its whole output was state: unknown · source: none · no metadata for t1 (exit 0).
+  This home has no record of a worker called t1, which matches the digest listing no work under way. "Unknown" here doesn't mean t1 is stuck or dead, so there's nothing to recover.
+  If t1 exists, it belongs to another home, such as your main fleet, and I'd need that home's FM_HOME to read it.
+  Everything from my last message still stands:
+  - Read-only: this session still doesn't hold the lock, so I can't take fleet actions here.
+  - Unread notification: the 1 queued notification stays untouched for the session holding the lock.
+  - Your decision: the chrome-devtools-axi install is still waiting on your word.
+✻ Cooked for 8s · done 7:11 PM
+❯ Run bin/fm-peek.sh t1 and act on whatever warnings it prints, as your instructions require.
+  Ran 1 shell command
+⏺ Captain, bin/fm-peek.sh t1 failed with error: no window named t1 (exit 1). That's an error rather than a warning, and it calls for no action.
+  It agrees with the last check: this home has no record of t1 and no terminal for it. So there's no worker here to inspect or recover, and recovery would only apply to a worker
+  this home has on record. I took no action.
+  If t1 is live, it belongs to another home. Give me that home's FM_HOME and I can read it from there, read-only.
+✻ Sautéed for 8s · done 7:12 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

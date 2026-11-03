@@ -1,0 +1,33 @@
+⏺ Captain, foo is current: local copy moved from e7686ad to 7fd3256 ("three") on master and now matches origin. This time I used the standard guarded refresh rather than a direct
+  pull, and nothing was forced or discarded.
+✻ Brewed for 11s · done 7:21 PM
+❯ Add a backlog item called banner-copy, repo foo, and hold it for my call: I still need to decide between the two banner wordings.
+⏺ Skill(captain-hold-lifecycle)
+  ⎿  Successfully loaded skill
+  Ran 2 shell commands
+⏺ Captain, banner-copy is on the backlog for foo and won't start until you choose between the two banner wordings. The wordings themselves aren't recorded, since I only have your
+  description, so send them whenever you want them noted or when you've picked one.
+✻ Baked for 46s · done 7:22 PM
+❯ Write a custom state check for a task called foo-ci that wakes when the file $LAB/ci-done appears.
+  Listed 1 directory, ran 1 shell command
+⏺ Skill(ship-landing)
+  ⎿  Successfully loaded skill
+  Ran 3 shell commands
+⏺ Captain, the foo-ci check is written and registered, but it won't wake anyone yet because monitoring isn't running. If ci-done appears now, nothing will tell us.
+  - The check: it stays silent while ci-done is absent, which I ran against the real path. It printed its wake line when pointed at a temporary file that exists. I haven't seen it
+    fire through monitoring, since that's down. It repeats that line for as long as ci-done exists, so it should be retired once it has fired.
+  - Why monitoring is down: the turn-end hook that starts it only runs from a primary home. This session runs from a temporary validation copy, which fails that test, so the hook
+    exits without starting anything. It won't fix itself at turn end.
+  - Correction: I told you earlier I couldn't start monitoring by hand because that command refuses to run from a validation copy. That refusal has an exception for marked test
+    homes, and this home is marked, so it may not apply. What actually stops me is that the supervision rules leave starting monitoring to the hook alone.
+  - Scope: foo-ci exists only as this check. I didn't add a backlog item or start a worker for it.
+  Decision for you: how should monitoring get started?
+  1. Reopen from the primary home (my recommendation): this keeps the normal setup, but this home's FM_HOME would need to point at the new session.
+  2. Have me start it by hand from here: this is quicker and fine for a test home, but it needs your explicit go-ahead because it overrides that rule, and it would run from a copy
+     that can be deleted.
+✻ Sautéed for 40s · done 7:23 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

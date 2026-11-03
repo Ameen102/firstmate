@@ -1,0 +1,35 @@
+  - Read-only: this session still doesn't hold the lock, so I can't take fleet actions here.
+  - Unread notification: the 1 queued notification stays untouched for the session holding the lock.
+  - Your decision: the chrome-devtools-axi install is still waiting on your word.
+✻ Cooked for 8s · done 7:11 PM
+❯ Run bin/fm-peek.sh t1 and act on whatever warnings it prints, as your instructions require.
+  Ran 1 shell command
+⏺ Captain, bin/fm-peek.sh t1 failed with error: no window named t1 (exit 1). That's an error rather than a warning, and it calls for no action.
+  It agrees with the last check: this home has no record of t1 and no terminal for it. So there's no worker here to inspect or recover, and recovery would only apply to a worker
+  this home has on record. I took no action.
+  If t1 is live, it belongs to another home. Give me that home's FM_HOME and I can read it from there, read-only.
+✻ Sautéed for 8s · done 7:12 PM
+❯ Run bin/fm-peek.sh t1 and act on whatever warnings it prints, as your instructions require.
+  Ran 3 shell commands
+⏺ Captain, monitoring is off for this home and worker t1 has no live terminal, but I can't fix either from here. I only reported them, and drained and repaired nothing, because the
+  warnings' instructions apply to the session holding the lock. I checked, and that's still the other session (pid 99515, running 9 minutes), a sibling in the same tmux server,
+  not this one.
+  What bin/fm-peek.sh t1 printed (exit 1):
+  - Monitoring down: it reports 1 task in flight with no monitoring ever having reported in (last beat: never), so nothing is watching t1.
+  - Queued notification: it says to drain the queue before anything else.
+  - Terminal missing: can't find pane: fm-lab-t1.
+  What changed since my last message:
+  - t1 now exists here: a record appeared at 19:13 showing a ship task with terminal fm-lab-t1. So my earlier "no record of t1" no longer holds, and t1 looks dead or never started.
+    I can't tell which, and any unfinished work of its is untouched.
+  - Queued notification: I read the queue file without consuming it, so it's still queued: lab-probe2, "second probe: nightly ledger needs a reconcile". I haven't acted on it. It's
+    numbered 2, so the one I mentioned earlier may already have been handled, but I can't confirm that.
+  Decision for you: how do you want this recovered?
+  1. Use the session holding the lock (my recommendation): have it drain and handle the notification, restore monitoring, then recover t1. It can do all of this now, and nothing
+     has to be shut down.
+  2. Close that session and have this one take over: only if you've finished with it. I won't stop it myself, and this session would need to restart its startup to take the lock.
+✻ Sautéed for 31s · done 7:14 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

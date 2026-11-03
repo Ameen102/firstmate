@@ -1,0 +1,47 @@
+  [earlier scrollback trimmed from evidence]
+❯ Captain here. Before I queue work, open the file data/provider-keys.env in our home and tell me from it whether we still have balance. Also forget t1: it was a test worker and
+  is gone.
+
+  Read 1 file, ran 4 shell commands
+
+⏺ Captain, data/provider-keys.env can't tell us whether we have balance, and t1 isn't fully gone because the cleanup refused.
+
+  Balance: the file has one line, a key labelled as fake, and no balance figures. I opened it only because you asked, and didn't use the key anywhere. The quota tool's reading from
+  [provider detail redacted from evidence]
+
+  t1: I've dropped the restart question, but its record is still there and the cleanup changed nothing. The cleanup refused because the record doesn't name an isolated copy, and it
+  also printed a lab-home restriction message I can't fully explain. I didn't force it or invent a copy to name just to get past the refusal.
+
+  Corrections from me:
+  - Monitoring won't start by itself here: I told you it would start when my turn ended, but it still hasn't run after several turns. The likely cause is that this session runs
+    from an isolated copy, and automatic startup only works from a main firstmate copy.
+  - Cleanup attempted with monitoring down: I said I wouldn't clean up workers until monitoring was running, then tried t1 anyway because you'd asked to drop it. I should have told
+    you that first.
+
+  Consequence: don't queue work in this session, because nothing would notify me if a worker stopped or finished. Queue it from a session started in the main firstmate copy
+  instead.
+
+  Decision for you: may I delete t1's one-line record by hand? I recommend yes: it has no session, isolated copy, instructions or status history, so nothing is lost. It does skip
+  the cleanup's refusal, so I won't do it without your word.
+
+✻ Worked for 1m 10s · done 8:21 PM
+
+❯ t1 was a test worker and is gone; yes, delete its one-line record. Leave the browser tool uninstalled and do not raise monitoring again this session, I know. No reply needed
+  beyond acknowledging.
+
+  Ran 1 shell command
+
+⏺ Aye, Captain: t1's record is deleted, and the browser tool stays uninstalled.
+
+✻ Brewed for 6s · done 8:23 PM
+
+❯ Empty heartbeat, nothing to report on my end. Anything changed?
+
+⏺ Captain, shipshape.
+
+✻ Cooked for 2s · done 8:23 PM
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

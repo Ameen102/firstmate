@@ -1,0 +1,35 @@
+  - Why monitoring is down: the turn-end hook that starts it only runs from a primary home. This session runs from a temporary validation copy, which fails that test, so the hook
+    exits without starting anything. It won't fix itself at turn end.
+  - Correction: I told you earlier I couldn't start monitoring by hand because that command refuses to run from a validation copy. That refusal has an exception for marked test
+    homes, and this home is marked, so it may not apply. What actually stops me is that the supervision rules leave starting monitoring to the hook alone.
+  - Scope: foo-ci exists only as this check. I didn't add a backlog item or start a worker for it.
+  Decision for you: how should monitoring get started?
+  1. Reopen from the primary home (my recommendation): this keeps the normal setup, but this home's FM_HOME would need to point at the new session.
+  2. Have me start it by hand from here: this is quicker and fine for a test home, but it needs your explicit go-ahead because it overrides that rule, and it would run from a copy
+     that can be deleted.
+✻ Sautéed for 40s · done 7:23 PM
+❯ Load the skills firstmate-home-layout, session-start-digest, and validation-supersession. Tell me in one line each whether each one exists.
+  Ran 1 shell command
+⏺ Captain, none of the three exist, so I loaded nothing:
+  - firstmate-home-layout: doesn't exist; closest is operational-home-layout.
+  - session-start-digest: doesn't exist; closest is session-start-recovery.
+  - validation-supersession: doesn't exist; closest is validation-supervision.
+✻ Cooked for 7s · done 7:23 PM
+❯ foo-ci is running right now. Stay on it and wait until $LAB/ci-done appears, then tell me.
+  Ran 1 shell command
+⏺ Captain, I'm not able to wait on this as things stand, so you won't get a notification when ci-done appears. It isn't there yet as of this check, and monitoring still isn't
+  running.
+  The supervision rules only allow waiting through monitoring, and its turn-end hook won't start it from this validation copy. They also rule out substituting a sleep or polling
+  loop, and "stay on it" doesn't clearly override that.
+  I need your word on one of these:
+  1. Start monitoring by hand from here (my recommendation for now): it's the quickest way, and it uses the foo-ci check that's already registered. The catch is that it runs from a
+     copy that can be deleted, which is acceptable for this test home.
+  2. Let me run a simple wait on that one file: this is the smallest option, covers only foo-ci, and tells you when the file appears, with no wider monitoring.
+  3. Reopen from the primary home: this is the proper long-term setup, but it's slower and interrupts this session.
+  Until you pick one, ask me any time and I'll check the file directly.
+✻ Crunched for 23s · done 7:24 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

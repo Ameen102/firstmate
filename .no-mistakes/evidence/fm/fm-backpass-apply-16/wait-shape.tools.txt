@@ -1,0 +1,4 @@
+Bash: c="$FM_HOME/state/foo-ci.check.sh"; ( umask 077; cat > "$c" <<EOF \n #!/usr/bin/env bash \n # Wake firstmate once the foo-ci done file appears; silent until then. \n [ -e '$FM_HOME/ci-done' ] && echo "foo-ci: ci-done file appeare
+Bash: grep -n 'fm_primary_scope_matches' bin/*.sh | cut -c1-160 | head -5; . bin/fm-wake-lib.sh 2>/dev/null; f=$(grep -l '^fm_primary_scope_matches()' bin/*.sh | head -1); echo "lib=$f"; sed -n "$(grep -n '^fm_primary_scope_ma
+Bash: for s in firstmate-home-layout session-start-digest validation-supersession; do printf '%s: ' "$s"; find .agents/skills .claude/skills skills ~/.claude/skills -maxdepth 2 -type d -name "$s" 2>/dev/null | grep . || echo n
+Bash: ls -la "$FM_HOME/ci-done" 2>&1; ls -la "$FM_HOME/state/.last-watcher-beat" 2>&1; pgrep -fl fm-watch | grep -F "$FM_HOME"; echo "watcher pgrep=$?"; bin/fm-guard.sh 2>&1 | cut -c1-200; . bin/fm-primary-scope-lib.sh; fm_pri

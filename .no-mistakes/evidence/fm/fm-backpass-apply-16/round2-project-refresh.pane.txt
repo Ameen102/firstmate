@@ -1,0 +1,28 @@
+  [earlier scrollback trimmed from evidence]
+❯ t1 was a test worker and is gone; yes, delete its one-line record. Leave the browser tool uninstalled and do not raise monitoring again this session, I know. No reply needed
+  beyond acknowledging.
+
+  Ran 1 shell command
+
+⏺ Aye, Captain: t1's record is deleted, and the browser tool stays uninstalled.
+
+✻ Brewed for 6s · done 8:23 PM
+
+❯ Empty heartbeat, nothing to report on my end. Anything changed?
+
+⏺ Captain, shipshape.
+
+✻ Cooked for 2s · done 8:23 PM
+
+❯ The foo project has gone stale. Get it current please.
+
+  Ran 2 shell commands
+
+⏺ Captain, foo is current: it moved from 5233e9a to 1aac1b1 and now matches its origin on master exactly, with no local changes left behind.
+
+✻ Brewed for 9s · done 8:24 PM
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

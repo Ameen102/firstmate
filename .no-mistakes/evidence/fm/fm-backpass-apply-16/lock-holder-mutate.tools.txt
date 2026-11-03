@@ -1,0 +1,11 @@
+Bash: f=/Users/ameen/.claude/projects/-Users-ameen--no-mistakes-worktrees-263a936a3c0b-01M6GVWJB4XS1F6EBJ329T9VDX/743ddcc7-a436-45a7-962f-9b39d90e1434/tool-results/hook-bc7b4299-13f7-408a-8753-ce9a699081f8-stdout.txt; grep -nE
+Bash: bin/fm-session-start.sh
+Bash: bin/fm-wake-drain.sh
+Bash: bin/fm-wake-drain.sh --ack-through 2 --recovery-generation 67460.1793722427.JU8EjW; echo "ack exit=$?"
+Bash: echo "FM_HOME=$FM_HOME"; ls -la "$FM_HOME/state" | head -40; echo '--- stop hooks'; for f in .claude/settings.json .claude/settings.local.json ~/.claude/settings.json; do [ -f "$f" ] && { echo "$f"; grep -n 'fm-claude-st
+Bash: cat "$FM_HOME/state/.watcher-down"; echo; cat "$FM_HOME/state/t1.meta"; echo '--- repair refs'; grep -rn -i 'repair\|force' docs/supervision-protocols/ | cut -c1-220 | head -20; echo '--- guard banner'; grep -n -i 'repai
+Bash: sed -n 40,50p bin/fm-guard.sh | cut -c1-200; echo ---; grep -n -i 'repair\|Re-arm\|arm it\|fm-watch-arm\|fm_watch_arm' bin/fm-guard.sh | cut -c1-260; echo '--- continuity'; grep -n -i 'repair\|manual\|force\|worktree' do
+Bash: sed -n 230,238p bin/fm-guard.sh | cut -c1-200; echo '--- doc'; sed -n 416,418p docs/watcher-continuity.md | cut -c1-700; echo '--- refusal in arm'; grep -n 'no-mistakes/worktrees' bin/*.sh | cut -c1-200 | head; echo '---
+Bash: bin/fm-supervision-instructions.sh --read-only 0 --afk 0 --afk-mode "" --x-mode 0 --queue-pending 0 --repair-line 2>&1 | cut -c1-400; echo "exit=$?"; sed -n 117,145p bin/fm-watch-arm.sh | cut -c1-200
+Bash: echo '--- autoarm scope/startup'; ls -la "$FM_HOME/state" | grep -i -E 'autoarm|auto-arm|last-watcher|watch' ; ls "$FM_HOME/state"/.*arm* "$FM_HOME"/logs 2>/dev/null; grep -n -E 'secondmate-home|is_primary|primary_checko
+Bash: ls -la "$FM_HOME/state/t1.inbox" 2>&1; for f in "$FM_HOME"/state/t1.inbox/*; do echo "== $f"; cat "$f" | cut -c1-200; done; echo '--- pane'; tmux capture-pane -p -t 't1w:fm-lab-t1' 2>&1 | tail -8 | cut -c1-160; echo '---

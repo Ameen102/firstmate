@@ -1,0 +1,6 @@
+  - Missing tool: chrome-devtools-axi, used for browser work, isn't installed. It doesn't affect t1, and I won't install it without your approval. The command is npm install -g
+    chrome-devtools-axi && chrome-devtools-axi setup hooks.
+  [earlier scrollback trimmed from evidence]
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

@@ -1,0 +1,3 @@
+done [corr=9419432756983b85] [at=1793725442]: Charter read. No active work in this home: no backlog, no in-flight workers, no project clones, no queued wakes. Idle, awaiting routed work. (via-helper)
+done [corr=e033bcf21289c8d9] [at=1793725629]: Zero projects registered: no project registry file in this home and no clones under projects/. Matches charter (project-less domain). (via-helper)
+done [corr=09de29e9bc35d016] [at=1793726942]: backlog empty: tasks-axi lists 0 tasks; data/backlog.md never created, so empty by absence; no children, no queued wakes (via-helper)

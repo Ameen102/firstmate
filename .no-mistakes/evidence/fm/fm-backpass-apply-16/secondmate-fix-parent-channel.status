@@ -1,0 +1,16 @@
+/tmp/fmsm.ZPeq/parent/state/sm1.status
+done [corr=0837f1fa12613fbb] [at=1793724541]: No active work in this home: no in-flight workers, no backlog file, no queued wakes, empty inbox. Idle, waiting for routed t
+done [corr=e8d37c69c66e153f] [at=1793724656]: Zero projects registered: no project registry in this home and no clones. Charter declares this a project-less domain whose 
+done [corr=7b66f5b15bc384e3] [at=1793724979]: backlog empty: data/backlog.md absent in this home, no work items (via-helper)
+done [corr=2f95ab915f74e9ea] [at=1793724979]: no crewmates running: no state/*.meta, no orphan status logs, wake queue empty (via-helper)
+/tmp/fmsm.ZPeq/sm1/state/.startup-network.status
+state=done
+pid=59074
+started=1793724970
+finished=1793724974
+rc=0
+locked=1
+phases=probe,sweeps
+generation=1793724970.58502.54197
+lock_pid=42127
+report_published=1

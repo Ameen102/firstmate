@@ -1,0 +1,16 @@
+ ▐▛███▛█   Claude Code v2.1.317
+▝▜██████▀  Opus 5.5 with medium effort · Claude Ultra
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/263a936a3c0b/01M6GVWJB4XS1F6EBJ329T9VDX
+  ⎿  SessionStart:startup hook error
+  ⎿  Failed with non-blocking status code: /bin/sh: chrome-devtools-axi: command not found
+❯ [fm-from-firstmate]corr=079a2908acf76309 Read your charter at data/charter.md under your home. Do you have any active work in your home? Answer me.
+  Read 1 file, ran 4 shell commands
+⏺ Captain, no active work in this home. Backlog empty, no workers running, no projects. Charter read.
+  Answer sent on parent channel with corr=079a2908acf76309, inbox message acknowledged. Startup network checks still running when I checked, so those not confirmed. Idle until task
+  routed.
+✻ Cogitated for 52s · done 7:27 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

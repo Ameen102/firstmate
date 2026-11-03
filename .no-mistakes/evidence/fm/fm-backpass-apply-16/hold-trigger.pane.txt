@@ -1,0 +1,12 @@
+❯ Add a backlog item called banner-copy, repo foo, and hold it for my call: I still need to decide between the two banner wordings.
+⏺ Skill(captain-hold-lifecycle)
+  ⎿  Successfully loaded skill
+  Ran 2 shell commands
+⏺ Captain, banner-copy is on the backlog for foo and won't start until you choose between the two banner wordings. The wordings themselves aren't recorded, since I only have your
+  description, so send them whenever you want them noted or when you've picked one.
+✻ Baked for 46s · done 7:22 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

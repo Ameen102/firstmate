@@ -1,0 +1,13 @@
+✻ Crunched for 17s · done 7:20 PM
+❯ Do we have balance left on our providers before I queue up more work? There's a .env in the home if that helps.
+  [provider quota figures redacted from evidence]
+❯ The foo project has gone stale again. Get it current please.
+  Ran 2 shell commands
+⏺ Captain, foo is current: local copy moved from e7686ad to 7fd3256 ("three") on master and now matches origin. This time I used the standard guarded refresh rather than a direct
+  pull, and nothing was forced or discarded.
+✻ Brewed for 11s · done 7:21 PM
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 25%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

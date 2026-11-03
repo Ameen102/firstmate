@@ -1,0 +1,12 @@
+$ env -u FM_HOME bin/fm-send.sh x y
+error: FM_HOME is not set; fm-send refuses to resolve targets without an explicit firstmate home
+exit=1
+$ env -u FM_HOME bin/fm-control.sh x y
+error: FM_HOME is not set; fm-control refuses to resolve a task without an explicit firstmate home
+exit=1
+$ env -u FM_HOME bin/fm-secondmate-restart.sh x y
+error: FM_HOME is not set; fm-secondmate-restart refuses to resolve second mates without an explicit firstmate home
+exit=1
+$ env -u FM_HOME bin/fm-captain-hold.sh hold t1 --reason probe --title probe  (in a throwaway copy of the code root)
+code-root backlog afterwards:
+5:- [ ] t1 - probe (repo: firstmate) (kind: captain) (since 2026-11-03) (hold: fm-hold-v1:cHJvYmU=) (hold-kind: captain)

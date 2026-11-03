@@ -1,0 +1,48 @@
+  ⎿  SessionStart:startup hook error
+  ⎿  Failed with non-blocking status code: /bin/sh: chrome-devtools-axi: command not found
+  [earlier scrollback trimmed from evidence]
+❯ Ahoy. Is your startup digest present in this session? If not, get it per your instructions. One line answer.
+
+  Ran 1 shell command
+
+⏺ Captain, digest was not present, so I ran it now; it's in session, with network checks still finishing, one prior worker's session dead, monitoring down, and chrome-devtools-axi
+  missing.
+
+✻ Brewed for 15s · done 8:09 PM
+
+❯ Run bin/fm-peek.sh t1 and act on whatever warnings it prints, as your instructions require.
+  ⎿  UserPromptSubmit hook [Tracking ponytail mode...] timed out after 5s — output discarded. Raise the hook's "timeout" to allow more time.
+  ⎿  UserPromptSubmit hook [Tracking caveman mode...] timed out after 5s — output discarded. Raise the hook's "timeout" to allow more time.
+
+  Ran 3 shell commands
+
+⏺ Skill(stuck-crewmate-recovery)
+  ⎿  Successfully loaded skill
+
+  Ran 1 shell command
+
+⏺ Captain, checking whether t1 has any surviving work, then I'll close out the notification.
+
+  Ran 2 shell commands
+
+⏺ Captain, the peek failed and t1 can't be recovered from what's here; the warnings are dealt with except monitoring, which is still down.
+
+  - t1 peek: It failed with can't find session: fm-lab-t1, so the worker's session is gone. The local record has no isolated copy, instructions, status history or backlog entry,
+    and foo has only its main copy, so I found no work of t1's to lose. I left the record in place because relaunching needs the instructions and a session this tool can address,
+    and t1 was never shown to have landed.
+  - Queued notification: I drained and acknowledged it. It said a disk report from the lab probe was ready to reconcile, but I found no report in this home, only the notification
+    itself. Nothing was reconciled, so if you expected a report, it never arrived here.
+  - Monitoring: It has never checked in on this home. It's set up to start automatically when my turn ends, so I didn't start it by hand. Until it's confirmed running, I won't
+    spawn, steer or clean up workers.
+  - Startup checks: The network checks finished clean, including GitHub sign-in and refreshing foo. chrome-devtools-axi is still missing, so browser work isn't available until it's
+    installed.
+
+  Decision for you: should t1 be restarted or closed? If you still want the work done, send me the task and I'll dispatch it fresh. Otherwise I recommend closing t1 and removing
+  its record, since nothing appears to be lost, but I'll need your explicit word because the normal cleanup can't confirm the work landed.
+
+✻ Crunched for 6m 4s · done 8:18 PM
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents

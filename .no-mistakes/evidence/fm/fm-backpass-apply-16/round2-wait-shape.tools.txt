@@ -1,0 +1,1 @@
+Bash: ls -l /private/tmp/fmlab.6g91/ci-done 2>&1; echo '--- monitoring files'; ls -la "$FM_HOME/state" | grep -i -E 'watch|arm|beacon|heartbeat|foo-ci'; cat "$FM_HOME/state/.watcher-down" 2>/dev/null; echo; pgrep -fl 'fm-watch
