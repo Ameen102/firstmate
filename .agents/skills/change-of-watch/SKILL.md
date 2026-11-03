@@ -61,10 +61,10 @@ Step 2 already flipped the owner line before this send, so if the command exits 
 ## 4. Receiving
 
 Read the note when its `check: captain inbox note` wake arrives.
+Before replying or re-filing, confirm the owner line names you; if it does not, ask back instead of accepting.
 Reply `accepted <item>` into the sender's inbox with the same stdin command shape, then take over the item.
 Re-file each open captain decision listed in the note as your own hold in your home with `bin/fm-captain-hold.sh hold <task-id> --title <title> --reason <reason>`, adding the decision's deferral date as `--until <date>` when the note carries one; the sender then closes its own copy as `handed over to <receiver>` through `bin/fm-captain-hold.sh answer <task-id> --decision-file <path>` with the file stating the handover, so the captain's later answer goes to you.
 When that re-file is refused because the task id is already closed, re-file under `<id>-<handover date>` and name that id in the accept reply; the sender closes its own copy only after the accept reply confirms the re-file.
-The owner line is already flipped by the sender; confirm it names you before acting.
 Anything unclear: ask back through the sender's inbox with the same stdin command shape; never guess.
 Acknowledge the note with `bin/fm-inbox.sh drain --ack <id>` only after the reply and re-files are done, so an interruption leaves it pending for re-handling.
 
@@ -75,5 +75,9 @@ A request for something you do not own is forwarded to the owner through its inb
 
 ## 6. Second mates
 
-A second mate moves with its owner.
-Use the normal retire-then-reseed path from `secondmate-provisioning`: retire it in the old home, seed it in the new home, then hand over per step 3, re-filing its held captain calls as in Receiving.
+A second mate moves with its owner through the normal retire-then-reseed path from `secondmate-provisioning`.
+
+1. The old firstmate hands over per step 3, with the note listing the second mate's open captain calls; after that flip it keeps only the next step.
+2. Once that note is delivered, the old firstmate retires the second mate and sends a second note starting `handoff: <item> retired`.
+   Retirement removes the second mate's home and its copies of those calls, so the old firstmate does not close them as in Receiving.
+3. The new firstmate accepts per Receiving, seeds the second mate anew after the `retired` note arrives, then re-files those calls from the first note with the Receiving command run in the new second mate's home.
