@@ -1,0 +1,45 @@
+== session 1 running
+buffer_bytes=    2766 HISTORY_mentions=51 catchall_items=1
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+marker .subsuper-seen-status-octA: 6359 of size     6399
+cursor: 
+daemon_alive=yes
+return begin rc=0
+return check rc=0
+== after return
+/tmp/fmv/scen.sh: line 9: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.FIqlju/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 6359 of size     6399
+cursor: octA	6399;
+daemon_alive=no
+drain rc=0; drain shows ATTENDED1: 2
+== after attended drain
+/tmp/fmv/scen.sh: line 9: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.FIqlju/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 6359 of size     6450
+cursor: octA	6450;
+daemon_alive=no
+== session 2 fresh start
+buffer_bytes=     106 HISTORY_mentions=0 catchall_items=0
+buffer: octA.status: failed: AWAY1 during first away session ; failed: ATTENDED1 presented by main while attended
+marker .subsuper-seen-status-octA: 6450 of size     6450
+cursor: octA	6450;
+daemon_alive=yes
+== session 2 new line
+buffer_bytes=     160 HISTORY_mentions=0 catchall_items=0
+buffer: octA.status: failed: AWAY1 during first away session ; failed: ATTENDED1 presented by main while attended
+octA.status: failed: AWAY2 during second away session
+marker .subsuper-seen-status-octA: 6491 of size     6491
+cursor: octA	6491;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:06:10+0300] daemon shutting down
+[2026-11-03T20:08:07+0300] daemon starting (pid 98084); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:08:14+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:08:16+0300] escalate: signal: $LAB/state/octA.status -> octA.status: failed: AWAY1 during first away session ; failed: ATTENDED1 presented by main while attended
+[2026-11-03T20:08:24+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))
+[2026-11-03T20:08:35+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:08:38+0300] escalate: signal: $LAB/state/octA.status -> octA.status: failed: AWAY2 during second away session
+[2026-11-03T20:08:40+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))

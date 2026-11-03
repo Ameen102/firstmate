@@ -1,0 +1,10 @@
+== unreadable marker octA, none on octB
+buffer_bytes=    1146 HISTORY_mentions=21 catchall_items=1
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+marker .subsuper-seen-status-octA:  of size     2549
+marker .subsuper-seen-status-octB: 2549 of size     2549
+cursor: 
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:04:02+0300] daemon starting (pid 62206); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:04:21+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))

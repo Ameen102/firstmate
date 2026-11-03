@@ -1,0 +1,16 @@
+== before start
+/tmp/fmv/scen.sh: line 11: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.Yhnx84/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 56 of size       82
+cursor: octA	26;
+daemon_alive=no
+== after start: only TAIL expected
+buffer_bytes=      56 HISTORY_mentions=0 catchall_items=1
+buffer: octA.status: failed: TAIL unclassified (catch-all scan)
+marker .subsuper-seen-status-octA: 82 of size       82
+cursor: octA	26;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:13:35+0300] daemon starting (pid 61175); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:13:45+0300] wake: signal: $LAB/state/octA.status

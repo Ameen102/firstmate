@@ -1,0 +1,15 @@
+   18018 total
+waited 156s
+== large fleet history
+buffer_bytes=   65901 HISTORY_mentions=1203 catchall_items=3
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+octB.status: failed: HISTORY octB.status event 1 from september ; failed: HISTORY octB.status event 2 from september ; failed: HISTORY octB.status event 3 from september ; failed: HISTORY octB.status event 4 from september ; failed: HISTORY octB.status event 5 from september ; failed: HISTORY octB.status event 6 from september ; failed: HISTORY octB.status event 7 from september ; failed: HISTORY octB.status event 8 from september ; failed: HISTORY octB.status event 9 from september ; failed: HISTORY octB.status event 10 from september ; failed: HISTORY octB.status event 11 from september ; fa
+octC.status: failed: HISTORY octC.status event 1 from september ; failed: HISTORY octC.status event 2 from september ; failed: HISTORY octC.status event 3 from september ; failed: HISTORY octC.status event 4 from september ; failed: HISTORY octC.status event 5 from september ; failed: HISTORY octC.status event 6 from september ; failed: HISTORY octC.status event 7 from september ; failed: HISTORY octC.status event 8 from september ; failed: HISTORY octC.status event 9 from september ; failed: HISTORY octC.status event 10 from september ; failed: HISTORY octC.status event 11 from september ; fa
+marker .subsuper-seen-status-octA: 52013 of size    52013
+marker .subsuper-seen-status-octB: 52013 of size    52013
+marker .subsuper-seen-status-octC: 52013 of size    52013
+cursor: 
+daemon_alive=yes
+    9627 /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.xMHFBa/state/.subsuper-escalations
+-- daemon log
+[2026-11-03T20:17:49+0300] daemon starting (pid 49274); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s

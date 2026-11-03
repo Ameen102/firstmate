@@ -1,0 +1,46 @@
+== after fresh start, no new lines
+buffer_bytes=    3306 HISTORY_mentions=61 catchall_items=1
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+marker .subsuper-seen-status-fresh-empty: 0 of size        0
+marker .subsuper-seen-status-octA: 7629 of size     7629
+cursor: 
+daemon_alive=yes
+== after new line on octA
+buffer_bytes=   10086 HISTORY_mentions=185 catchall_items=3
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+octB.status: failed: HISTORY octB.status event 1 from september ; failed: HISTORY octB.status event 2 from september ; failed: HISTORY octB.status event 3 from september ; failed: HISTORY octB.status event 4 from september ; failed: HISTORY octB.status event 5 from september ; failed: HISTORY octB.status event 6 from september ; failed: HISTORY octB.status event 7 from september ; failed: HISTORY octB.status event 8 from september ; failed: HISTORY octB.status event 9 from september ; failed: HISTORY octB.status event 10 from september ; failed: HISTORY octB.status event 11 from september ; fa
+octC.status: failed: HISTORY octC.status event 1 from september ; failed: HISTORY octC.status event 2 from september ; failed: HISTORY octC.status event 3 from september ; failed: HISTORY octC.status event 4 from september ; failed: HISTORY octC.status event 5 from september ; failed: HISTORY octC.status event 6 from september ; failed: HISTORY octC.status event 7 from september ; failed: HISTORY octC.status event 8 from september ; failed: HISTORY octC.status event 9 from september ; failed: HISTORY octC.status event 10 from september ; failed: HISTORY octC.status event 11 from september ; fa
+octA.status: failed: NEW-A appended after start | octB.status: done: HISTORY octB.status finished weeks ago | octC.status: done: HISTORY octC.status finished weeks ago
+marker .subsuper-seen-status-fresh-empty: 0 of size        0
+marker .subsuper-seen-status-octA: 7664 of size     7664
+marker .subsuper-seen-status-octB: 7629 of size     7629
+marker .subsuper-seen-status-octC: 7629 of size     7629
+cursor: fresh-empty	0;octA	7664;octB	7629;octC	7629;
+daemon_alive=yes
+== after first line on empty log and brand-new log
+buffer_bytes=   10250 HISTORY_mentions=185 catchall_items=3
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+octB.status: failed: HISTORY octB.status event 1 from september ; failed: HISTORY octB.status event 2 from september ; failed: HISTORY octB.status event 3 from september ; failed: HISTORY octB.status event 4 from september ; failed: HISTORY octB.status event 5 from september ; failed: HISTORY octB.status event 6 from september ; failed: HISTORY octB.status event 7 from september ; failed: HISTORY octB.status event 8 from september ; failed: HISTORY octB.status event 9 from september ; failed: HISTORY octB.status event 10 from september ; failed: HISTORY octB.status event 11 from september ; fa
+octC.status: failed: HISTORY octC.status event 1 from september ; failed: HISTORY octC.status event 2 from september ; failed: HISTORY octC.status event 3 from september ; failed: HISTORY octC.status event 4 from september ; failed: HISTORY octC.status event 5 from september ; failed: HISTORY octC.status event 6 from september ; failed: HISTORY octC.status event 7 from september ; failed: HISTORY octC.status event 8 from september ; failed: HISTORY octC.status event 9 from september ; failed: HISTORY octC.status event 10 from september ; failed: HISTORY octC.status event 11 from september ; fa
+octA.status: failed: NEW-A appended after start | octB.status: done: HISTORY octB.status finished weeks ago | octC.status: done: HISTORY octC.status finished weeks ago
+brandnew.status: done: NEW-BRAND task created after start | fresh-empty.status: failed: NEW-EMPTY first ever line | octA.status: failed: NEW-A appended after start
+marker .subsuper-seen-status-brandnew: 41 of size       41
+marker .subsuper-seen-status-fresh-empty: 34 of size       34
+marker .subsuper-seen-status-octA: 7664 of size     7664
+marker .subsuper-seen-status-octB: 7629 of size     7629
+marker .subsuper-seen-status-octC: 7629 of size     7629
+cursor: brandnew	41;fresh-empty	34;octA	7664;octB	7629;octC	7629;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:11:06+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))
+[2026-11-03T20:11:13+0300] wake: signal: $LAB/state/fresh-empty.status $LAB/state/octA.status $LAB/state/octB.status /var/f
+[2026-11-03T20:11:27+0300] escalate: signal: $LAB/state/fresh-empty.status $LAB/state/octA.status $LAB/state/octB.status /v
+[2026-11-03T20:11:27+0300] self-handle: signal: $LAB/state/fresh-empty.status $LAB/state/octA.status $LAB/state/octB.status
+[2026-11-03T20:11:28+0300] self-handle: signal: $LAB/state/fresh-empty.status $LAB/state/octA.status $LAB/state/octB.status
+[2026-11-03T20:11:28+0300] self-handle: signal: $LAB/state/fresh-empty.status $LAB/state/octA.status $LAB/state/octB.status
+[2026-11-03T20:11:31+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))
+[2026-11-03T20:11:38+0300] wake: signal: $LAB/state/brandnew.status $LAB/state/fresh-empty.status $LAB/state/octA.status
+[2026-11-03T20:12:14+0300] escalate: signal: $LAB/state/brandnew.status $LAB/state/fresh-empty.status $LAB/state/octA.statu
+[2026-11-03T20:12:14+0300] self-handle: signal: $LAB/state/brandnew.status $LAB/state/fresh-empty.status $LAB/state/octA.st
+[2026-11-03T20:12:15+0300] self-handle: signal: $LAB/state/brandnew.status $LAB/state/fresh-empty.status $LAB/state/octA.st
+[2026-11-03T20:12:17+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))

@@ -1,0 +1,10 @@
+cursor offset=7629 size=    7661
+== after fresh start, cursor mid-file
+buffer_bytes=      62 HISTORY_mentions=0 catchall_items=1
+buffer: octA.status: failed: UNPRESENTED past cursor (catch-all scan)
+marker .subsuper-seen-status-octA: 7661 of size     7661
+cursor: octA	7629;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:13:35+0300] daemon starting (pid 61112); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:13:58+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))

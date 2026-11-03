@@ -1,0 +1,46 @@
+== session 1 running
+/tmp/fmv/scen.sh: line 9: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.u5Rd7c/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 6359 of size     6399
+cursor: 
+daemon_alive=yes
+return begin rc=3
+return check rc=0
+== after return
+/tmp/fmv/scen.sh: line 9: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.u5Rd7c/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 6359 of size     6399
+cursor: octA	6399;
+daemon_alive=no
+drain rc=0; drain shows ATTENDED1: 2
+== after attended drain
+/tmp/fmv/scen.sh: line 9: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.u5Rd7c/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 6359 of size     6450
+cursor: octA	6450;
+daemon_alive=no
+== session 2 fresh start
+/tmp/fmv/scen.sh: line 9: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.u5Rd7c/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 6450 of size     6450
+cursor: octA	6450;
+daemon_alive=yes
+== session 2 new line
+buffer_bytes=      54 HISTORY_mentions=0 catchall_items=0
+buffer: octA.status: failed: AWAY2 during second away session
+marker .subsuper-seen-status-octA: 6491 of size     6491
+cursor: octA	6491;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:05:41+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:06:50+0300] daemon shutting down
+[2026-11-03T20:07:59+0300] daemon starting (pid 93180); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:08:11+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:08:13+0300] self-handle: signal: $LAB/state/octA.status -> signal already escalated (catch-all scan): octA.status: failed: ATTENDED1 presented by main while attended
+[2026-11-03T20:08:25+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:08:28+0300] escalate: signal: $LAB/state/octA.status -> octA.status: failed: AWAY2 during second away session
+[2026-11-03T20:08:32+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))

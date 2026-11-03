@@ -1,0 +1,18 @@
+== after fresh start, unclassified marker
+buffer_bytes=    3306 HISTORY_mentions=61 catchall_items=1
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+marker .subsuper-seen-status-octA: 7629 of size     7629
+cursor: 
+daemon_alive=yes
+== after new line
+buffer_bytes=    3306 HISTORY_mentions=61 catchall_items=1
+buffer: octA.status: failed: HISTORY octA.status event 1 from september ; failed: HISTORY octA.status event 2 from september ; failed: HISTORY octA.status event 3 from september ; failed: HISTORY octA.status event 4 from september ; failed: HISTORY octA.status event 5 from september ; failed: HISTORY octA.status event 6 from september ; failed: HISTORY octA.status event 7 from september ; failed: HISTORY octA.status event 8 from september ; failed: HISTORY octA.status event 9 from september ; failed: HISTORY octA.status event 10 from september ; failed: HISTORY octA.status event 11 from september ; fa
+marker .subsuper-seen-status-octA: 7629 of size     7664
+cursor: 
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:13:35+0300] daemon starting (pid 61115); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:13:58+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))
+[2026-11-03T20:14:09+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))
+[2026-11-03T20:15:51+0300] inject deferred: supervisor composer not confirmed-empty (state=unknown: composer not proven empty or pending (unrecognized screen, or harness not idle))
+[2026-11-03T20:15:53+0300] wake: signal: $LAB/state/octA.status

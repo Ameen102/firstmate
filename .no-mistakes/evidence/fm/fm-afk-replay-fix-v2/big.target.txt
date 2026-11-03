@@ -1,0 +1,17 @@
+   18018 total
+waited 280s
+== large fleet history
+/tmp/fmv/scen.sh: line 11: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.FKORcJ/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 52013 of size    52013
+marker .subsuper-seen-status-octB: 52013 of size    52013
+marker .subsuper-seen-status-octC: 52013 of size    52013
+cursor: octA	52013;octB	52013;octC	52013;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:17:49+0300] daemon starting (pid 49209); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:20:30+0300] wake: signal: $LAB/state/octA.status $LAB/state/octB.status $LAB/state/octC.status
+[2026-11-03T20:21:03+0300] self-handle: signal: $LAB/state/octA.status $LAB/state/octB.status $LAB/state/octC.status -> sig
+[2026-11-03T20:21:04+0300] self-handle: signal: $LAB/state/octA.status $LAB/state/octB.status $LAB/state/octC.status -> sig
+[2026-11-03T20:21:04+0300] self-handle: signal: $LAB/state/octA.status $LAB/state/octB.status $LAB/state/octC.status -> sig

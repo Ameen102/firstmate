@@ -1,0 +1,19 @@
+== after fresh start, unclassified marker
+/tmp/fmv/scen.sh: line 11: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.RYZJjf/state/.subsuper-escalations: No such file or directory
+buffer_bytes=0 HISTORY_mentions=0 catchall_items=0
+buffer: 
+marker .subsuper-seen-status-octA: 7629 of size     7629
+cursor: octA	7629;
+daemon_alive=yes
+== after new line
+buffer_bytes=      48 HISTORY_mentions=0 catchall_items=0
+buffer: octA.status: failed: NEW-A appended after start
+marker .subsuper-seen-status-octA: 7664 of size     7664
+cursor: octA	7664;
+daemon_alive=yes
+-- daemon log
+[2026-11-03T20:09:51+0300] daemon starting (pid 65041); target=primary:0.0; target_source=FM_SUPERVISOR_TARGET; backend=tmux; backend_source=FM_SUPERVISOR_BACKEND; afk=on; inject_skip='__none__'; stale_escalate=240s; batch=2s
+[2026-11-03T20:10:06+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:10:13+0300] self-handle: signal: $LAB/state/octA.status -> signal already escalated (catch-all scan): octA.status: done: HISTORY octA.status finished weeks ago
+[2026-11-03T20:10:22+0300] wake: signal: $LAB/state/octA.status
+[2026-11-03T20:10:26+0300] escalate: signal: $LAB/state/octA.status -> octA.status: failed: NEW-A appended after start
