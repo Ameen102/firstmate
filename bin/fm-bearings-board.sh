@@ -9,6 +9,7 @@
 #
 # Usage:
 #   fm-bearings-board.sh build <data.json>
+#   fm-bearings-board.sh refresh [--if-live]
 #   fm-bearings-board.sh path
 #
 # build      Validate the payload, drop the Captain's Call cards whose subject
@@ -33,6 +34,27 @@
 #            Every dropped card is named on stderr as a `dropped-landed-card:`
 #            line, so a rebuild states what it removed instead of quietly
 #            shrinking Captain's Call.
+# refresh    Compose the payload deterministically from one fresh
+#            bin/fm-bearings-snapshot.sh read, then run build, so the board stays
+#            current with no agent-authored JSON. Underway, Recently Landed,
+#            Charted Next, and the swimlanes come from the snapshot. A decision
+#            card already on the board keeps its authored copy only while its
+#            task is still an open decision; every other open decision gets a
+#            plain card answered in the captain's own words, which releases the
+#            hold rather than completing the task, because a released item stays
+#            visible and a wrongly completed one does not. A merge card stays only
+#            while its task is live, and a credential card stays until the next
+#            composed build. A secondmate whose state is unavailable shows on its
+#            lane rather than as a Charted Next warning. An active away window
+#            refuses, exactly as the snapshot does. Without lavish-axi it still
+#            publishes the board file and reports the missing session, so a
+#            headless home's /bearings keeps answering.
+#            --if-live is the unattended form the watcher runs at each heartbeat
+#            review: it never creates a board and never reopens one the captain
+#            ended, printing `skipped: <reason>` instead, and it prints
+#            `unchanged` without touching the file when only the generated time
+#            differs, because Lavish reloads the page on every write and a reload
+#            clears an answer the captain has not queued yet.
 # path       Print the stable board path for this home.
 #
 # A LIVE SESSION IS PROVED, NEVER ASSUMED. `lavish-axi <file>` exits 0 even
@@ -79,6 +101,11 @@
 # first; a row with no comparable date keeps its payload order after every dated
 # row. Anything else in that field refuses rather than sorting on garbage.
 #
+# The optional `lanes` array is the swimlane view, copied verbatim from
+# `bin/fm-bearings-snapshot.sh --fields lanes`, whose header owns each row's
+# fields and sources. When present the template renders it in place of the
+# Underway list; an older payload without it renders exactly as before.
+#
 # The board path is stable - $FM_HOME/.lavish/bearings-board.html - so a
 # re-invocation rebuilds the same file in place, which keeps the same Lavish
 # session URL and the same canonical process-event source id. Injection escapes
@@ -92,6 +119,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FM_ROOT="${FM_ROOT_OVERRIDE:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 FM_HOME="${FM_HOME:-$FM_ROOT}"
 
+BOARD_NO_REOPEN=0
+BOARD_FILES_ONLY=0
 TEMPLATE="${FM_BEARINGS_BOARD_TEMPLATE:-$SCRIPT_DIR/../.agents/skills/bearings/assets/board-template.html}"
 PLACEHOLDER='__FM_BEARINGS_BOARD_DATA__'
 BOARD_SCHEMA=fm-bearings-board.v1
@@ -110,6 +139,11 @@ fail() {
 }
 
 board_path() { printf '%s/.lavish/bearings-board.html\n' "$FM_HOME"; }
+
+board_payload() {  # <board-page>
+  sed -n '/<script id="bearings-data" type="application\/json">/,/<\/script>/p' "$1" \
+    | sed '1d;$d'
+}
 
 validate_payload() {  # <data.json>
   jq -e --arg schema "$BOARD_SCHEMA" '
@@ -169,6 +203,21 @@ validate_payload() {  # <data.json>
             | ([.options[].value] | index($recommend) != null))))
       and ([.options[].value] | index("reconcile") == null)
       and (if .type == "merge" then (.risk | nonempty_string) else true end);
+    def nullable_https_url($name):
+      (.[$name] == null) or optional_https_url($name);
+    def lane_item:
+      type == "object" and repo_marker and name_marker
+      and (.id | nonempty_string) and (.owner | nonempty_string)
+      and (.kind | nonempty_string) and (.state | nonempty_string)
+      and (.step | type == "string")
+      and (.last_event_at == null or (.last_event_at | type == "number"))
+      and (.events | type == "array")
+      and ([.events[] | (.at | type == "number") and (.state | nonempty_string)] | all)
+      and (.open | type == "array")
+      and ([.open[] | (.kind == "decision" or .kind == "blocker") and (.text | nonempty_string)] | all)
+      and nullable_https_url("pr_url")
+      and nullable_https_url("linear_url")
+      and (.linear_label == null or (.linear_label | nonempty_string));
     def underway_item:
       type == "object" and repo_marker and name_marker and (.id | nonempty_string)
       and (.state | nonempty_string) and (.doing | nonempty_string) and (.kind | nonempty_string);
@@ -201,6 +250,8 @@ validate_payload() {  # <data.json>
     and ([.underway[] | underway_item] | all)
     and ([.landed[] | landed_item] | all)
     and ([.charted[] | charted_item] | all)
+    and ((has("lanes") | not)
+      or ((.lanes | type == "array") and ([.lanes[] | lane_item] | all)))
   ' "$1" >/dev/null
 }
 
@@ -254,6 +305,10 @@ establish_board_session() {  # <board>
   if lavish_board_live "$out" "$real"; then
     printf 'session: live\n'
     return 0
+  fi
+  if [ "$BOARD_NO_REOPEN" = 1 ]; then
+    printf 'skipped: board session is not open\n'
+    exit 0
   fi
   out=$(lavish-axi "$board" --reopen) || fail "cannot reopen the ended board Lavish session"
   printf '%s\n' "$out"
@@ -393,8 +448,7 @@ command_build() {
   fi
   # Round-trip the injected payload back out of the built page, so a board that
   # would fail to parse in the browser fails here instead.
-  extracted=$(sed -n '/<script id="bearings-data" type="application\/json">/,/<\/script>/p' "$tmp" \
-    | sed '1d;$d')
+  extracted=$(board_payload "$tmp")
   if ! printf '%s\n' "$extracted" | jq -e --arg schema "$BOARD_SCHEMA" '.schema == $schema' >/dev/null 2>&1; then
     rm -f -- "$tmp"
     fail "the built board does not carry a readable $BOARD_SCHEMA payload"
@@ -405,6 +459,10 @@ command_build() {
   fi
   printf 'board: %s\n' "$board"
 
+  if [ "$BOARD_FILES_ONLY" = 1 ]; then
+    printf 'skipped: lavish-axi is not installed, so the board has no live session\n'
+    return 0
+  fi
   command -v lavish-axi >/dev/null 2>&1 || fail "lavish-axi is not installed"
   sid=$("$SCRIPT_DIR/fm-procevent-lavish.sh" source-id "$board") \
     || fail "cannot derive the board source id"
@@ -451,8 +509,118 @@ command_build() {
   fi
 }
 
+# The deterministic composer behind `refresh`. Its input is the snapshot's
+# projected model plus the payload already on the board (empty when none).
+compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
+  jq --slurpfile prior "$2" '
+    def slug: type == "string" and test("^[A-Za-z0-9._-]{1,128}$");
+    def text_or($fallback):
+      if type == "string" and test("[^[:space:]]") then . else $fallback end;
+    def filed_or_null:
+      if type == "string"
+        and (try (((. + "T00:00:00Z") | fromdateiso8601 | strftime("%Y-%m-%d")) == .) catch false)
+      then . else null end;
+    . as $snap
+    | ([$snap.in_flight[].id]) as $live_ids
+    | ([$snap.decisions_open[]
+        | . as $row
+        | ($row.id | ltrimstr($row.owner + "/")) as $task
+        | select($task | slug)
+        | {key:$task, type:"decision", repo:null,
+           title:($row.summary | text_or($task)),
+           decide:"Answer in your own words",
+           options:[], allow_freeform:true, close:"release"}
+          + (if $row.owner == "(main)" then {} else {about:("Second mate: " + $row.owner)} end)]
+       | unique_by(.key)) as $open_cards
+    | ([$open_cards[].key]) as $open_keys
+    | ([($prior[0].captains_call // [])[]
+        | select(
+            (.type == "decision" and (.key as $key | $open_keys | index($key)) != null)
+            or (.type == "merge" and ((.key | ltrimstr("merge.")) as $task
+                | any($live_ids[]; . == $task or endswith("/" + $task))))
+            or (.type == "credential"))
+        | .options |= map(select(.value != "reconcile"))]) as $kept
+    | ([$kept[].key]) as $kept_keys
+    | ([$snap.gates[]
+        | (.id | gsub("[^A-Za-z0-9._-]"; "-") | ltrimstr("-") | rtrimstr("-") | .[:128]) as $id
+        | ((.id | startswith("(")) ) as $warning
+        | ((.reason // "-") | if . == "-" then "" else . end) as $reason
+        | {id:$id, repo:null, title:(.title | text_or($id)), reason:$reason,
+           dispatchable:((.owner == "(main)") and (.blocked_by == "-") and ($reason == "") and ($warning | not)),
+           filed:(.filed | filed_or_null)}
+          + (if $warning then {kind:"warning"} else {} end)]) as $charted
+    | {schema:"fm-bearings-board.v1", home:$snap.home, generated:$snap.generated, prs_live:false,
+       captains_call:($kept + [$open_cards[] | select(.key as $key | $kept_keys | index($key) == null)]),
+       underway:[$snap.in_flight[]
+         | {id, repo, name:(.name | text_or(.id)), kind:(.kind | text_or("ship")),
+            state:(.state | text_or("unknown")), doing:(.doing | text_or("-"))}],
+       landed:[$snap.landed[]
+         | {id, repo:null, what:(.what | text_or(.id)), owner}
+           + (if ((.artifact // "") | test("^https://[^[:space:]]+/pull/[0-9]+$")) then {pr_url:.artifact} else {} end)],
+       charted:$charted[:20],
+       charted_more:([$charted[20:][] | select(.kind != "warning")] | length),
+       charted_warning_more:([$charted[20:][] | select(.kind == "warning")] | length),
+       lanes:$snap.lanes}
+  ' "$1"
+}
+
+# Compared without generated and the build-injected reconcile choice, so only a
+# real fleet change rewrites the page.
+payload_fingerprint() {  # <payload.json>
+  jq -S 'del(.generated)
+    | .captains_call |= map(.options |= map(select(.value != "reconcile")))' "$1" 2>/dev/null
+}
+
+command_refresh() {
+  local if_live=0 board real tmpdir
+  case "${1-}" in
+    --if-live) if_live=1; shift ;;
+  esac
+  [ "$#" -eq 0 ] || { usage >&2; exit 2; }
+  command -v jq >/dev/null 2>&1 || fail "jq is required"
+  board=$(board_path)
+  if [ "$if_live" = 1 ]; then
+    BOARD_NO_REOPEN=1
+    if [ ! -f "$board" ]; then
+      printf 'skipped: no board has been built\n'
+      return 0
+    fi
+    command -v lavish-axi >/dev/null 2>&1 || { printf 'skipped: lavish-axi is not installed\n'; return 0; }
+    real=$(board_realpath "$board") || fail "cannot resolve the board path: $board"
+    if ! lavish_session_listed_open "$real"; then
+      printf 'skipped: board session is not open\n'
+      return 0
+    fi
+  fi
+  tmpdir=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/fm-bearings-refresh.XXXXXX") \
+    || fail "cannot stage the board refresh"
+  command -v lavish-axi >/dev/null 2>&1 || BOARD_FILES_ONLY=1
+  # shellcheck disable=SC2064  # tmpdir is fixed here and must survive a later exit
+  trap "rm -rf -- '$tmpdir'" EXIT
+  # The decision bound only limits what a chat digest shows; a call past it must
+  # not lose its card here.
+  FM_BEARINGS_DECISIONS=${FM_BEARINGS_DECISIONS:-1000} \
+    "$SCRIPT_DIR/fm-bearings-snapshot.sh" --json --fields lanes \
+      --all-in-flight --all-secondmates --all-queued > "$tmpdir/snapshot.json" \
+    || fail "cannot read the fleet snapshot"
+  : > "$tmpdir/prior.json"
+  if [ -f "$board" ]; then
+    board_payload "$board" > "$tmpdir/prior.json" || : > "$tmpdir/prior.json"
+    jq empty "$tmpdir/prior.json" 2>/dev/null || : > "$tmpdir/prior.json"
+  fi
+  compose_refresh_payload "$tmpdir/snapshot.json" "$tmpdir/prior.json" > "$tmpdir/payload.json" \
+    || fail "cannot compose the board payload"
+  if [ "$if_live" = 1 ] \
+    && [ "$(payload_fingerprint "$tmpdir/payload.json")" = "$(payload_fingerprint "$tmpdir/prior.json")" ]; then
+    printf 'unchanged\n'
+    return 0
+  fi
+  command_build "$tmpdir/payload.json"
+}
+
 case "${1-}" in
   build) shift; command_build "$@" ;;
+  refresh) shift; command_refresh "$@" ;;
   path) board_path ;;
   -h|--help|help) usage ;;
   *) usage >&2; exit 2 ;;

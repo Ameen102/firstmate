@@ -1594,6 +1594,52 @@ SH
   chmod +x "$fakebin/jq"
 }
 
+test_lanes_are_opt_in_and_carry_current_state_age_and_linear() {
+  local home fakebin json lanes
+  home=$(make_home lanes)
+  fakebin=$(make_fakebin "$home")
+  write_fixture "$home"
+  printf -- '- firstmate [no-mistakes] - fleet tooling; Linear project P-AME-5 (added 2026-07-11)\n- other [direct-PR] - see https://linear.app/acme/project/other-1 (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  printf 'working [at=1783790000]: first\nblocked [at=1783791000]: second\n' > "$home/state/ship-task.status"
+  printf 'working [at=1783790000]: stamped\nworking: unstamped latest\n' > "$home/state/external-wait.status"
+
+  json=$(run "$home" "$fakebin" --json)
+  printf '%s' "$json" | jq -e 'has("lanes") | not' >/dev/null \
+    || fail "lanes appeared without the opt-in"
+  printf '%s' "$json" | jq -e '[.omitted[].reveal] | index("--fields lanes") != null' >/dev/null \
+    || fail "the default output did not disclose the omitted lanes"
+
+  json=$(run "$home" "$fakebin" --json --fields lanes)
+  lanes=$(printf '%s' "$json" | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '
+    (map(.id) | index("ship-task") != null and index("mate") != null)
+    and all(.[]; has("step") and has("last_event_at") and has("events") and has("open")
+                 and has("pr_url") and has("linear_url") and has("linear_label"))
+  ' >/dev/null || fail "lanes missed a worker or second mate, or a field: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "ship-task")
+    | .owner == "(main)" and .repo == "firstmate"
+      and .last_event_at == 1783791000
+      and .events == [{at:1783790000,state:"working"},{at:1783791000,state:"blocked"}]
+      and .linear_url == null and .linear_label == "P-AME-5"
+  ' >/dev/null || fail "a worker lane misread its age or registry Linear reference: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "external-wait")
+    | .last_event_at == null and .events == [{at:1783790000,state:"working"}]
+  ' >/dev/null || fail "an unstamped latest event borrowed an older time: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate")
+    | .kind == "secondmate" and .owner == "mate"
+      and any(.open[]; .kind == "decision" and (.text | test("subscribe order")))
+  ' >/dev/null || fail "a second mate lane lost its open decision: $lanes"
+
+  printf -- '- other [direct-PR] - Linear project "Some Name" at https://linear.app/acme/project/other-1 (added 2026-07-11)\n- firstmate [no-mistakes] - see https://linear.app/acme/project/fleet-2, details (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  lanes=$(run "$home" "$fakebin" --json --fields lanes | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "ship-task")
+    | .linear_url == "https://linear.app/acme/project/fleet-2"
+  ' >/dev/null || fail "a worker lane did not read its Linear URL from the registry: $lanes"
+  pass "lanes are opt-in and carry current state, event age, open items, and registry Linear references"
+}
+
 test_projection_and_toon_fail_closed() {
   local home fakebin out err rc
   home=$(make_home fail-closed); write_fixture "$home"
@@ -3418,4 +3464,5 @@ fm_test_run \
   test_revealed_deferred_holds_show_their_deferral_reason \
   test_pr_repository_cap_and_expansion \
   test_per_repository_pr_cap_is_disclosed \
+  test_lanes_are_opt_in_and_carry_current_state_age_and_linear \
   test_projection_and_toon_fail_closed

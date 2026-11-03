@@ -73,11 +73,25 @@
 # waste capacity, and --all-landed switches back to the complete global newest-first
 # order. Which closed rows either side contributes is bin/fm-landed-lib.sh's rule.
 #
+# The `lanes` opt-in is the board's swimlane feed: one row per Underway task, one
+# per registered secondmate, and one per secondmate active child, in that group
+# order, unbounded by the Underway cap. Each row carries id, owner, kind, name,
+# repo, state, step, last_event_at, events[{at,state}], open[{kind,text}], pr_url,
+# linear_url, and linear_label, with null for an absent scalar. state and step
+# come from the canonical current_state or the secondmate home classification,
+# rewritten into plain words without changing which state is reported.
+# last_event_at and events come only from the task's local status log through
+# bin/fm-classify-lib.sh's stamp parser: an unstamped latest line means an unknown
+# time, never a file mtime or an older stamp. A remote child has no local log.
+# linear_url and linear_label are read from the project or secondmate registry
+# line itself - the first https://linear.app URL, else the name after
+# `Linear project` - with no Linear API call, and a name alone yields no URL.
+#
 # Flags:
 #   (default)        compact projection with bounded remote-ledger collection, TOON
 #   --json           the same projected model as JSON (machine/debug; parity form)
 #   --include-prs    ALSO do live GitHub open-PR discovery + checks
-#   --fields <list>  opt in to dropped surfaces: bodies,paths,actions,endpoints
+#   --fields <list>  opt in to dropped surfaces: bodies,paths,actions,endpoints,lanes
 #   --all-in-flight  include every in-flight task
 #   --all-decisions  include every open decision and captain hold in the bounded snapshot
 #   --all-secondmates include every aggregated secondmate record
@@ -101,6 +115,9 @@ FLEET="$SCRIPT_DIR/fm-fleet-snapshot.sh"
 # shellcheck source=bin/fm-landed-lib.sh
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/fm-landed-lib.sh"  # FM_LANDED_JQ_DEFS: the shared landed selector
+# shellcheck source=bin/fm-classify-lib.sh
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/fm-classify-lib.sh"  # status_line_at_epoch: the status stamp grammar
 
 # Bounds (overridable for tests / large fleets).
 FM_BEARINGS_LANDED=${FM_BEARINGS_LANDED:-6}
@@ -115,6 +132,7 @@ FM_BEARINGS_UNHEALTHY=${FM_BEARINGS_UNHEALTHY:-20}
 FM_BEARINGS_PR_REPOS=${FM_BEARINGS_PR_REPOS:-10}
 FM_BEARINGS_PR_LIMIT=${FM_BEARINGS_PR_LIMIT:-20}
 FM_BEARINGS_PR_TIMEOUT=${FM_BEARINGS_PR_TIMEOUT:-20}
+FM_BEARINGS_LANE_EVENTS=${FM_BEARINGS_LANE_EVENTS:-12}
 case "$FM_BEARINGS_PR_TIMEOUT" in ''|*[!0-9]*|0) FM_BEARINGS_PR_TIMEOUT=20 ;; esac
 validate_bound() {  # <name> <value>
   case "$2" in ''|*[!0-9]*|0) echo "fm-bearings-snapshot: $1 must be a positive integer" >&2; exit 2 ;; esac
@@ -130,6 +148,7 @@ validate_bound FM_BEARINGS_RECORDED_PRS "$FM_BEARINGS_RECORDED_PRS"
 validate_bound FM_BEARINGS_UNHEALTHY "$FM_BEARINGS_UNHEALTHY"
 validate_bound FM_BEARINGS_PR_REPOS "$FM_BEARINGS_PR_REPOS"
 validate_bound FM_BEARINGS_PR_LIMIT "$FM_BEARINGS_PR_LIMIT"
+validate_bound FM_BEARINGS_LANE_EVENTS "$FM_BEARINGS_LANE_EVENTS"
 
 usage() {
   cat <<'EOF'
@@ -163,7 +182,7 @@ For every registered secondmate, readable structured facts from its own home are
   Parent events and bounded terminal reads are labeled fallback or contradiction
   evidence and never become current work. The provenance and freshness fields
   distinguish live and cached ledgers; a home without either is explicitly unreadable.
-Opt-in surfaces: --fields bodies|paths|actions|endpoints, --all-in-flight,
+Opt-in surfaces: --fields bodies|paths|actions|endpoints|lanes, --all-in-flight,
   --all-decisions (all open decisions and captain holds in the bounded snapshot),
   --all-secondmates, --all-landed, --all-reports, --all-queued, --all-recorded-prs,
   --all-unhealthy, --all-pr-repos, --include-prs (adds candidate_prs).
@@ -345,6 +364,66 @@ EOF
   fi
 fi
 
+# --- optional swimlane evidence (--fields lanes) ------------------------------
+# One shared selection, so a lane exists exactly when its Underway row does.
+UNDERWAY_TASK_JQ='def underway_task:
+  select(.kind != "secondmate")
+  | select(.backlog.current_role != "program")
+  | select(.backlog.current_role != "held" or .current_state.state == "working");'
+LANE_EVENTS='{}'
+LANE_LINEAR='{}'
+
+lane_events_json() {
+  printf '%s' "$SNAP" | jq -r "$UNDERWAY_TASK_JQ"'
+    .tasks[]
+    | (select(.kind == "secondmate") // underway_task)
+    | select(.paths.status_log.present == true)
+    | [.id, .paths.status_log.path] | @tsv' \
+    | while IFS=$'\t' read -r id path; do
+        tail -n "$FM_BEARINGS_LANE_EVENTS" "$path" 2>/dev/null | {
+          while IFS= read -r line || [ -n "$line" ]; do
+            [ -n "$line" ] || continue
+            last=$line
+            at=$(status_line_at_epoch "$line") || continue
+            printf '%s\t%s\t%s\n' "$id" "$at" "${line%%[ :]*}"
+          done
+          at=$(status_line_at_epoch "${last:-}") || at=null
+          printf '%s\tlast\t%s\n' "$id" "$at"
+        }
+      done \
+    | jq -Rs '
+        [split("\n")[] | select(length > 0) | split("\t")]
+        | group_by(.[0])
+        | map({key:.[0][0],
+               value:{
+                 last:(map(select(.[1] == "last"))[0][2] | if . == "null" then null else tonumber end),
+                 events:[.[] | select(.[1] != "last") | {at:(.[1] | tonumber), state:.[2]}]}})
+        | from_entries'
+}
+
+# Registry lines are `- <name> ...`. Only their own text is read.
+lane_linear_json() {
+  local data
+  data=$(printf '%s' "$SNAP" | jq -r '.roots.data')
+  cat "$data/projects.md" "$data/secondmates.md" 2>/dev/null | jq -Rs '
+    [split("\n")[]
+     | select(startswith("- "))
+     | (.[2:] | split(" ")[0]) as $name
+     | ([match("https://linear\\.app/[^][:space:]<>()\"\u0027,;]+"; "g").string][0]) as $url
+     | ([capture("Linear project \"(?<n>[^\"]+)\"")][0].n
+        // ([capture("Linear project (?<n>[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9])")][0].n)) as $label
+     | select($url != null or $label != null)
+     | {key:$name, value:{url:$url, label:$label}}]
+    | from_entries'
+}
+
+case ",$FIELDS," in
+  *,lanes,*)
+    LANE_EVENTS=$(lane_events_json) || LANE_EVENTS='{}'
+    LANE_LINEAR=$(lane_linear_json) || LANE_LINEAR='{}'
+    ;;
+esac
+
 # --- projection: canonical snapshot -> fm-bearings.v1 model (JSON) ----------
 BEARINGS_TODAY=${NOW%%T*}
 case "$BEARINGS_TODAY" in
@@ -380,7 +459,9 @@ MODEL=$(printf '%s' "$SNAP" | jq \
   --argjson pr_rows_capped "$PR_ROWS_CAPPED" \
   --argjson pr_rows_min_total "$PR_ROWS_MIN_TOTAL" \
   --argjson return_catchup "$RETURN_CATCHUP" \
-  --argjson candidate_prs "$CANDIDATE_PRS" "$FM_LANDED_JQ_DEFS"'
+  --argjson lane_events "$LANE_EVENTS" \
+  --argjson lane_linear "$LANE_LINEAR" \
+  --argjson candidate_prs "$CANDIDATE_PRS" "$UNDERWAY_TASK_JQ$FM_LANDED_JQ_DEFS"'
   def trunc($n): if . == null then null else
     (tostring | gsub("\\s+"; " ") | if (length > $n) then (.[:$n] + "…") else . end) end;
   def fit($n):
@@ -438,11 +519,38 @@ MODEL=$(printf '%s' "$SNAP" | jq \
        | $groups[]
        | select(length > $i)
        | .[$i]][:$n];
+  def plain_words($n):
+    (. // "")
+    | tostring
+    | gsub("^corr=[^ ]+ "; "")
+    | gsub("(^| )/[^ ]*/[^ ]*"; " (file)")
+    | gsub("^ +"; "")
+    | trunc($n);
+  def plain_step:
+    if test("^harness busy") then "Working"
+    elif test("^harness idle|^pane idle") then "Idle at a prompt"
+    elif test("^backend target gone") then "Worker session has ended"
+    elif test("^worktree gone") then "Worker copy is gone"
+    else plain_words(120) end;
+  def plain_open:
+    {kind:(if .verb == "blocked" then "blocker" else "decision" end),
+     text:((.summary // .key // "open")
+           | if test("^pending-reply-missed:") then "Did not answer a routed message"
+             else gsub("^(corr=[^ ]+ )?captain hold [^ :]+: "; "") | plain_words(160) end)};
+  def bounded_open:
+    unique_by(.text)
+    | if length > 5 then .[:5] + [{kind:"decision",text:"+\(length - 5) more open"}] else . end;
+  def https_or_null: if type == "string" and test("^https://") then . else null end;
+  def base_name:
+    if type == "string" and length > 0 then (split("/") | map(select(length > 0)) | last) else null end;
+  def lane_linear_for($names):
+    (reduce ($names[] | select(. != null)) as $n (null; . // $lane_linear[$n])) // {url:null,label:null};
   ($fields | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(. != ""))) as $fl
   | (($fl | index("bodies")) != null) as $f_bodies
   | (($fl | index("paths")) != null) as $f_paths
   | (($fl | index("actions")) != null) as $f_actions
   | (($fl | index("endpoints")) != null) as $f_endpoints
+  | (($fl | index("lanes")) != null) as $f_lanes
   | ([ .backlog.records[] | select(landed_record)
        | {id, title, kind, hold_kind, pr_url, report_path, local_note, completion,
           home:"(main)", home_id:"(main)"} ]) as $main_done
@@ -501,9 +609,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
           age_seconds:.freshness.age_seconds,contradiction:(.contradiction // false),
           reason:(.current.reason // "-")} ]) as $secondmates_all
   | ([ .tasks[]
-       | select(.kind != "secondmate")
-       | select(.backlog.current_role != "program")
-       | select(.backlog.current_role != "held" or .current_state.state == "working")
+       | underway_task
        | {id, kind,
         state: .current_state.state,
         repo:(.backlog.repo // .project // null),
@@ -656,12 +762,66 @@ MODEL=$(printf '%s' "$SNAP" | jq \
   | . + (if $f_bodies then {bodies:[ $snap.backlog.records[] | select(.structured and (.state == "queued" or .state == "done")) | {id, body:((.body_excerpt // .raw // "-") | trunc(200))} ]} else {} end)
   | . + (if $f_paths then {paths:[ $snap.tasks[] | {id, worktree:(.paths.worktree.path // "-"), home:(.paths.home.path // "-"), status:.paths.status_log.path, report:.paths.report.path} ]} else {} end)
   | . + (if $f_actions then {actions:[ $snap.tasks[] | {id, watch:(.actions.watch // .actions.send // "-"), steer:(.actions.steer // .actions.send // "-")} ]} else {} end)
+  | . + (if $f_lanes then {lanes:(
+      ($snap.tasks | map({key:.id, value:.}) | from_entries) as $by_id
+      | ([ $snap.tasks[]
+           | underway_task
+           | ((.backlog.repo // .project) | base_name) as $repo
+           | (lane_linear_for([$repo])) as $linear
+           | {id, owner:"(main)", kind,
+              name:((.backlog.title // "") as $name
+                    | (if ($name | test("[^[:space:]]")) then $name else .id end) | trunc(70)),
+              repo:$repo,
+              state:(.current_state.state // "unknown"),
+              step:((.current_state.detail // "") as $d
+                    | (if $d != "" then $d else (.hints.last_event_text // "") end) | plain_step),
+              last_event_at:($lane_events[.id].last // null),
+              events:($lane_events[.id].events // []),
+              open:([.hints.open_decisions[]? | plain_open] | bounded_open),
+              pr_url:(.pr.url | https_or_null),
+              linear_url:$linear.url, linear_label:$linear.label} ]
+         + [ $secondmate_views | sort_by(.id)[] as $m
+             | ($by_id[$m.id] // {}) as $task
+             | (($task.secondmate_projects // [])) as $projects
+             | (lane_linear_for([$m.id] + $projects)) as $mate_linear
+             | ({id:$m.id, owner:$m.id, kind:"secondmate", name:$m.id,
+                 repo:(if ($projects | length) > 0 then ($projects | join(", ")) else null end),
+                 state:$m.bearings_state,
+                 step:(if $m.bearings_state == "active_child_work" then
+                         "\($m.active_children | length) worker(s) running"
+                       elif $m.bearings_state == "no_active_work" then "Idle"
+                       elif $m.bearings_state == "captain_decision" then "Waiting on your call"
+                       elif $m.bearings_state == "externally_held" then "Waiting on an outside condition"
+                       elif (($m.current.reason // "") | test("^structured home state invalid")) then
+                         "Its own records disagree"
+                       elif (($m.current.reason // "") | test("^structured home ledger")) then
+                         "Current state is unavailable from its home"
+                       else ($m.current.reason // "Current state unavailable") | plain_words(120) end),
+                 last_event_at:($lane_events[$m.id].last // null),
+                 events:($lane_events[$m.id].events // []),
+                 open:(([$task.hints.open_decisions[]? | plain_open]
+                        + [$m.decisions_open[]? | plain_open]) | bounded_open),
+                 pr_url:($task.pr.url | https_or_null),
+                 linear_url:$mate_linear.url, linear_label:$mate_linear.label}),
+               ($m.active_children[]?
+                | (lane_linear_for([.repo] + [$m.id] + $projects)) as $linear
+                | {id:($m.id + "/" + .id), owner:$m.id, kind:(.kind // "ship"),
+                   name:((.name // "") as $name
+                         | (if (($name | type) == "string" and ($name | test("[^[:space:]]")))
+                            then $name else ($m.id + "/" + .id) end) | trunc(70)),
+                   repo:(.repo // null),
+                   state:(.state // "working"),
+                   step:((.doing // .state // "") | plain_step),
+                   last_event_at:null, events:[], open:[],
+                   pr_url:null,
+                   linear_url:$linear.url, linear_label:$linear.label}) ]))} else {} end)
   | . + (if $f_endpoints then {endpoints:[ $snap.tasks[] | {id, backend, target:(.endpoint.target // "-"), exists:.endpoint.exists, agent:.endpoint.agent_alive} ]} else {} end)
   | . + {omitted: (
       [ (if $f_bodies then empty else {surface:"backlog item bodies", reveal:"--fields bodies"} end),
         (if $f_paths then empty else {surface:"task paths", reveal:"--fields paths"} end),
         (if $f_actions then empty else {surface:"watch/steer actions", reveal:"--fields actions"} end),
         (if $f_endpoints then empty else {surface:"healthy endpoint detail", reveal:"--fields endpoints"} end),
+        (if $f_lanes then empty else {surface:"worker swimlanes", reveal:"--fields lanes"} end),
         (if $all_reports == 1 then empty else {surface:"full scout-report inventory", reveal:"--all-reports"} end),
         (if $all_landed == 0 and ($per_home_capped | length) > ($done | length) then {surface:("landed showing \($done | length) of \($per_home_capped | length)" + (($done | map(.home_id) | unique | map(select(. != "(main)")) | length) as $k | if $k > 0 then " (incl. \($k) secondmate home(s))" else "" end)), reveal:"--all-landed"} else empty end),
         (if $all_landed == 0 and $home_cap_dropped > 0 then {surface:("landed per-home capped at \($landed_per_home_n) for \($home_cap_dropped) home(s)"), reveal:"--all-landed"} else empty end),

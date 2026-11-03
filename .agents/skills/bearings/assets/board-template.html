@@ -258,6 +258,36 @@ a { color: inherit; text-decoration: none; }
 }
 .bb-empty { padding: 18px; font-size: var(--fs-sm); color: var(--text-muted); }
 
+/* ---- swimlanes: one lane per live worker and second mate ---- */
+.bb-section[hidden] { display: none; }
+.bb-cols--single { grid-template-columns: minmax(0,1fr); }
+.bb-lane { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,1fr) 96px;
+  gap: 6px 14px; align-items: center; padding: 11px 18px; border-top: 1px solid var(--border-soft); }
+.bb-lane:first-child { border-top: none; }
+.bb-lane--child { padding-left: 38px; background: var(--surface-card-warm); }
+.bb-lane--attention { box-shadow: inset 4px 0 0 var(--rust-500); }
+.bb-lane__who, .bb-lane__now { min-width: 0; }
+.bb-lane__name { font-size: var(--fs-sm); font-weight: 700; color: var(--text-strong); line-height: 1.3; overflow-wrap: anywhere; }
+.bb-lane__repo { font-size: var(--fs-xs); color: var(--text-muted); overflow-wrap: anywhere; }
+.bb-lane__linear { color: var(--ocean-600); font-weight: 600; }
+a.bb-lane__linear:hover, .bb-lane__pr:hover { text-decoration: underline; }
+.bb-lane__now { display: flex; align-items: flex-start; gap: 8px; }
+.bb-lane__step { font-size: var(--fs-xs); color: var(--text-body); line-height: 1.35; min-width: 0; overflow-wrap: anywhere; }
+.bb-lane__track { position: relative; height: 16px; min-width: 0; }
+.bb-lane__track::before { content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 2px;
+  background: var(--border-default); border-radius: 1px; }
+.bb-lane__dot { position: absolute; top: 3px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%;
+  background: var(--ocean-500); border: 1.5px solid var(--ink-900); }
+.bb-lane__dot--alert { background: var(--rust-500); }
+.bb-lane__dot--done { background: var(--sea-500); }
+.bb-lane__side { text-align: right; min-width: 0; }
+.bb-lane__age { display: block; font-family: var(--font-mono); font-size: var(--fs-2xs); color: var(--text-muted); }
+.bb-lane__pr { font-family: var(--font-mono); font-size: var(--fs-xs); font-weight: 600; color: var(--ocean-600); }
+.bb-lane__open { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 8px;
+  font-size: var(--fs-xs); color: var(--text-body); line-height: 1.4; overflow-wrap: anywhere; }
+.bb-lane__open .fm-badge { flex: none; }
+.bb-lane__open span:last-child { min-width: 0; }
+
 /* ---- Charted Next dispatch picker ---- */
 /* margin:0 kills the UA default checkbox margin so picker rows and spacer rows
    share one text left edge */
@@ -274,6 +304,8 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 900px) {
   .bb-cols { grid-template-columns: 1fr; }
+  .bb-lane { grid-template-columns: minmax(0,1fr); }
+  .bb-lane__side { text-align: left; }
 }
 </style>
 </head>
@@ -295,6 +327,17 @@ a { color: inherit; text-decoration: none; }
 <main class="bb-main">
 
   <div class="bb-stats" id="bb-stats"></div>
+
+  <section class="bb-section" id="bb-lanes-section" hidden>
+    <div class="bb-section__head">
+      <span class="fm-sign fm-sign--eyebrow">
+        <svg class="fm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+        Swimlanes
+      </span>
+      <span class="fm-sign fm-sign--muted" id="bb-lanes-sub"></span>
+    </div>
+    <div class="fm-card"><div id="bb-lanes"></div></div>
+  </section>
 
   <div class="bb-cols">
   <section class="bb-section">
@@ -343,8 +386,8 @@ a { color: inherit; text-decoration: none; }
   </section>
   </div>
 
-  <div class="bb-cols">
-    <section class="bb-section">
+  <div class="bb-cols" id="bb-lower-cols">
+    <section class="bb-section" id="bb-underway-section">
       <div class="bb-section__head">
         <span class="fm-sign fm-sign--eyebrow">
           <svg class="fm-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.189V14"/><path d="M12 2v3"/><path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/><path d="M19.38 20A11.6 11.6 0 0 0 21 14l-8.188-3.639a2 2 0 0 0-1.624 0L3 14a11.6 11.6 0 0 0 2.81 7.76"/><path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>
@@ -422,7 +465,8 @@ __FM_BEARINGS_BOARD_DATA__
       typeof item.title === "string" && item.title.length > 0 &&
       Array.isArray(item.options);
   });
-  if (!fleetLists.every(Array.isArray) || !callItemsValid) {
+  if (!fleetLists.every(Array.isArray) || !callItemsValid ||
+      (data.lanes !== undefined && !Array.isArray(data.lanes))) {
     renderBoardError("The board data does not have the required structure");
     return;
   }
@@ -638,6 +682,99 @@ __FM_BEARINGS_BOARD_DATA__
     row.appendChild(main);
     uw.appendChild(row);
   });
+
+  /* Swimlanes replace the Underway list when the payload carries them. Ages are
+     computed from event times at view time, so they stay honest between rebuilds. */
+  var LANE_WINDOW_SECONDS = 6 * 3600;
+  var LANE_BADGES = {
+    working: ["online", "working"], parked: ["warn", "at a review stop"], paused: ["info", "waiting"],
+    blocked: ["danger", "blocked"], failed: ["danger", "failed"], done: ["info", "finished"],
+    unknown: ["warn", "unknown"], active_child_work: ["online", "running"],
+    no_active_work: ["neutral", "idle"], captain_decision: ["solid", "needs you"],
+    externally_held: ["info", "waiting"]
+  };
+  var ALERT_EVENTS = { blocked: 1, failed: 1, "needs-decision": 1 };
+  function ago(seconds) {
+    var s = Math.max(0, Math.floor(seconds));
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.floor(s / 60) + "m ago";
+    if (s < 172800) return Math.floor(s / 3600) + "h ago";
+    return Math.floor(s / 86400) + "d ago";
+  }
+  function renderLane(t, now) {
+    var child = t.kind !== "secondmate" && t.owner !== "(main)";
+    var lane = el("div", "bb-lane" + (child ? " bb-lane--child" : "") + (t.open.length ? " bb-lane--attention" : ""));
+
+    var who = el("div", "bb-lane__who");
+    who.appendChild(el("div", "bb-lane__name", t.name));
+    var repo = el("div", "bb-lane__repo");
+    repo.appendChild(el("span", "", (t.kind === "secondmate" ? "second mate" : t.kind) + (t.repo ? " · " + t.repo : "")));
+    if (t.linear_url || t.linear_label) {
+      repo.appendChild(el("span", "", " · "));
+      var linearText = "Linear" + (t.linear_label ? ": " + t.linear_label : "");
+      if (t.linear_url) {
+        var linear = el("a", "bb-lane__linear", linearText);
+        linear.href = t.linear_url; linear.target = "_blank"; linear.rel = "noopener";
+        repo.appendChild(linear);
+      } else {
+        repo.appendChild(el("span", "bb-lane__linear", linearText));
+      }
+    }
+    who.appendChild(repo);
+    lane.appendChild(who);
+
+    var current = el("div", "bb-lane__now");
+    var look = LANE_BADGES[t.state] || ["neutral", t.state];
+    current.appendChild(badge(look[0], look[1]));
+    current.appendChild(el("span", "bb-lane__step", t.step));
+    lane.appendChild(current);
+
+    var track = el("div", "bb-lane__track");
+    t.events.forEach(function (e) {
+      var age = now - e.at;
+      if (age < 0 || age > LANE_WINDOW_SECONDS) return;
+      var dot = el("span", "bb-lane__dot" + (ALERT_EVENTS[e.state] ? " bb-lane__dot--alert" : (e.state === "done" ? " bb-lane__dot--done" : "")));
+      dot.setAttribute("style", "left:" + (100 - (age / LANE_WINDOW_SECONDS) * 100).toFixed(1) + "%");
+      dot.setAttribute("title", e.state + " · " + ago(age));
+      track.appendChild(dot);
+    });
+    lane.appendChild(track);
+
+    var side = el("div", "bb-lane__side");
+    side.appendChild(el("span", "bb-lane__age",
+      t.last_event_at == null ? "time not recorded" : ago(now - t.last_event_at)));
+    if (t.pr_url) {
+      var pr = el("a", "bb-lane__pr", "PR #" + t.pr_url.split("/").pop());
+      pr.href = t.pr_url; pr.title = t.pr_url; pr.target = "_blank"; pr.rel = "noopener";
+      side.appendChild(pr);
+    }
+    lane.appendChild(side);
+
+    t.open.forEach(function (o) {
+      var row = el("div", "bb-lane__open");
+      row.appendChild(badge(o.kind === "blocker" ? "danger" : "warn", o.kind));
+      row.appendChild(el("span", "", o.text));
+      lane.appendChild(row);
+    });
+    return lane;
+  }
+  if (data.lanes) {
+    var lanesBox = document.getElementById("bb-lanes");
+    var renderLanes = function () {
+      var now = Date.now() / 1000;
+      lanesBox.textContent = "";
+      if (!data.lanes.length) lanesBox.appendChild(el("div", "bb-empty", "No workers or second mates are live."));
+      data.lanes.forEach(function (t) { lanesBox.appendChild(renderLane(t, now)); });
+      var changed = Date.parse(data.generated);
+      document.getElementById("bb-lanes-sub").textContent =
+        "last 6 hours" + (isNaN(changed) ? "" : " · last change " + ago(now - changed / 1000));
+    };
+    document.getElementById("bb-lanes-section").hidden = false;
+    document.getElementById("bb-underway-section").hidden = true;
+    document.getElementById("bb-lower-cols").classList.add("bb-cols--single");
+    renderLanes();
+    setInterval(renderLanes, 30000);
+  }
 
   /* Landed */
   var ld = document.getElementById("bb-landed");

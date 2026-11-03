@@ -15,6 +15,11 @@ BOARD="$ROOT/bin/fm-bearings-board.sh"
 HARNESS="$ROOT/tests/assets/board-render-harness.mjs"
 TMP_ROOT=$(fm_test_tmproot fm-bearings-board-render)
 
+# Every case here builds a board, and each build arms a detached listener that
+# must claim inside fm-procevent.sh's confirm window. Give a loaded machine more
+# room than the 3s default rather than shortening that window.
+export FM_PROCEVENT_LAUNCH_CONFIRM_SECONDS=10
+
 command -v jq >/dev/null 2>&1 || { echo "skip: jq not found"; exit 0; }
 command -v node >/dev/null 2>&1 || { echo "skip: node not found"; exit 0; }
 
@@ -266,6 +271,76 @@ test_charted_rows_without_a_filed_date_follow_the_dated_rows_in_payload_order() 
   pass "charted rows with no filed date follow the dated rows in payload order"
 }
 
+# Lane ages render from the viewer's clock, so event times are relative to now.
+test_swimlanes_show_each_lane_and_replace_the_underway_list() {
+  local home out now data
+  home=$(make_home swimlanes)
+  now=$(date +%s)
+  data="$home/lanes.json"
+  jq -n --argjson now "$now" '[
+    {id:"worker-a",owner:"(main)",kind:"ship",name:"Ship the board",repo:"firstmate",
+     state:"working",step:"Working",last_event_at:($now - 300),
+     events:[{at:($now - 300),state:"working"},{at:($now - 90000),state:"working"}],
+     open:[],pr_url:"https://github.com/o/r/pull/12",
+     linear_url:"https://linear.app/acme/project/board",linear_label:"Board"},
+    {id:"mate-b",owner:"mate-b",kind:"secondmate",name:"mate-b",repo:null,
+     state:"captain_decision",step:"Waiting on your call",last_event_at:null,events:[],
+     open:[{kind:"decision",text:"Pick a route"},{kind:"blocker",text:"Needs a login"}],
+     pr_url:null,linear_url:null,linear_label:"Pitwall"},
+    {id:"mate-b/child",owner:"mate-b",kind:"ship",name:"Child work",repo:"site",
+     state:"working",step:"Working",last_event_at:null,events:[],open:[],
+     pr_url:null,linear_url:null,linear_label:null}
+  ]' > "$data"
+  jq -n --slurpfile lanes "$data" '{
+    schema:"fm-bearings-board.v1", home:"render-home", generated:"2026-08-26T00:00Z",
+    prs_live:false, captains_call:[], landed:[], charted:[],
+    underway:[{id:"worker-a",repo:"firstmate",name:"Ship the board",state:"working",kind:"ship",doing:"Working"}],
+    lanes:$lanes[0]}' > "$home/payload.json"
+  PATH="$home/fakebin:$PATH" FM_HOME="$home" \
+    FM_STATE_OVERRIDE="$home/state" FM_DATA_OVERRIDE="$home/data" \
+    FM_PROCEVENT_CLAIM_ROOT="$home/procevent-claims" \
+    LAVISH_AXI_STATE_DIR="$home/lavish-state" \
+    "$BOARD" build "$home/payload.json" >/dev/null || fail "the board did not build"
+  require_listener_reached_poll "$home"
+  out=$(node "$HARNESS" "$home/.lavish/bearings-board.html") \
+    || fail "the built board could not be rendered"
+  printf '%s' "$out" | jq -e '
+    .error == "" and .lanes_hidden == false and .underway_hidden == true and (.lanes | length) == 3
+  ' >/dev/null || fail "the swimlanes did not replace the underway list: $out"
+  printf '%s' "$out" | jq -e '.lanes[0]
+    | .name == "Ship the board" and (.repo | test("firstmate")) and (.repo | test("Linear: Board"))
+      and .linear_href == "https://linear.app/acme/project/board"
+      and .step == "Working" and .badges == ["working"] and .age == "5m ago"
+      and .pr_href == "https://github.com/o/r/pull/12"
+      and .dots == 1 and .attention == false and .child == false
+  ' >/dev/null || fail "a worker lane lost its project, step, age, or PR link, or drew an event outside the window: $out"
+  printf '%s' "$out" | jq -e '.lanes[1]
+    | .badges == ["needs you"] and .age == "time not recorded"
+      and .pr_href == null and .linear_href == null and (.repo | test("Linear: Pitwall"))
+      and .attention == true
+      and (.open[0] | test("decision")) and (.open[0] | test("Pick a route"))
+      and (.open[1] | test("blocker")) and (.open[1] | test("Needs a login"))
+  ' >/dev/null || fail "a second mate lane misreported its open items or an unknown time: $out"
+  printf '%s' "$out" | jq -e '.lanes[2].child == true and .lanes[1].child == false' >/dev/null \
+    || fail "a second mate child was not marked as nested: $out"
+  pass "swimlanes show project, step, age, open items, PR and Linear per lane, and replace Underway"
+}
+
+test_a_payload_without_lanes_keeps_the_underway_list() {
+  local home out
+  home=$(make_home no-lanes)
+  out=$(render_board "$home" '[
+    {"id":"task-a","repo":"firstmate","name":"Task A","state":"working","kind":"ship","doing":"Working"}
+  ]' '[]')
+  printf '%s' "$out" | jq -e '
+    .error == "" and .lanes == [] and .lanes_hidden == true and .underway_hidden == false
+      and (.underway | length) == 1
+  ' >/dev/null || fail "a payload without lanes changed the board: $out"
+  pass "a payload without lanes renders the underway list as before"
+}
+
+test_swimlanes_show_each_lane_and_replace_the_underway_list
+test_a_payload_without_lanes_keeps_the_underway_list
 test_an_underway_row_leads_with_the_task_name_and_keeps_its_run_status
 test_an_underway_identifier_label_is_not_replaced_by_run_status
 test_charted_next_reads_newest_filed_first

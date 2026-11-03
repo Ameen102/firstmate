@@ -5,7 +5,9 @@
 // Usage: node board-render-harness.mjs <built-board.html>
 // Prints one JSON document:
 //   { stats:[{n,label}], underway:[{title,sub,badges}],
-//     charted:[{title,sub,badges,pickable}], empty, more, error }
+//     charted:[{title,sub,badges,pickable}], empty, more, error,
+//     lanes:[{name,repo,linear_href,step,badges,age,pr_href,dots,open,child,attention}],
+//     lanes_hidden, underway_hidden }
 import { readFileSync } from "node:fs";
 
 const html = readFileSync(process.argv[2], "utf8");
@@ -80,6 +82,8 @@ globalThis.document = {
 };
 globalThis.window = {};
 globalThis.TextEncoder = TextEncoder;
+// The page's own ticking refresh would otherwise keep this process alive.
+globalThis.setInterval = () => 0;
 
 const script = html.slice(html.indexOf("<script>") + "<script>".length, html.lastIndexOf("</script>"));
 new Function(script)();
@@ -122,5 +126,28 @@ const errorText = [...byId.entries()]
 const empty = ch.children.filter((c) => c.className.includes("bb-empty")).map((c) => c.textContent);
 const more = ch.children.filter((c) => c.className.includes("bb-morechip")).map((c) => c.textContent);
 
+const lanesBox = byId.get("bb-lanes") || new Node("div");
+const textOf = (lane, cls) => lane.querySelectorAll("." + cls)[0]?.textContent ?? null;
+const lanes = lanesBox.children
+  .filter((c) => c.className.split(/\s+/).includes("bb-lane"))
+  .map((lane) => ({
+    name: textOf(lane, "bb-lane__name"),
+    repo: textOf(lane, "bb-lane__repo"),
+    linear_href: lane.querySelectorAll(".bb-lane__linear")[0]?.href ?? null,
+    step: textOf(lane, "bb-lane__step"),
+    badges: lane.querySelectorAll(".bb-lane__now")[0].children
+      .filter((c) => c.className.includes("fm-badge")).map((c) => c.textContent),
+    age: textOf(lane, "bb-lane__age"),
+    pr_href: lane.querySelectorAll(".bb-lane__pr")[0]?.href ?? null,
+    dots: lane.querySelectorAll(".bb-lane__dot").length,
+    open: lane.querySelectorAll(".bb-lane__open").map((o) => o.textContent),
+    child: lane.className.includes("bb-lane--child"),
+    attention: lane.className.includes("bb-lane--attention"),
+  }));
+
 process.stdout.write(
-  JSON.stringify({ stats, underway, charted, empty, more, error: errorText }) + "\n");
+  JSON.stringify({
+    stats, underway, charted, empty, more, error: errorText, lanes,
+    lanes_hidden: byId.get("bb-lanes-section")?.hidden ?? true,
+    underway_hidden: byId.get("bb-underway-section")?.hidden ?? false,
+  }) + "\n");

@@ -11,6 +11,11 @@ set -u
 BOARD="$ROOT/bin/fm-bearings-board.sh"
 TMP_ROOT=$(fm_test_tmproot fm-bearings-board)
 
+# Every case here builds a board, and each build arms a detached listener that
+# must claim inside fm-procevent.sh's confirm window. Give a loaded machine more
+# room than the 3s default rather than shortening that window.
+export FM_PROCEVENT_LAUNCH_CONFIRM_SECONDS=10
+
 command -v jq >/dev/null 2>&1 || { echo "skip: jq not found"; exit 0; }
 
 # A lavish-axi stub that reproduces the shapes verified against the real
@@ -769,7 +774,161 @@ test_build_refuses_a_nondecision_reconcile_value() {
   pass "build reserves reconcile across non-decision cards"
 }
 
+# refresh reads the real snapshot, so these fixtures are real home records.
+write_held_backlog() {  # <home> <held-task-id>...
+  local home=$1
+  shift
+  {
+    printf '## In flight\n\n## Queued\n'
+    for id in "$@"; do
+      printf -- '- [ ] %s - Pick for %s (repo: sample) (kind: captain) (hold: which route) (hold-kind: captain)\n' "$id" "$id"
+    done
+    printf '\n## Done\n'
+  } > "$home/data/backlog.md"
+}
+
+test_build_refuses_a_malformed_lane() {
+  local home data board rc lane
+  home=$(make_home lane-refusal)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  for lane in \
+    '{"id":"a"}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":"soon","events":[],"open":[],"pr_url":null,"linear_url":null,"linear_label":null}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":null,"events":[],"open":[{"kind":"note","text":"x"}],"pr_url":null,"linear_url":null,"linear_label":null}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":null,"events":[],"open":[],"pr_url":"javascript:alert(1)","linear_url":null,"linear_label":null}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":null,"events":[],"open":[],"pr_url":null,"linear_url":"http://linear.app/x","linear_label":null}'; do
+    write_valid_payload "$data"
+    jq --argjson lane "$lane" '.lanes = [$lane]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+    set +e; run_board "$home" build "$data" >/dev/null 2>&1; rc=$?; set -e
+    [ "$rc" -ne 0 ] || fail "a malformed lane was accepted: $lane"
+    [ ! -e "$board" ] || fail "a malformed lane touched the board: $lane"
+  done
+  pass "build refuses a malformed lane before touching the board"
+}
+
+test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
+  local home data board out
+  home=$(make_home refresh-cards)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" authored-call plain-call
+  write_valid_payload "$data"
+  jq '.captains_call = [
+        {"key":"authored-call","type":"decision","repo":"sample","title":"Authored title",
+         "options":[{"value":"yes","label":"Yes"}]},
+        {"key":"merge.gone-task","type":"merge","repo":"sample","title":"Merge gone",
+         "risk":"low","options":[{"value":"merge","label":"Merge now"}]},
+        {"key":"needs-login","type":"credential","repo":"sample","title":"Log in",
+         "options":[{"value":"done","label":"Done"}]}
+      ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+  out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  assert_contains "$out" "board: $board" "refresh did not report the rebuilt board: $out"
+  extract_payload "$board" | jq -e '
+    (.lanes | type == "array")
+    and ([.captains_call[].key] | sort) == ["authored-call","needs-login","plain-call"]
+    and (.captains_call[] | select(.key == "authored-call")
+      | .title == "Authored title" and ([.options[].value] == ["yes","reconcile"]))
+    and (.captains_call[] | select(.key == "plain-call")
+      | .allow_freeform == true and .close == "release"
+        and (.title | test("Pick for plain-call")) and ([.options[].value] == ["reconcile"]))
+  ' >/dev/null || fail "refresh did not keep authored cards or card plain ones: $(extract_payload "$board")"
+
+  write_held_backlog "$home" plain-call
+  out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
+  extract_payload "$board" | jq -e '([.captains_call[].key] | sort) == ["needs-login","plain-call"]' >/dev/null \
+    || fail "refresh kept a card whose call is no longer open: $(extract_payload "$board")"
+  pass "refresh composes from the snapshot and keeps an authored card only while its call is open"
+}
+
+test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board() {
+  local home board out before
+  home=$(make_home refresh-live)
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" first-call
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed with no board: $out"
+  assert_contains "$out" "skipped: no board has been built" "--if-live did not name the missing board: $out"
+  [ ! -e "$board" ] || fail "--if-live created a board"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "the seed refresh failed: $out"
+  before=$(cat "$board")
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on an unchanged fleet: $out"
+  assert_contains "$out" "unchanged" "--if-live did not report an unchanged fleet: $out"
+  [ "$before" = "$(cat "$board")" ] || fail "--if-live rewrote an unchanged board, which reloads the captain's page"
+
+  write_held_backlog "$home" first-call second-call
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on a changed fleet: $out"
+  extract_payload "$board" | jq -e '[.captains_call[].key] | index("second-call") != null' >/dev/null \
+    || fail "--if-live did not publish a real change: $out"
+
+  end_session_as_captain "$home"
+  before=$(cat "$board")
+  write_held_backlog "$home" first-call
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on an ended session: $out"
+  assert_contains "$out" "skipped: board session is not open" "--if-live did not name the ended session: $out"
+  [ "$before" = "$(cat "$board")" ] || fail "--if-live touched a board the captain ended"
+  [ -e "$home/lavish-state/user-ended" ] || fail "--if-live reopened a session the captain ended"
+  pass "refresh --if-live never creates or reopens a board and leaves an unchanged one alone"
+}
+
+test_a_heartbeat_review_refreshes_a_live_board() {
+  local home board i=0
+  home=$(make_home refresh-heartbeat)
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" first-call
+  run_board "$home" refresh >/dev/null 2>&1 || fail "the seed refresh failed"
+  write_held_backlog "$home" first-call heartbeat-call
+  touch -t 200001010000 "$home/state/.last-heartbeat"
+  fm_test_track_watcher_state "$home/state"
+  PATH="$home/fakebin:$PATH" FM_HOME="$home" FM_STATE_OVERRIDE="$home/state" FM_DATA_OVERRIDE="$home/data" \
+    FM_CONFIG_OVERRIDE="$home/config" FM_PROCEVENT_CLAIM_ROOT="$home/procevent-claims" \
+    LAVISH_FAKE_STATE="$home/lavish-state" LAVISH_AXI_STATE_DIR="$home/lavish-state" \
+    FM_POLL=1 FM_SIGNAL_GRACE=1 FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=1 \
+    "$ROOT/bin/fm-watch.sh" >/dev/null 2>&1 &
+  while [ "$i" -lt 200 ] && ! extract_payload "$board" | jq -e '[.captains_call[].key] | index("heartbeat-call") != null' >/dev/null 2>&1; do
+    sleep 0.1
+    i=$((i + 1))
+  done
+  FM_HOME="$home" FM_STATE_OVERRIDE="$home/state" "$ROOT/bin/fm-watch-arm.sh" --stop >/dev/null 2>&1 || true
+  extract_payload "$board" | jq -e '[.captains_call[].key] | index("heartbeat-call") != null' >/dev/null \
+    || fail "a heartbeat review did not refresh the live board"
+  pass "a heartbeat review refreshes a live board"
+}
+
+# A home without lavish-axi still gets its board file, so `/bearings` answers
+# there instead of failing on a missing viewer.
+test_refresh_publishes_the_board_file_without_lavish_axi() {
+  local home board out dir path=''
+  home=$(make_home refresh-files-only)
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" first-call
+  local IFS=:
+  for dir in $PATH; do
+    [ -n "$dir" ] || continue
+    [ -x "$dir/lavish-axi" ] && continue
+    path=${path:+$path:}$dir
+  done
+  out=$(PATH="$path" FM_HOME="$home" \
+    FM_STATE_OVERRIDE="$home/state" FM_DATA_OVERRIDE="$home/data" \
+    FM_PROCEVENT_CLAIM_ROOT="$home/procevent-claims" \
+    "$BOARD" refresh 2>&1) || fail "refresh failed without lavish-axi: $out"
+  assert_contains "$out" "board: $board" "refresh did not publish the board file: $out"
+  assert_contains "$out" "skipped: lavish-axi is not installed" \
+    "refresh did not report the missing viewer: $out"
+  extract_payload "$board" | jq -e '[.captains_call[].key] == ["first-call"]' >/dev/null \
+    || fail "the published board does not carry the composed payload"
+  pass "refresh publishes the board file even without lavish-axi"
+}
+
 test_path_is_stable_and_home_scoped
+test_build_refuses_a_malformed_lane
+test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open
+test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board
+test_refresh_publishes_the_board_file_without_lavish_axi
+test_a_heartbeat_review_refreshes_a_live_board
 test_build_refuses_malformed_payloads_before_touching_the_board
 test_charted_kind_is_optional_and_accepts_both_values
 test_build_injects_binds_then_arms
