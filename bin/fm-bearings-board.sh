@@ -545,7 +545,7 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
         | (.id | gsub("[^A-Za-z0-9._-]"; "-") | ltrimstr("-") | rtrimstr("-") | .[:128]) as $id
         | ((.id | startswith("(")) ) as $warning
         | ((.reason // "-") | if . == "-" then "" else . end) as $reason
-        | {id:$id, repo:null, title:(.title | text_or($id)), reason:$reason,
+        | {id:$id, repo:(.repo // null), title:(.title | text_or($id)), reason:$reason,
            dispatchable:((.owner == "(main)") and (.blocked_by == "-") and ($reason == "") and ($warning | not)),
            filed:(.filed | filed_or_null)}
           + (if $warning then {kind:"warning"} else {} end)]) as $charted
@@ -555,7 +555,7 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
          | {id, repo, name:(.id as $id | .name | text_or($id)), kind:(.kind | text_or("ship")),
             state:(.state | text_or("unknown")), doing:(.doing | text_or("-"))}],
        landed:[$snap.landed[]
-         | {id, repo:null, what:(.id as $id | .what | text_or($id)), owner}
+         | {id, repo, what:(.id as $id | .what | text_or($id)), owner}
            + (if ((.artifact // "") | test("^https://[^[:space:]]+/pull/[0-9]+$")) then {pr_url:.artifact} else {} end)],
        charted:$charted[:20],
        charted_more:([$charted[20:][] | select(.kind != "warning")] | length),

@@ -82,7 +82,9 @@
 # rewritten into plain words without changing which state is reported.
 # last_event_at and events come only from the task's local status log through
 # bin/fm-classify-lib.sh's stamp parser: an unstamped latest line means an unknown
-# time, never a file mtime or an older stamp. A remote child has no local log.
+# time, never a file mtime or an older stamp. A secondmate child's lane carries
+# only its own project, state, kind, and step; its parent mate's lane carries the
+# age, open items, and PR link.
 # linear_url and linear_label are read from the project or secondmate registry
 # line itself - the first https://linear.app URL, else the name after
 # `Linear project` - with no Linear API call, and a name alone yields no URL.
@@ -167,8 +169,8 @@ remote homes under one shared snapshot budget and may refresh the parent-side ca
 Default fields: schema, home, generated, prs, in_flight{id,kind,state,repo,name,doing},
   secondmates{id,state,doing,provenance,freshness,age_seconds,contradiction,reason},
   secondmate_reconcile{id,spawn_gen,host,kind,ids},
-  decisions_open{id,key,verb,summary,owner}, landed{id,what,artifact,owner},
-  gates{id,title,blocked_by,reason,owner,filed}, reports{id,path}, recorded_prs{id,url},
+  decisions_open{id,key,verb,summary,owner}, landed{id,repo,what,artifact,owner},
+  gates{id,repo,title,blocked_by,reason,owner,filed}, reports{id,path}, recorded_prs{id,url},
   unhealthy_endpoints{...} (only when non-empty), omitted{surface,reveal}.
 Default gates are selected newest filed first before their bound; undated gates
   retain input order after dated gates.
@@ -385,7 +387,10 @@ lane_events_json() {
             [ -n "$line" ] || continue
             last=$line
             at=$(status_line_at_epoch "$line") || continue
-            printf '%s\t%s\t%s\n' "$id" "$at" "${line%%[ :]*}"
+            status_line_verb "$line" verb
+            verb=${verb%%[[:space:]]*}
+            [ -n "$verb" ] || continue
+            printf '%s\t%s\t%s\n' "$id" "$at" "$verb"
           done
           at=$(status_line_at_epoch "${last:-}") || at=null
           printf '%s\tlast\t%s\n' "$id" "$at"
@@ -508,8 +513,10 @@ MODEL=$(printf '%s' "$SNAP" | jq \
            + ($base | fit($context_n - $title_n)))
         end
       end;
+  def base_name:
+    if type == "string" and length > 0 then (split("/") | map(select(length > 0)) | last) else null end;
   def as_gate($owner):
-    {id, title:(.title | trunc(60)),
+    {id, repo:(.repo | base_name | trunc(120)), title:(.title | trunc(60)),
      blocked_by:((.unresolved_blocker_ids // []) | if length > 0 then join(",") else "-" end | trunc(120)),
      reason:(hold_gate_reason | trunc(40)), owner:$owner,
      filed:((.since // null) | trunc(40))};
@@ -533,16 +540,18 @@ MODEL=$(printf '%s' "$SNAP" | jq \
     elif test("^worktree gone") then "Worker copy is gone"
     else plain_words(120) end;
   def plain_open:
-    {kind:(if .verb == "blocked" then "blocker" else "decision" end),
-     text:((.summary // .key // "open")
-           | if test("^pending-reply-missed:") then "Did not answer a routed message"
-             else gsub("^(corr=[^ ]+ )?captain hold [^ :]+: "; "") | plain_words(160) end)};
+    (if .verb == "blocked" then "blocker" else "decision" end) as $kind
+    | ((.summary // "")
+       | if test("^pending-reply-missed:") then "Did not answer a routed message"
+         else gsub("^(corr=[^ ]+ )?captain hold [^ :]+:( |$)"; "") | plain_words(160) end) as $text
+    | {kind:$kind,
+       text:(if ($text | test("[^[:space:]]")) then $text
+             elif $kind == "blocker" then "Blocked, no reason given"
+             else "Needs a decision, no detail given" end)};
   def bounded_open:
     unique_by(.text)
     | if length > 5 then .[:5] + [{kind:"decision",text:"+\(length - 5) more open"}] else . end;
   def https_or_null: if type == "string" and test("^https://") then . else null end;
-  def base_name:
-    if type == "string" and length > 0 then (split("/") | map(select(length > 0)) | last) else null end;
   def lane_linear_for($names):
     (reduce ($names[] | select(. != null)) as $n (null; . // $lane_linear[$n])) // {url:null,label:null};
   ($fields | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(. != ""))) as $fl
@@ -552,7 +561,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
   | (($fl | index("endpoints")) != null) as $f_endpoints
   | (($fl | index("lanes")) != null) as $f_lanes
   | ([ .backlog.records[] | select(landed_record)
-       | {id, title, kind, hold_kind, pr_url, report_path, local_note, completion,
+       | {id, title, repo, kind, hold_kind, pr_url, report_path, local_note, completion,
           home:"(main)", home_id:"(main)"} ]) as $main_done
   | ((.secondmate_landed.records) // []) as $mate_done
   | ($main_done + $mate_done) as $all_landed_rows
@@ -659,6 +668,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
      | length) as $decisions_marked_deferred
   | (if ($return_catchup.pending // false) then
        [{id:"(return-catchup)",
+         repo:null,
          title:((if ($return_catchup.blockers // 0) > 0 then
                    "\($return_catchup.blockers) blocker(s) to clear before ordinary work"
                  elif (($return_catchup.reason // "") != "") then
@@ -672,6 +682,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
      else [] end) as $return_catchup_gate
   | ((if (.main_inventory.valid == false) then
         [{id:"(main-inventory)",
+          repo:null,
           title:((.main_inventory.reason // "main inventory invalid") | trunc(60)),
           blocked_by:"-",
           reason:"main inventory",
@@ -747,7 +758,7 @@ MODEL=$(printf '%s' "$SNAP" | jq \
         | select(.reconcile_inventory != null)
         | {id, spawn_gen:(.spawn_gen // null), host:(.host // null), kind:(.reconcile_inventory.kind // null), ids:((.reconcile_inventory.ids // []) | map(select(type == "string")) | sort)} ],
       decisions_open: (if $all_decisions == 1 then $decisions_all else $decisions_all[:$decisions_n] end),
-      landed: ($done | map({id, what:(.title | trunc(70)),
+      landed: ($done | map({id, repo:(.repo | base_name | trunc(120)), what:(.title | trunc(70)),
                             artifact:(landed_artifact // "-"),owner:.home_id})),
       gates: ($return_catchup_gate
               + ($gates_all | newest_filed_first
@@ -804,12 +815,13 @@ MODEL=$(printf '%s' "$SNAP" | jq \
                  pr_url:($task.pr.url | https_or_null),
                  linear_url:$mate_linear.url, linear_label:$mate_linear.label}),
                ($m.active_children[]?
-                | (lane_linear_for([.repo] + [$m.id] + $projects)) as $linear
+                | (.repo | base_name) as $repo
+                | (lane_linear_for([$repo] + [$m.id] + $projects)) as $linear
                 | {id:($m.id + "/" + .id), owner:$m.id, kind:(.kind // "ship"),
                    name:((.name // "") as $name
                          | (if (($name | type) == "string" and ($name | test("[^[:space:]]")))
                             then $name else ($m.id + "/" + .id) end) | trunc(70)),
-                   repo:(.repo // null),
+                   repo:$repo,
                    state:(.state // "working"),
                    step:((.doing // .state // "") | plain_step),
                    last_event_at:null, events:[], open:[],

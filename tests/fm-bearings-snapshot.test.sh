@@ -1640,6 +1640,52 @@ test_lanes_are_opt_in_and_carry_current_state_age_and_linear() {
   pass "lanes are opt-in and carry current state, event age, open items, and registry Linear references"
 }
 
+test_snapshot_rows_name_their_project() {
+  local home mate fakebin json lanes
+  home=$(make_home row-repos)
+  : > "$home/data/secondmates.md"
+  mate="$TMP_ROOT/row-repos-mate"
+  make_valid_secondmate_home repo-mate "$mate"
+  append_secondmate_registry "$home" repo-mate "$mate"
+  fakebin=$(make_fakebin "$home")
+  printf -- '- sample [no-mistakes] - see https://linear.app/acme/project/sample-1 (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  cat > "$home/data/backlog.md" <<'EOF'
+## In flight
+
+## Queued
+- [ ] main-next - Main queued (repo: /work/main-repo) (kind: ship)
+- [ ] main-bare - Main without a project (kind: ship)
+
+## Done
+- [x] main-done - Main landed https://github.com/example/main-repo/pull/1 (repo: main-repo) (kind: ship) (merged 2026-07-10)
+EOF
+  printf '## In flight\n' > "$mate/data/backlog.md"
+  seed_working_child "$mate" child-a "first live child" /work/sample
+  cat >> "$mate/data/backlog.md" <<'EOF'
+
+## Queued
+- [ ] mate-next - Mate queued (repo: mate-repo) (kind: ship)
+
+## Done
+- [x] mate-done - Mate landed https://github.com/example/mate-repo/pull/2 (repo: mate-repo) (kind: ship) (merged 2026-07-10)
+EOF
+  json=$(run "$home" "$fakebin" --json --fields lanes --all-queued --all-secondmates)
+  printf '%s' "$json" | jq -e '
+    (.gates | any(.id == "main-next" and .repo == "main-repo"))
+    and (.gates | any(.id == "main-bare" and .repo == null))
+    and (.gates | any(.id == "mate-next" and .repo == "mate-repo"))
+    and (.landed | any(.id == "main-done" and .repo == "main-repo"))
+    and (.landed | any(.id == "mate-done" and .repo == "mate-repo"))
+  ' >/dev/null || fail "gate or landed rows lost their project: $json"
+  lanes=$(printf '%s' "$json" | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "repo-mate/child-a")
+    | .repo == "sample" and .linear_url == "https://linear.app/acme/project/sample-1"
+      and .last_event_at == null and .events == [] and .open == [] and .pr_url == null
+  ' >/dev/null || fail "a child lane misread its project, or claimed more than its own: $lanes"
+  pass "gate, landed, and child-lane rows name their project by its registry name"
+}
+
 test_projection_and_toon_fail_closed() {
   local home fakebin out err rc
   home=$(make_home fail-closed); write_fixture "$home"
@@ -3465,4 +3511,5 @@ fm_test_run \
   test_pr_repository_cap_and_expansion \
   test_per_repository_pr_cap_is_disclosed \
   test_lanes_are_opt_in_and_carry_current_state_age_and_linear \
+  test_snapshot_rows_name_their_project \
   test_projection_and_toon_fail_closed

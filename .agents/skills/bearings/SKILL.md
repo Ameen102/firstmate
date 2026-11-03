@@ -30,8 +30,8 @@ Board answers are acted on later under the normal authority rules; this skill's 
 - Treat `file` and `lavish` only as explicit invocation options in the slash command.
 - Do not treat natural-language requests such as "write a report", "save this", "persist it", "make a file", or "make a board" as file or lavish mode unless the invocation explicitly includes the standalone option.
 - When the captain asks to include PRs, pass the snapshot command's live-PR opt-in.
-- `/bearings include PRs` adds live PR enrichment to the same board refresh and digest.
-- `/bearings file include PRs` and `/bearings lavish include PRs` compose the same way.
+- `/bearings include PRs` adds live PR enrichment to the chat digest only; a board refresh never runs it and resets the board's live PR state to off.
+- `/bearings file include PRs` also enriches the dated report, and `/bearings lavish include PRs` may mark its authored board live until the next refresh resets it.
 
 ## What it does
 

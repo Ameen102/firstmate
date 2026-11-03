@@ -852,6 +852,7 @@ test_refresh_composes_live_tasks_and_landed_rows() {
 - [ ] live-task - Ship the thing (repo: sample) (kind: ship) (since 2026-07-11)
 
 ## Queued
+- [ ] next-task - Queued work (repo: sample) (kind: ship)
 
 ## Done
 - [x] done-task - Landed thing https://github.com/example/sample/pull/7 (repo: sample) (kind: ship) (merged 2026-07-10)
@@ -869,14 +870,50 @@ EOF
   out=$(run_board "$home" refresh 2>&1) || fail "refresh failed on a fleet with a live task and a landed row: $out"
   extract_payload "$board" | jq -e '
     (.underway | any(.id == "live-task" and .repo == "sample" and (.name | test("Ship the thing"))))
-    and (.landed | any(.id == "done-task" and (.what | test("Landed thing"))
+    and (.landed | any(.id == "done-task" and .repo == "sample" and (.what | test("Landed thing"))
       and .pr_url == "https://github.com/example/sample/pull/7"))
+    and (.charted | any(.id == "next-task" and .repo == "sample"))
     and (.lanes | any(.id == "live-task"))
   ' >/dev/null || fail "refresh misread the live task or landed row: $(extract_payload "$board")"
 
   out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on a live fleet: $out"
   assert_contains "$out" "unchanged" "--if-live rewrote an unchanged live fleet: $out"
   pass "refresh composes a fleet with a live task and a landed row"
+}
+
+test_refresh_survives_blank_status_notes() {
+  local home board out line kind text
+  home=$(make_home refresh-blank-note)
+  board="$home/.lavish/bearings-board.html"
+  printf '## In flight\n- [ ] live-task - Ship the thing (repo: sample) (kind: ship) (since 2026-07-11)\n\n## Queued\n\n## Done\n' \
+    > "$home/data/backlog.md"
+  mkdir -p "$home/projects/live-wt"
+  fm_write_meta "$home/state/live-task.meta" \
+    "window=sample:fm-live-task" \
+    "worktree=$home/projects/live-wt" \
+    "project=sample" \
+    "harness=claude" \
+    "kind=ship" \
+    "mode=no-mistakes"
+  while IFS='|' read -r line kind text; do
+    printf '%s\n' "$line" > "$home/state/live-task.status"
+    out=$(run_board "$home" refresh 2>&1) || fail "refresh refused on status line '$line': $out"
+    extract_payload "$board" | jq -e --arg kind "$kind" --arg text "$text" '
+      .lanes[] | select(.id == "live-task") | .open == [{kind:$kind,text:$text}]
+    ' >/dev/null || fail "lane misread status line '$line': $(extract_payload "$board")"
+  done <<'EOF'
+blocked: |blocker|Blocked, no reason given
+needs-decision:|decision|Needs a decision, no detail given
+needs-decision: captain hold live-task: |decision|Needs a decision, no detail given
+EOF
+
+  printf ' working [at=1783790000]: x\n[at=1783790001]: no verb\n' > "$home/state/live-task.status"
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh refused on an indented or verbless stamped line: $out"
+  extract_payload "$board" | jq -e '
+    .lanes[] | select(.id == "live-task")
+    | .events == [{at:1783790000,state:"working"}] and .last_event_at == 1783790001
+  ' >/dev/null || fail "lane misread indented or verbless stamped lines: $(extract_payload "$board")"
+  pass "refresh survives blank status notes and events without a verb"
 }
 
 test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board() {
@@ -963,6 +1000,7 @@ test_path_is_stable_and_home_scoped
 test_build_refuses_a_malformed_lane
 test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open
 test_refresh_composes_live_tasks_and_landed_rows
+test_refresh_survives_blank_status_notes
 test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board
 test_refresh_publishes_the_board_file_without_lavish_axi
 test_a_heartbeat_review_refreshes_a_live_board
