@@ -2,20 +2,40 @@
 # Check, and optionally repair, one remote account's second-mate readiness.
 #
 # Usage:
-#   bin/fm-on.sh <secondmate-id|ssh-alias> fm-remote-doctor.sh [--fix]
+#   bin/fm-on.sh <secondmate-id|ssh-alias> fm-remote-doctor.sh [--fix] [--backend herdr|rex|any]
 #
 # Run it through fm-on.sh so the fixed entrypoint invokes this readiness owner
 # over its plain SSH bootstrap. The command reports the same filesystem-composed
 # PATH used by worker jobs while retaining authority to inspect and repair the
 # worker itself.
 #
-# A remote second mate always runs on the Herdr backend in the dedicated
-# fm-remote session. Its account therefore needs the Firstmate-owned Aqua Herdr
-# agent plus the sibling dev.firstmate.remote-job worker that runs normal fm-on
-# commands through the Aqua or Linux job-worker path. Doctor remains invokable
-# over the plain-SSH bootstrap path to inspect and repair that worker. SSH cannot
-# create an Aqua session, so a host with no GUI login is a human gap rather than
-# something --fix attempts to bypass.
+# A remote second mate runs on one session-provider backend: herdr (the
+# default) in the dedicated fm-remote session, or rex on the host's own
+# persistent rex server in a 2ndmate-<id>-<hash> session. --backend names the
+# one to verify; the default `any` resolves herdr when its CLI is present, then
+# rex, so a host offering both is still verified for the default backend. On
+# the Herdr backend the account needs the Firstmate-owned Aqua Herdr agent plus
+# the sibling dev.firstmate.remote-job worker that runs normal fm-on commands
+# through the Aqua or Linux job-worker path. On darwin, that Herdr agent runs
+# bin/fm-remote-herdr-guard.sh through the remote account's login shell
+# (`-l -c`) so the server inherits the account's own environment; the
+# gui/<uid> launchd domain it is bootstrapped into, not the shell, is what
+# gives the server and its panes the Aqua audit session and login-keychain
+# access. The guard execs the server in the foreground under launchd, leaves an
+# Aqua-born server alone, and takes the session over from a server born
+# outside that session (an SSH remote attach wins the socket at boot), because
+# such a server's panes cannot read the login keychain;
+# bin/fm-remote-herdr-owner-lib.sh owns that birth test. On the Rex backend the
+# account instead needs a rex CLI and a persistent `rex server start` server on
+# the account's personal unix socket, which is detached from every SSH session;
+# --fix may run `rex server start` when no server answers, but never installs
+# the CLI and never stops or restarts an answering server: an exit-when-empty
+# server is a human gap that needs an operator-scheduled restart. The remote job
+# worker is backend-independent, so its Aqua login-session requirement is
+# checked under either backend. Doctor remains invokable over the plain-SSH
+# bootstrap path to inspect and repair that worker. SSH cannot create an Aqua
+# session, so a host with no GUI login is a human gap rather than something
+# --fix attempts to bypass.
 #
 # Line protocol, one fact per line, stable for script consumers:
 #   mode=check|fix
@@ -38,7 +58,8 @@
 #
 # --fix is idempotent and closes only automatable gaps: it writes and reloads
 # both Firstmate-owned Aqua agents, starts the Linux workers where no Aqua agent
-# applies, recreates the entrypoint symlink, and may add an owned ~/.local/bin
+# applies, starts a persistent rex server when that backend needs one and none
+# answers, recreates the entrypoint symlink, and may add an owned ~/.local/bin
 # wrapper for a required tool it can discover under nvm, asdf, or mise. It never
 # installs packages, creates a login session, writes an auto-login password,
 # changes FileVault, stores an account password, or replaces a non-Firstmate
@@ -56,9 +77,18 @@ FM_ROOT="${FM_ROOT_OVERRIDE:-$(CDPATH='' cd "$SCRIPT_DIR/.." && pwd -P)}"
 . "$SCRIPT_DIR/fm-remote-job-lib.sh"
 # shellcheck source=bin/fm-tasks-axi-lib.sh
 . "$SCRIPT_DIR/fm-tasks-axi-lib.sh"
-REQUIRED_TOOLS=(git jq herdr tasks-axi treehouse)
-HARNESS_TOOLS=(claude codex opencode pi pi-signed grok kimi)
+# shellcheck source=bin/fm-remote-herdr-owner-lib.sh
+. "$SCRIPT_DIR/fm-remote-herdr-owner-lib.sh"
+# The shared remote toolchain plus the selected backend's CLI; the backend slot
+# is filled once the backend is resolved below, keeping the probe's six-fact
+# shape (five tools plus the at-least-one harness) for explicit and resolved
+# selections alike.
+REQUIRED_TOOLS=()
+HARNESS_TOOLS=(claude codex opencode pi pi-signed grok kimi omp)
 OPTIONAL_TOOLS=(tmux no-mistakes gh)
+# The server API revision Firstmate's rex adapter is verified against
+# (bin/backends/rex.sh's FM_BACKEND_REX_MIN_API).
+REX_MIN_API=5
 LAUNCH_AGENT_LABEL=dev.firstmate.herdr.fm-remote
 # The dedicated remote-secondmate session. The user's interactive Herdr work
 # remains in the separate default session, which this readiness check never
@@ -73,17 +103,44 @@ ENTRYPOINT_LINK="${HOME:-}/.local/bin/fm-remote-entrypoint.sh"
 usage() { sed -n '2,5p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 MODE=check
-case "${1:-}" in
-  '') ;;
-  --fix) MODE=fix; shift ;;
-  --worker-tool-probe)
-    [ "${FM_REMOTE_JOB_ACTIVE:-}" = 1 ] || { printf 'error: worker tool probe requires the remote job worker\n' >&2; exit 64; }
-    MODE='worker-tool-probe'
-    shift
-    ;;
-  *) usage ;;
+DOCTOR_BACKEND=any
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --fix) MODE=fix ;;
+    --backend)
+      shift
+      case "${1:-}" in herdr | rex | any) DOCTOR_BACKEND=$1 ;; *) usage ;; esac
+      ;;
+    --backend=*)
+      case "${1#--backend=}" in herdr | rex | any) DOCTOR_BACKEND=${1#--backend=} ;; *) usage ;; esac
+      ;;
+    --worker-tool-probe)
+      [ "${FM_REMOTE_JOB_ACTIVE:-}" = 1 ] || { printf 'error: worker tool probe requires the remote job worker\n' >&2; exit 64; }
+      MODE='worker-tool-probe'
+      ;;
+    *) usage ;;
+  esac
+  shift
+done
+
+# Resolve which backend this run is responsible for before any check or tool
+# list is derived: an explicit --backend wins, and `any` picks herdr when its
+# CLI resolves (the default backend), then rex, so a host offering both is
+# verified for the default. `none` means no supported backend CLI resolves and
+# is reported as one backend gap rather than two tool gaps.
+if [ "$DOCTOR_BACKEND" = any ]; then
+  if command -v herdr >/dev/null 2>&1; then
+    DOCTOR_BACKEND=herdr
+  elif command -v rex >/dev/null 2>&1; then
+    DOCTOR_BACKEND=rex
+  else
+    DOCTOR_BACKEND=none
+  fi
+fi
+case "$DOCTOR_BACKEND" in
+  herdr | rex) REQUIRED_TOOLS=(git jq "$DOCTOR_BACKEND" tasks-axi treehouse) ;;
+  *) REQUIRED_TOOLS=(git jq backend tasks-axi treehouse) ;;
 esac
-[ "$#" -eq 0 ] || usage
 
 PLATFORM=$(fm_remote_job_platform)
 UID_NUM=$(id -u 2>/dev/null) || UID_NUM=
@@ -149,12 +206,45 @@ herdr_adapter_load() {
   FM_REMOTE_DOCTOR_HERDR_LOADED=1
 }
 
+herdr_server_status_json() {
+  herdr_adapter_load || return 1
+  fm_backend_herdr_cli "$HERDR_SESSION_NAME" status --json 2>/dev/null
+}
+
 herdr_server_running() {
   local running
-  herdr_adapter_load || return 1
-  running=$(fm_backend_herdr_cli "$HERDR_SESSION_NAME" status --json 2>/dev/null \
-    | jq -r '.server.running // false' 2>/dev/null) || return 1
+  running=$(herdr_server_status_json | jq -r '.server.running // false' 2>/dev/null) || return 1
   [ "$running" = true ]
+}
+
+# Birth of the process serving the session, as the guard classifies it:
+# prints "<birth> <pid>" (launchd, worker, ssh, or unknown), "unproven" when
+# no herdr process can be shown to hold the socket, or "nolsof" when lsof does
+# not resolve. bin/fm-remote-herdr-owner-lib.sh owns the markers.
+herdr_server_birth() {
+  local socket owner rc birth
+  socket=$(herdr_server_status_json | jq -r '.server.socket // empty' 2>/dev/null) || socket=
+  owner=$(fm_remote_herdr_socket_owner "$socket"); rc=$?
+  if [ "$rc" -eq 2 ]; then
+    printf 'nolsof\n'
+    return 0
+  fi
+  if [ -z "$owner" ]; then
+    printf 'unproven\n'
+    return 0
+  fi
+  birth=$(fm_remote_herdr_owner_birth "$owner")
+  printf '%s %s\n' "$birth" "$owner"
+}
+
+# On darwin the session is ready only when its server was born in the Aqua
+# login session; elsewhere any running server is.
+herdr_server_aqua_owned() {
+  local birth
+  herdr_server_running || return 1
+  [ "$PLATFORM" = darwin ] || return 0
+  birth=$(herdr_server_birth)
+  fm_remote_herdr_birth_is_aqua "${birth%% *}"
 }
 
 launch_agent_is_aqua() {
@@ -167,8 +257,67 @@ launch_agent_is_aqua() {
   return 1
 }
 
-render_launch_agent() { # <resolved-herdr-path>
-  local herdr_bin=$1
+launch_agent_shell_quote() { # <value>
+  printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
+}
+
+launch_agent_xml_escape() { # <value>
+  printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
+}
+
+# Directory Services UserShell is the account's real login shell on darwin
+# (bash, fish, zsh, ...). Fall back without failing the render: $SHELL, then
+# /bin/sh. Separate -l and -c so fish accepts the flags.
+resolve_launch_agent_shell() {
+  local user raw shell
+  if [ -n "${FM_LAUNCH_AGENT_SHELL:-}" ] && [ -x "$FM_LAUNCH_AGENT_SHELL" ]; then
+    printf '%s' "$FM_LAUNCH_AGENT_SHELL"
+    return 0
+  fi
+  user=$(id -un 2>/dev/null || true)
+  if [ -n "$user" ] && command -v dscl >/dev/null 2>&1 && command -v perl >/dev/null 2>&1; then
+    raw=$(perl -e '$SIG{ALRM} = sub { exit 124 }; alarm 2; exec @ARGV' \
+      dscl . -read "/Users/$user" UserShell 2>/dev/null || true)
+    shell=$(printf '%s\n' "$raw" | awk '
+      /^UserShell:[[:space:]]+/ {
+        sub(/^UserShell:[[:space:]]+/, "")
+        if (length) { print; exit }
+      }
+    ')
+    if [ -n "$shell" ] && [ -x "$shell" ]; then
+      printf '%s' "$shell"
+      return 0
+    fi
+  fi
+  if [ -n "${SHELL:-}" ] && [ -x "$SHELL" ]; then
+    printf '%s' "$SHELL"
+    return 0
+  fi
+  printf '%s' /bin/sh
+}
+
+# Login-shell command that execs the Firstmate-owned guard, which in turn execs
+# the resolved herdr so launchd keeps one foreground process in the Aqua
+# session, or exits 0 when an Aqua-born server already owns the session.
+# KeepAlive={SuccessfulExit=false} is load-bearing for that exit: an
+# unconditional KeepAlive would respawn the job every throttle interval
+# forever while a foreign server holds the socket, exactly the loop this guard
+# replaces, and would never let the guard's "nothing to do" verdict rest.
+launch_agent_guard_path() {
+  printf '%s/bin/fm-remote-herdr-guard.sh' "$FM_ROOT"
+}
+
+launch_agent_exec_command() { # <resolved-herdr-path>
+  printf 'exec %s %s %s' \
+    "$(launch_agent_shell_quote "$(launch_agent_guard_path)")" \
+    "$(launch_agent_shell_quote "$1")" \
+    "$(launch_agent_shell_quote "$HERDR_SESSION_NAME")"
+}
+
+render_launch_agent() { # <resolved-herdr-path> <resolved-login-shell>
+  local herdr_bin=$1 shell=$2 exec_cmd shell_xml
+  shell_xml=$(launch_agent_xml_escape "$shell")
+  exec_cmd=$(launch_agent_exec_command "$herdr_bin")
   cat <<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -178,17 +327,22 @@ render_launch_agent() { # <resolved-herdr-path>
 	<string>$LAUNCH_AGENT_LABEL</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>$herdr_bin</string>
-		<string>server</string>
-		<string>--session</string>
-		<string>$HERDR_SESSION_NAME</string>
+		<string>$shell_xml</string>
+		<string>-l</string>
+		<string>-c</string>
+		<string>$exec_cmd</string>
 	</array>
 	<key>LimitLoadToSessionType</key>
 	<string>Aqua</string>
 	<key>RunAtLoad</key>
 	<true/>
 	<key>KeepAlive</key>
-	<true/>
+	<dict>
+		<key>SuccessfulExit</key>
+		<false/>
+	</dict>
+	<key>ThrottleInterval</key>
+	<integer>10</integer>
 	<key>StandardOutPath</key>
 	<string>$LAUNCH_AGENT_LOG</string>
 	<key>StandardErrorPath</key>
@@ -198,30 +352,34 @@ render_launch_agent() { # <resolved-herdr-path>
 XML
 }
 
-launch_agent_contract_matches() {
-  local herdr_bin actual expected
+launch_agent_contract_matches() { # <resolved-login-shell>
+  local shell=$1 herdr_bin actual expected
   [ -f "$LAUNCH_AGENT_PLIST" ] && [ ! -L "$LAUNCH_AGENT_PLIST" ] || return 1
   herdr_bin=$(command -v herdr 2>/dev/null) || return 1
   actual=$(tr -d ' \t\r\n' < "$LAUNCH_AGENT_PLIST" 2>/dev/null) || return 1
-  expected=$(render_launch_agent "$herdr_bin" | tr -d ' \t\r\n') || return 1
+  expected=$(render_launch_agent "$herdr_bin" "$shell" | tr -d ' \t\r\n') || return 1
   [ "$actual" = "$expected" ]
 }
 
-launch_agent_loaded_contract_matches() {
-  local loaded herdr_bin herdr_compact plist_compact log_compact args
+launch_agent_loaded_contract_matches() { # <resolved-login-shell>
+  local shell=$1 loaded herdr_bin exec_compact shell_compact plist_compact log_compact args
   herdr_bin=$(command -v herdr 2>/dev/null) || return 1
   loaded=$(launchctl print "gui/$UID_NUM/$LAUNCH_AGENT_LABEL" 2>/dev/null) || return 1
   loaded=$(printf '%s' "$loaded" | tr -d ' \t\r\n') || return 1
-  herdr_compact=$(printf '%s' "$herdr_bin" | tr -d ' \t\r\n') || return 1
+  exec_compact=$(launch_agent_exec_command "$herdr_bin" | tr -d ' \t\r\n') || return 1
+  shell_compact=$(printf '%s' "$shell" | tr -d ' \t\r\n') || return 1
   plist_compact=$(printf '%s' "$LAUNCH_AGENT_PLIST" | tr -d ' \t\r\n') || return 1
   log_compact=$(printf '%s' "$LAUNCH_AGENT_LOG" | tr -d ' \t\r\n') || return 1
-  args="arguments={$herdr_compact"'server--session'"$HERDR_SESSION_NAME}"
+  args="arguments={${shell_compact}-l-c${exec_compact}}"
   [[ "$loaded" == *"path=$plist_compact"* ]] || return 1
-  [[ "$loaded" == *"program=$herdr_compact"* ]] || return 1
+  [[ "$loaded" == *"program=$shell_compact"* ]] || return 1
   [[ "$loaded" == *"$args"* ]] || return 1
   [[ "$loaded" == *"stdoutpath=$log_compact"* ]] || return 1
   [[ "$loaded" == *"stderrpath=$log_compact"* ]] || return 1
-  [[ "$loaded" == *'properties=keepalive|runatload'* ]] || return 1
+  # launchd renders KeepAlive={SuccessfulExit=false} as a successful-exit
+  # semaphore rather than a keepalive property.
+  [[ "$loaded" == *'successfulexit=>0'* ]] || return 1
+  [[ "$loaded" == *'properties=runatload'* ]] || return 1
 }
 
 # --- remote job and tool checks ---------------------------------------------
@@ -340,8 +498,15 @@ report_required_tools() {
 report_required_tools_from_worker() {
   local job_id probe_stdout probe_stderr probe_exit line fact name value
   local expected=6 count=0 valid=1 seen=' '
+  # The probe recomputes the same backend selection in the worker's own PATH:
+  # an explicit selection is passed through, while `none` stays unflagged so the
+  # probe reports `backend=MISSING` rather than resolving differently.
+  local -a probe_args=(--worker-tool-probe)
+  case "$DOCTOR_BACKEND" in
+    herdr | rex) probe_args+=(--backend "$DOCTOR_BACKEND") ;;
+  esac
   if ! job_id=$(fm_remote_job_stage "${HOME:-}" "$FM_ROOT" "${FM_HOME:-}" \
-    fm-remote-doctor.sh --worker-tool-probe </dev/null); then
+    fm-remote-doctor.sh "${probe_args[@]}" </dev/null); then
     set_check remote-job-probe "fixable: the remote job worker could not accept the required-tool probe" \
       "rerun this command with --fix to restart the worker"
     report_required_tools
@@ -363,7 +528,7 @@ report_required_tools_from_worker() {
     fact=${line#required }
     name=${fact%%=*}
     value=${fact#*=}
-    case "$name" in git|jq|herdr|tasks-axi|treehouse|harness) ;; *) valid=0; continue ;; esac
+    case "$name" in git | jq | herdr | rex | backend | tasks-axi | treehouse | harness) ;; *) valid=0; continue ;; esac
     case "$seen" in *" $name "*) valid=0; continue ;; esac
     seen="$seen$name "
     count=$((count + 1))
@@ -451,13 +616,149 @@ fix_remote_job_worker() {
 # --- checks -----------------------------------------------------------------
 
 check_herdr() {
-  local resolved
+  local resolved selected
   if resolved=$(command -v herdr 2>/dev/null) && [ -x "$resolved" ]; then
+    if herdr_adapter_load; then
+      fm_backend_herdr_client_select "$HERDR_SESSION_NAME"
+      selected=$(fm_backend_herdr_bin)
+      if [ "$selected" != herdr ] && [ "$selected" != "$resolved" ]; then
+        record herdr "ok: $selected (bypassing $resolved)"
+        return 0
+      fi
+    fi
     record herdr "ok: $resolved"
     return 0
   fi
   record herdr "human: the herdr CLI does not resolve on the remote runtime PATH" \
-    "install herdr from https://herdr.dev on that account, or add a ~/.local/bin wrapper for it; a remote second mate always runs on the Herdr backend"
+    "install herdr from https://herdr.dev on that account, or add a ~/.local/bin wrapper for it; the remote second mate's herdr backend needs this CLI"
+}
+
+# Reported only when no supported backend CLI resolves at all: one session-
+# provider gap rather than one gap per missing CLI.
+check_backend() {
+  record backend "human: neither the herdr nor the rex CLI resolves on the remote runtime PATH" \
+    "install herdr from https://herdr.dev or Rex on that account, or add a ~/.local/bin wrapper for one; a remote second mate needs one session-provider backend"
+}
+
+# Rex server calls below read through a resolved rex CLI that can never
+# autostart: the doctor's job is the existing server's state, and a lazy
+# autostart would silently satisfy the persistent-server check with an
+# exit-empty server.
+rex_bin() {
+  command -v rex 2>/dev/null
+}
+
+rex_server_status_json() {
+  local rex
+  rex=$(rex_bin) || return 1
+  "$rex" --autostart=false api call server.status 2>/dev/null
+}
+
+rex_whoami_json() {
+  local rex
+  rex=$(rex_bin) || return 1
+  "$rex" --autostart=false whoami --json 2>/dev/null
+}
+
+check_rex() {
+  local rex raw client_api
+  if ! rex=$(rex_bin) || [ ! -x "$rex" ]; then
+    record rex "human: the rex CLI does not resolve on the remote runtime PATH" \
+      "install Rex on that account, or add a ~/.local/bin wrapper for it; the remote second mate's rex backend needs this CLI"
+    return 0
+  fi
+  raw=$("$rex" version 2>/dev/null || true)
+  client_api=$(printf '%s\n' "$raw" | sed -n 's/^api: revision \([0-9][0-9]*\).*/\1/p' | head -1)
+  case "$client_api" in
+    '' | *[!0-9]*)
+      record rex "human: the rex CLI at $rex reports no parsable API revision; Firstmate refuses an unverified build" \
+        "install a Rex build whose 'rex version' reports 'api: revision N' with N >= $REX_MIN_API, then rerun this command"
+      ;;
+    *)
+      if [ "$client_api" -lt "$REX_MIN_API" ]; then
+        record rex "human: the rex CLI at $rex speaks API revision $client_api, older than the verified minimum $REX_MIN_API" \
+          "update Rex on that account, then rerun this command"
+      else
+        record rex "ok: $rex (API revision $client_api)"
+      fi
+      ;;
+  esac
+}
+
+check_rex_server() {
+  local status whoami endpoint exit_empty server_api
+  if ! rex_bin >/dev/null || ! command -v jq >/dev/null 2>&1; then
+    record rex-server "human: rex server status cannot be read without both rex and jq on the runtime PATH" \
+      "install the missing tool reported above, then rerun this command"
+    return 0
+  fi
+  if ! status=$(rex_server_status_json); then
+    record rex-server "fixable: no rex server answers on this account's personal socket" \
+      "rerun this command with --fix to start a persistent rex server"
+    return 0
+  fi
+  server_api=$(printf '%s' "$status" | jq -r '.api_revision // empty' 2>/dev/null)
+  case "$server_api" in
+    '' | *[!0-9]*)
+      record rex-server "human: the running rex server reports no parsable API revision; Firstmate refuses an unverified build" \
+        "update Rex on that account, then rerun this command"
+      return 0
+      ;;
+  esac
+  if [ "$server_api" -lt "$REX_MIN_API" ]; then
+    record rex-server "human: the running rex server speaks API revision $server_api, older than the verified minimum $REX_MIN_API" \
+      "update Rex on that account, then rerun this command"
+    return 0
+  fi
+  if ! whoami=$(rex_whoami_json); then
+    record rex-server "human: the rex server's settings could not be read" \
+      "run 'rex whoami --json' on that account and report the failure"
+    return 0
+  fi
+  endpoint=$(printf '%s' "$whoami" | jq -r '.endpoint // empty' 2>/dev/null) || endpoint=
+  case "$endpoint" in
+    unix://*) ;;
+    '')
+      record rex-server "human: the rex server's endpoint could not be read" \
+        "run 'rex whoami --json' on that account and report the failure"
+      return 0
+      ;;
+    *)
+      record rex-server "human: the rex server endpoint '$endpoint' is not a local unix socket; remote second mates stay on the account's personal unix:// server" \
+        "reconfigure that account's rex to serve the default unix:// endpoint, then rerun this command"
+      return 0
+      ;;
+  esac
+  exit_empty=$(printf '%s' "$whoami" | jq -r '.exit_empty | select(type == "boolean")' 2>/dev/null) || exit_empty=
+  if [ "$exit_empty" = true ]; then
+    record rex-server "human: the rex server at $endpoint exits when empty, so a second mate's session would not survive an idle stretch" \
+      "at a time when nothing runs on that account's rex server, run 'rex server stop' and then 'rex server start' there to bring it back as a persistent server, then rerun this command; Firstmate never stops an answering server, because that ends every process in its sessions"
+    return 0
+  fi
+  if [ "$exit_empty" != false ]; then
+    record rex-server "human: the rex server at $endpoint reports no explicit boolean exit_empty=false; persistence is unproven" \
+      "run 'rex whoami --json' on that account and resolve the missing or malformed exit_empty setting, then rerun this command"
+    return 0
+  fi
+  record rex-server "ok: persistent rex server on $endpoint (API revision $server_api)"
+}
+
+# A persistent rex server is `rex server start`, detached from every SSH
+# session. This repair runs only when no server answers; an answering server is
+# never stopped or restarted here, because stopping it ends every process in
+# its sessions and restoring them brings back shells, not that work.
+start_rex_server() {
+  local rex
+  rex=$(rex_bin) || {
+    fix_report rex-server failed "rex does not resolve, so no server was started"
+    return 1
+  }
+  if "$rex" server start >/dev/null 2>&1; then
+    fix_report rex-server applied "started a persistent rex server"
+    return 0
+  fi
+  fix_report rex-server failed "a persistent rex server did not come up"
+  return 1
 }
 
 check_gui_session() {
@@ -483,7 +784,8 @@ check_gui_session() {
     "log that account in once at the console, and enable automatic login in System Settings > Users & Groups if the machine runs headless; SSH cannot create a GUI session, and Firstmate never writes an auto-login password or changes FileVault"
 }
 
-check_launch_agent() {
+check_launch_agent() { # <resolved-login-shell>
+  local shell=$1
   if [ "$PLATFORM" != darwin ]; then
     record launchagent "skip: launch agents apply only on darwin"
     record launchagent-scope "skip: launch agents apply only on darwin"
@@ -491,7 +793,7 @@ check_launch_agent() {
     return 0
   fi
   if [ -f "$LAUNCH_AGENT_PLIST" ] && [ ! -L "$LAUNCH_AGENT_PLIST" ]; then
-    if launch_agent_contract_matches; then
+    if launch_agent_contract_matches "$shell"; then
       record launchagent "ok: $LAUNCH_AGENT_PLIST matches the Firstmate-owned contract"
     else
       record launchagent "fixable: $LAUNCH_AGENT_PLIST does not match the current Firstmate-owned contract" \
@@ -508,17 +810,18 @@ check_launch_agent() {
       "rerun this command with --fix to install it"
     record launchagent-scope "skip: no launch agent is installed yet"
   fi
-  check_launch_agent_loaded
+  check_launch_agent_loaded "$shell"
 }
 
-check_launch_agent_loaded() {
+check_launch_agent_loaded() { # <resolved-login-shell>
+  local shell=$1
   if [ -z "$UID_NUM" ] || ! command -v launchctl >/dev/null 2>&1; then
     record launchagent-loaded "human: the launch agent domain gui/<uid> cannot be inspected on this account" \
       "restore launchctl and a readable account uid, then rerun this command"
     return 0
   fi
   if launchctl print "gui/$UID_NUM/$LAUNCH_AGENT_LABEL" >/dev/null 2>&1; then
-    if launch_agent_loaded_contract_matches; then
+    if launch_agent_loaded_contract_matches "$shell"; then
       record launchagent-loaded "ok: gui/$UID_NUM/$LAUNCH_AGENT_LABEL matches the effective contract"
     else
       record launchagent-loaded "fixable: gui/$UID_NUM/$LAUNCH_AGENT_LABEL does not match the effective Firstmate-owned contract" \
@@ -542,7 +845,29 @@ check_herdr_server() {
     return 0
   fi
   if herdr_server_running; then
-    record herdr-server "ok: session $HERDR_SESSION_NAME is running"
+    if [ "$PLATFORM" != darwin ]; then
+      record herdr-server "ok: session $HERDR_SESSION_NAME is running"
+      return 0
+    fi
+    local birth
+    birth=$(herdr_server_birth)
+    case "$birth" in
+      launchd\ *|worker\ *)
+        record herdr-server "ok: session $HERDR_SESSION_NAME is running in the Aqua login session (pid ${birth#* }, ${birth%% *})"
+        ;;
+      nolsof)
+        record herdr-server "human: session $HERDR_SESSION_NAME is running but lsof does not resolve, so its server's birth cannot be proven" \
+          "install lsof on that account so the launch agent and this check can tell an Aqua-born server from one started over SSH"
+        ;;
+      unproven)
+        record herdr-server "fixable: session $HERDR_SESSION_NAME is running but no herdr process can be shown to own its socket, so its birth cannot be proven" \
+          "rerun this command with --fix so the launch agent takes the session over (its current panes close and the parent firstmate relaunches its mates)"
+        ;;
+      *)
+        record herdr-server "fixable: session $HERDR_SESSION_NAME is served by pid ${birth#* } born outside the Aqua login session (${birth%% *}), so its panes cannot reach the login keychain" \
+          "rerun this command with --fix so the launch agent takes the session over (its current panes close and the parent firstmate relaunches its mates)"
+        ;;
+    esac
     return 0
   fi
   if [ "$PLATFORM" = darwin ] && ! check_is_ok gui-session; then
@@ -574,15 +899,28 @@ check_entrypoint_link() {
     "rerun this command with --fix to create it"
 }
 
-run_checks() {
+run_checks() { # <resolved-login-shell>
+  local shell=$1
   CHECK_NAMES=()
   CHECK_VALUES=()
   CHECK_ACTIONS=()
-  check_herdr
+  case "$DOCTOR_BACKEND" in
+    herdr) check_herdr ;;
+    rex) check_rex ;;
+    *) check_backend ;;
+  esac
   check_gui_session
   check_remote_job_worker
-  check_launch_agent
-  check_herdr_server
+  # Backend infrastructure is checked only for the selected backend: herdr
+  # needs the Aqua-owned fm-remote server, rex needs a persistent personal rex
+  # server, and the no-backend gap has nothing further to prove.
+  case "$DOCTOR_BACKEND" in
+    herdr)
+      check_launch_agent "$shell"
+      check_herdr_server
+      ;;
+    rex) check_rex_server ;;
+  esac
   check_entrypoint_link
 }
 
@@ -592,8 +930,8 @@ fix_report() { # <check> applied|failed <text>
   printf 'fix %s=%s: %s\n' "$1" "$2" "$3"
 }
 
-write_launch_agent() {
-  local herdr_bin tmp
+write_launch_agent() { # <resolved-login-shell>
+  local shell=$1 herdr_bin tmp
   if ! herdr_bin=$(command -v herdr 2>/dev/null); then
     fix_report launchagent failed "herdr does not resolve, so no launch agent was written"
     return 1
@@ -610,14 +948,14 @@ write_launch_agent() {
   fi
   mkdir -p "$LAUNCH_AGENT_LOG_DIR" 2>/dev/null || true
   tmp="$LAUNCH_AGENT_DIR/.$LAUNCH_AGENT_LABEL.plist.tmp.$$"
-  render_launch_agent "$herdr_bin" > "$tmp"
+  render_launch_agent "$herdr_bin" "$shell" > "$tmp"
   chmod 0644 "$tmp" 2>/dev/null || true
   if ! mv -f -- "$tmp" "$LAUNCH_AGENT_PLIST" 2>/dev/null; then
     rm -f -- "$tmp"
     fix_report launchagent failed "cannot publish $LAUNCH_AGENT_PLIST"
     return 1
   fi
-  fix_report launchagent applied "wrote the Aqua-scoped $LAUNCH_AGENT_LABEL launch agent running $herdr_bin server"
+  fix_report launchagent applied "wrote the Aqua-scoped $LAUNCH_AGENT_LABEL launch agent running $(launch_agent_guard_path) for $herdr_bin via $shell -l -c"
 }
 
 # Reload rather than plain bootstrap so a rewritten plist replaces a stale
@@ -643,7 +981,7 @@ reload_launch_agent() { # <check-to-report-under>
     return 1
   fi
   if ! wait_for_herdr_server; then
-    fix_report "$report" failed "the herdr server for session $HERDR_SESSION_NAME did not report running within 10s"
+    fix_report "$report" failed "the herdr server for session $HERDR_SESSION_NAME did not come up inside the Aqua launch agent within 10s"
     return 1
   fi
   fix_report "$report" applied "bootstrapped and started $LAUNCH_AGENT_LABEL in gui/$UID_NUM"
@@ -652,7 +990,7 @@ reload_launch_agent() { # <check-to-report-under>
 wait_for_herdr_server() {
   local i=0
   while [ "$i" -lt 20 ]; do
-    herdr_server_running && return 0
+    herdr_server_aqua_owned && return 0
     i=$((i + 1))
     sleep 0.5
   done
@@ -685,8 +1023,8 @@ link_entrypoint() {
   fix_report entrypoint-link applied "linked $ENTRYPOINT_LINK to $want"
 }
 
-apply_fixes() {
-  local i name value launch_agent_written=0 launch_agent_reloaded=0 remote_job_fixed=0
+apply_fixes() { # <resolved-login-shell>
+  local shell=$1 i name value launch_agent_written=0 launch_agent_reloaded=0 remote_job_fixed=0
   repair_required_wrappers
   i=0
   while [ "$i" -lt "${#CHECK_NAMES[@]}" ]; do
@@ -703,7 +1041,7 @@ apply_fixes() {
       launchagent|launchagent-scope)
         [ "$launch_agent_written" -eq 0 ] || continue
         launch_agent_written=1
-        write_launch_agent || continue
+        write_launch_agent "$shell" || continue
         # A freshly written plist runs nothing until it is (re)loaded, and only
         # an existing GUI session can hold it.
         check_is_ok gui-session || continue
@@ -727,6 +1065,7 @@ apply_fixes() {
         fi
         start_herdr_server || true
         ;;
+      rex-server) start_rex_server || true ;;
       entrypoint-link) link_entrypoint || true ;;
     esac
   done
@@ -750,12 +1089,16 @@ else
 fi
 printf 'platform=%s\n' "$PLATFORM"
 
-run_checks
+LAUNCH_AGENT_SHELL=
+if [ "$PLATFORM" = darwin ]; then
+  LAUNCH_AGENT_SHELL=$(resolve_launch_agent_shell)
+fi
+run_checks "$LAUNCH_AGENT_SHELL"
 if [ "$MODE" = fix ]; then
-  apply_fixes
+  apply_fixes "$LAUNCH_AGENT_SHELL"
   # Re-derive every check from the host itself, so what prints below is the
   # state after repair rather than the intent of a repair.
-  run_checks
+  run_checks "$LAUNCH_AGENT_SHELL"
 fi
 
 if [ "${FM_REMOTE_JOB_ACTIVE:-}" = 1 ] || ! remote_job_identity_ok; then

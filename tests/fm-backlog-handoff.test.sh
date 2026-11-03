@@ -273,6 +273,7 @@ test_move_crash_keeps_wake_pending_for_recovery() {
 EOF
   printf '## Queued\n\n## Done\n' > "$sub/data/backlog.md"
   real_tasks=$(command -v tasks-axi)
+  fm_fake_crash_injector "$fakebin"
   cat > "$fakebin/tasks-axi" <<'SH'
 #!/usr/bin/env bash
 "$FM_REAL_TASKS_AXI" "$@"
@@ -280,9 +281,10 @@ rc=$?
 case " $* " in
   *" --file "*" --to "*)
     if [ "$rc" -eq 0 ] && [ "${1:-}" = mv ]; then
+      # Crash AFTER the durable move lands, and only return once the handoff is
+      # observably gone so it cannot run its own post-move bookkeeping.
       handoff_pid=$(ps -o ppid= -p "$PPID" | tr -d '[:space:]')
-      kill -KILL "$handoff_pid"
-      sleep 1
+      fm-crash-inject "$handoff_pid" || exit 1
     fi
     ;;
 esac
@@ -347,14 +349,18 @@ test_pre_move_crash_does_not_wake_until_move_lands() {
 EOF
   printf '## Queued\n\n## Done\n' > "$sub/data/backlog.md"
   real_tasks=$(command -v tasks-axi)
+  fm_fake_crash_injector "$fakebin"
   cat > "$fakebin/tasks-axi" <<'SH'
 #!/usr/bin/env bash
 case " $* " in
   *" --file "*" --to "*)
     if [ "${1:-}" = mv ]; then
+      # Crash BEFORE the move and never run it. This fake outlives the handoff
+      # it kills, so delegating to the real binary at all - even after a pause -
+      # lets an orphan complete the move the case requires left undone.
       handoff_pid=$(ps -o ppid= -p "$PPID" | tr -d '[:space:]')
-      kill -KILL "$handoff_pid"
-      sleep 1
+      fm-crash-inject "$handoff_pid" || exit 1
+      exit 137
     fi
     ;;
 esac
@@ -418,12 +424,15 @@ test_delivery_confirmation_crash_does_not_resend() {
 EOF
   printf '## Queued\n\n## Done\n' > "$sub/data/backlog.md"
   real_rm=$(command -v rm)
+  fm_fake_crash_injector "$fakebin"
   cat > "$fakebin/rm" <<'SH'
 #!/usr/bin/env bash
 for arg in "$@"; do
   if [ "$arg" = "$FM_CONFIRM_WAKE_MARKER" ] \
     && mkdir "$FM_CONFIRM_CRASH_ONCE" 2>/dev/null; then
-    kill -KILL "$PPID"
+    # Crash instead of clearing the marker, and confirm the handoff is gone
+    # before returning so it cannot proceed past this step.
+    fm-crash-inject "$PPID" || exit 1
     exit 0
   fi
 done
@@ -494,11 +503,14 @@ test_unresolved_delivery_attempt_refuses_immediate_resend() {
 EOF
   printf '## Queued\n\n## Done\n' > "$sub/data/backlog.md"
   real_mv=$(command -v mv)
+  fm_fake_crash_injector "$fakebin"
   cat > "$fakebin/mv" <<'SH'
 #!/usr/bin/env bash
 for arg in "$@"; do
   if [ -f "$arg" ] && grep -q '^confirmed=' "$arg" 2>/dev/null; then
-    kill -KILL "$PPID"
+    # Crash instead of publishing the confirmed record, and confirm the handoff
+    # is gone before returning so it cannot reach its later doorbell step.
+    fm-crash-inject "$PPID" || exit 1
     exit 1
   fi
 done
@@ -762,7 +774,7 @@ assert_block_equals() {
 seed_public_commitment() {
   local home=$1 obligation=$2 work_home=$3 work_id=$4
   printf 'FMX_PAIRING_TOKEN=test-token\n' > "$home/.env"
-  cp "$ROOT/.tasks.toml" "$home/.tasks.toml"
+  fm_test_tasks_toml "$home/.tasks.toml"
   jq -n '{request_id:"req-handoff", platform:"x",
           context_binding:{version:"ctx1", value:"ctx1_req-handoff"},
           public_safe_summary:"looking into the sign-in redirect",
@@ -1332,7 +1344,32 @@ EOF
   pass "registry entry without (home: ...) fails cleanly with has no home"
 }
 
+# A caller's working directory may hold a .tasks.toml for another backend (an
+# operator checkout keeps a beads override). The handoff names explicit markdown
+# files, so that override must not redirect the move.
+test_cwd_tasks_toml_does_not_redirect_handoff() {
+  local home="$TMP_ROOT/decoy-cwd-main" sub="$TMP_ROOT/decoy-cwd-sub" decoy="$TMP_ROOT/decoy-cwd" out
+  setup_homes "$home" "$sub"
+  cat > "$home/data/backlog.md" <<'EOF'
+## Queued
+- [ ] decoy-item - moves despite a cwd beads config (repo: alpha)
+- [ ] decoy-keep - stays put (repo: alpha)
+
+## Done
+EOF
+  mkdir -p "$decoy"
+  printf 'backend = "beads"\n\n[beads]\ndb = "%s/missing/beads.db"\n' "$decoy" > "$decoy/.tasks.toml"
+
+  out=$(cd "$decoy" && FM_HOME="$home" "$ROOT/bin/fm-backlog-handoff.sh" design decoy-item 2>&1) \
+    || fail "handoff from a cwd with a beads .tasks.toml failed: $out"
+  assert_grep 'decoy-item' "$sub/data/backlog.md" "item did not reach the secondmate backlog"
+  assert_no_grep 'decoy-item' "$home/data/backlog.md" "item stayed in the main backlog"
+  assert_grep 'decoy-keep' "$home/data/backlog.md" "unrelated item was disturbed"
+  pass "a cwd .tasks.toml for another backend does not redirect a markdown handoff"
+}
+
 test_handoff_wakes_live_local_receiver
+test_cwd_tasks_toml_does_not_redirect_handoff
 test_failed_wake_retries_when_the_item_is_already_present
 test_known_receiver_failure_remains_retryable_after_grace
 test_known_failure_restores_retry_after_reconciliation_race
