@@ -76,6 +76,7 @@ A request for something you do not own is forwarded to the owner through its inb
 ## 6. Second mates
 
 A second mate moves with its owner through the normal retire-then-reseed path from `secondmate-provisioning`.
+It moves only when its home has no in-flight work, which that retire path already requires; with work in flight, do not start the move (no flip, no note) and hand it over later.
 
 1. The old firstmate hands over per step 3, with the note listing the second mate's open captain calls; after that flip it keeps only the next step.
 2. Once that note is delivered, the old firstmate retires the second mate and sends a second note starting `handoff: <item> retired`.
