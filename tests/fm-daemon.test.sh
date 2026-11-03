@@ -1803,6 +1803,207 @@ test_escalate_batch_age_uses_first_append() {
   pass "batch flush measures max-delay from the first append, not the last"
 }
 
+# A fresh daemon start used to replay every finished task's whole history: an
+# absent or never-classified seen marker reads position 0, so the first catch-all
+# scan joined every captain-relevant line ever appended into one giant digest.
+history_log() {  # <file>
+  local i
+  : > "$1"
+  for i in 1 2 3 4 5; do
+    printf 'needs-decision [key=old%s]: old question %s\nresolved [key=old%s]: answered\nfailed: old failure %s\n' \
+      "$i" "$i" "$i" "$i" >> "$1"
+  done
+}
+
+scan_once() {  # <state>
+  : > "$1/.subsuper-escalations"
+  rm -f "$1/.subsuper-last-scan"
+  FM_STATE_OVERRIDE="$1" housekeeping "$1"
+}
+
+test_fresh_start_bounds_status_history_without_marker() {
+  local dir state
+  dir=$(make_supercase seed-no-marker)
+  state="$dir/state"
+  history_log "$state/old-t1.status"
+  scan_once "$state"
+  grep -F "old failure 1" "$state/.subsuper-escalations" >/dev/null \
+    || fail "fixture no longer reproduces the replay: an absent marker should replay history"
+  rm -f "$state"/.subsuper-seen-status-*
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  [ ! -s "$state/.subsuper-escalations" ] \
+    || fail "a fresh start replayed old status history: $(cat "$state/.subsuper-escalations")"
+  printf 'failed: brand new failure\n' >> "$state/old-t1.status"
+  scan_once "$state"
+  grep -F "brand new failure" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line appended after the fresh start was not escalated"
+  grep -F "old failure" "$state/.subsuper-escalations" >/dev/null \
+    && fail "the new-line digest still carried old history"
+  pass "a fresh daemon start bounds an unmarked status history and still escalates new lines"
+}
+
+test_fresh_start_bounds_unclassified_marker() {
+  local dir state
+  dir=$(make_supercase seed-unclassified-marker)
+  state="$dir/state"
+  history_log "$state/old-t2.status"
+  printf 'v2\t%s\t-' "$(status_observed_signature "$state/old-t2.status")" \
+    > "$state/.subsuper-seen-status-old-t2"
+  [ "$(status_seen_offset "$state" old-t2)" = 0 ] || fail "an unclassified marker should read position 0"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  [ ! -s "$state/.subsuper-escalations" ] \
+    || fail "an unclassified marker replayed old status history: $(cat "$state/.subsuper-escalations")"
+  pass "a fresh daemon start bounds a status history whose marker was never classified"
+}
+
+test_fresh_start_resumes_at_main_presentation_cursor() {
+  local dir state ident mid
+  dir=$(make_supercase seed-cursor)
+  state="$dir/state"
+  history_log "$state/old-t3.status"
+  mid=$(log_size "$state/old-t3.status")
+  printf 'failed: never presented\n' >> "$state/old-t3.status"
+  ident=$(_fm_open_decisions_file_ident "$state/old-t3.status")
+  printf 'old-t3\t%s\t%s\n' "$ident" "$mid" > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "never presented" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line past the main session's presentation cursor was dropped"
+  grep -F "old failure" "$state/.subsuper-escalations" >/dev/null \
+    && fail "lines before the presentation cursor were replayed"
+  pass "a fresh daemon start resumes at the main session's presentation cursor"
+}
+
+test_fresh_start_keeps_existing_classified_position() {
+  local dir state
+  dir=$(make_supercase seed-keeps-position)
+  state="$dir/state"
+  printf 'failed: first\n' > "$state/old-t4.status"
+  seen_through "$state" old-t4
+  printf 'failed: unclassified tail\n' >> "$state/old-t4.status"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "unclassified tail" "$state/.subsuper-escalations" >/dev/null \
+    || fail "seeding moved a marker that already held a classified position"
+  pass "a fresh daemon start leaves a marker with a classified position alone"
+}
+
+test_fresh_start_advances_marker_behind_presentation_cursor() {
+  local dir state ident presented
+  dir=$(make_supercase seed-marker-behind-cursor)
+  state="$dir/state"
+  printf 'failed: classified by an earlier away session\n' > "$state/old-t7.status"
+  seen_through "$state" old-t7
+  printf 'failed: already presented by main\n' >> "$state/old-t7.status"
+  presented=$(log_size "$state/old-t7.status")
+  printf 'failed: never presented\n' >> "$state/old-t7.status"
+  ident=$(_fm_open_decisions_file_ident "$state/old-t7.status")
+  printf 'old-t7\t%s\t%s\n' "$ident" "$presented" > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "already presented by main" "$state/.subsuper-escalations" >/dev/null \
+    && fail "a marker behind the presentation cursor replayed lines main already presented"
+  grep -F "never presented" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line past the presentation cursor was dropped"
+  pass "a fresh daemon start advances a stale marker to the main session's presentation cursor"
+}
+
+test_fresh_start_keeps_marker_ahead_of_presentation_cursor() {
+  local dir state ident presented
+  dir=$(make_supercase seed-marker-ahead-of-cursor)
+  state="$dir/state"
+  printf 'failed: presented by main\n' > "$state/old-t8.status"
+  presented=$(log_size "$state/old-t8.status")
+  printf 'failed: classified while away\n' >> "$state/old-t8.status"
+  seen_through "$state" old-t8
+  printf 'failed: unclassified tail\n' >> "$state/old-t8.status"
+  ident=$(_fm_open_decisions_file_ident "$state/old-t8.status")
+  printf 'old-t8\t%s\t%s\n' "$ident" "$presented" > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F "classified while away" "$state/.subsuper-escalations" >/dev/null \
+    && fail "seeding moved a marker back to a presentation cursor behind it"
+  grep -F "unclassified tail" "$state/.subsuper-escalations" >/dev/null \
+    || fail "a line past the classified position was dropped"
+  pass "a fresh daemon start keeps a marker that is already ahead of the presentation cursor"
+}
+
+test_fresh_start_skips_unreadable_marker() {
+  local dir state marker before
+  dir=$(make_supercase seed-unreadable-marker)
+  state="$dir/state"
+  history_log "$state/old-t5.status"
+  seen_through "$state" old-t5
+  printf 'failed: unclassified tail\n' >> "$state/old-t5.status"
+  marker="$state/.subsuper-seen-status-old-t5"
+  before=$(cat "$marker")
+  chmod 200 "$marker"
+  if [ -r "$marker" ]; then
+    chmod 600 "$marker"
+    pass "seeding of an unreadable marker skipped because permissions cannot deny reads"
+    return
+  fi
+  seed_status_seen_markers "$state"
+  chmod 600 "$marker"
+  [ "$(cat "$marker")" = "$before" ] \
+    || fail "seeding replaced the classified position of a marker it could not read"
+  pass "a fresh daemon start leaves a marker it cannot read alone"
+}
+
+test_fresh_start_skips_unusable_presentation_cursor() {
+  local dir state
+  dir=$(make_supercase seed-unusable-cursor)
+  state="$dir/state"
+  history_log "$state/old-t6.status"
+  printf 'old-t6\tstrong:1:2\tnot-a-number\n' > "$state/.status-presentation-cursor"
+  seed_status_seen_markers "$state"
+  scan_once "$state"
+  grep -F 'old failure' "$state/.subsuper-escalations" >/dev/null \
+    || fail "an unusable presentation cursor silently skipped unread status history"
+  pass "a fresh daemon start leaves a status log alone when the presentation cursor is unusable"
+}
+
+# The seeding step only matters at the single call site a real daemon executes,
+# so drive the daemon executable itself: history that predates its start must not
+# enter the escalation buffer, while a line appended after it must.
+test_fresh_start_daemon_bounds_history_at_startup() {
+  local dir state fakebin pid snapshot i
+  dir=$(make_supercase seed-daemon-startup)
+  state="$dir/state"; fakebin="$dir/fakebin"
+  snapshot="$dir/escalations.snapshot"
+  history_log "$state/old-t9.status"
+  afk_enter "$state"
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_STATE_OVERRIDE="$state" \
+    FM_SUPERVISOR_BACKEND=tmux FM_SUPERVISOR_TARGET=firstmate:supervisor \
+    FM_DAEMON_PRIMARY_HARNESS=claude FM_POLL=1 FM_SIGNAL_GRACE=1 \
+    FM_HOUSEKEEPING_TICK=0 FM_HEARTBEAT_SCAN_SECS=0 \
+    FM_STALE_ESCALATE_SECS=999999 FM_ESCALATE_BATCH_SECS=999999 \
+    "$DAEMON" > "$dir/daemon.out" 2> "$dir/daemon.err" &
+  pid=$!
+  i=0
+  while [ ! -e "$state/.subsuper-last-scan" ] && [ "$i" -lt 100 ]; do
+    sleep 0.2; i=$((i + 1))
+  done
+  printf 'failed: brand new failure\n' >> "$state/old-t9.status"
+  i=0
+  while ! grep -Fq 'brand new failure' "$state/.subsuper-escalations" 2>/dev/null \
+    && [ "$i" -lt 100 ]; do
+    sleep 0.2; i=$((i + 1))
+  done
+  cat "$state/.subsuper-escalations" > "$snapshot" 2>/dev/null || : > "$snapshot"
+  kill "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+  [ -e "$state/.subsuper-last-scan" ] \
+    || fail "the daemon never ran its catch-all scan: $(cat "$dir/daemon.err")"
+  grep -F 'brand new failure' "$snapshot" >/dev/null \
+    || fail "the daemon did not escalate a line appended after its start: $(cat "$snapshot")"
+  grep -F 'old failure' "$snapshot" >/dev/null \
+    && fail "the daemon replayed status history that predates its start: $(cat "$snapshot")"
+  pass "a real daemon start bounds existing status history and still escalates later lines"
+}
+
 test_heartbeat_scan_dedup() {
   local dir state
   dir=$(make_supercase scan-dedup)
@@ -3550,6 +3751,15 @@ test_housekeeping_orca_persistent_stale_resolves_terminal
 test_escalate_batches_into_one_digest
 test_escalate_batch_age_uses_first_append
 test_heartbeat_scan_dedup
+test_fresh_start_bounds_status_history_without_marker
+test_fresh_start_bounds_unclassified_marker
+test_fresh_start_resumes_at_main_presentation_cursor
+test_fresh_start_keeps_existing_classified_position
+test_fresh_start_advances_marker_behind_presentation_cursor
+test_fresh_start_keeps_marker_ahead_of_presentation_cursor
+test_fresh_start_skips_unreadable_marker
+test_fresh_start_skips_unusable_presentation_cursor
+test_fresh_start_daemon_bounds_history_at_startup
 test_handle_wake_routes_self_and_escalate
 test_needs_decision_queued_row_escalates_once_as_the_decision
 test_captain_held_decision_owned_row_is_self_handled

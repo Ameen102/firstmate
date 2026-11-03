@@ -686,6 +686,40 @@ mark_status_seen() {  # <state> <task> <captured-end-offset> <captured-identity>
     "$1/$2.status" "$3" "$4"
 }
 
+# Bound every status log at the daemon's fresh start, so the catch-all scan
+# escalates only lines nobody has been shown yet.
+# Without this an absent, unclassified, or identity-mismatched marker reads 0 and
+# the first scan replays the whole history of every finished task as one digest,
+# while a marker left by an earlier away session replays what the main session has
+# presented since then.
+# The start point is the later of the marker's classified position and the main
+# session's recorded presentation offset, so a marker already ahead of the cursor
+# stays put, and a marker with no recorded cursor stays put rather than skip lines
+# nobody has presented.
+# A log with neither position starts at the current end of the file.
+seed_status_seen_markers() {  # <state>
+  local state=$1 f task size ident end marker classified
+  for f in "$state"/*.status; do
+    [ -f "$f" ] && [ -r "$f" ] && [ ! -L "$f" ] || continue
+    task=$(basename "$f"); task="${task%.status}"
+    size=$(_fm_status_file_size "$f") || continue
+    size=${size//[[:space:]]/}
+    case "$size" in ''|*[!0-9]*|0) continue ;; esac
+    marker=$(_seen_status_path "$state" "$task")
+    if [ -e "$marker" ] || [ -L "$marker" ]; then
+      [ -f "$marker" ] && [ -r "$marker" ] && [ ! -L "$marker" ] || continue
+    fi
+    classified=$(status_seen_offset "$state" "$task")
+    ident=$(_fm_open_decisions_file_ident "$f") || continue
+    end=$(status_presentation_cursor_offset "$f") || continue
+    case "$end" in ''|*[!0-9]*) end=0 ;; esac
+    if [ "$classified" -eq 0 ] && [ "$end" -eq 0 ]; then end=$size; fi
+    [ "$end" -gt "$classified" ] || continue
+    mark_status_seen "$state" "$task" "$end" "$ident" \
+      || log "could not bound status log $task at its start position"
+  done
+}
+
 # Advance the offset for every task a per-wake classification escalated, so the
 # catch-all scan does not re-escalate the same events within HEARTBEAT_SCAN_SECS.
 # An ERROR row names a task whose log could not be classified and carries the
@@ -2091,6 +2125,7 @@ fm_super_main() {
   afk_active "$STATE" && afk_status="on"
   log "daemon starting (pid $$); target=$TARGET; target_source=$target_source; backend=$BACKEND; backend_source=$backend_source; afk=$afk_status; inject_skip='${FM_INJECT_SKIP:-$INJECT_SKIP_DEFAULT}'; stale_escalate=${FM_STALE_ESCALATE_SECS:-$STALE_ESCALATE_SECS_DEFAULT}s; batch=${FM_ESCALATE_BATCH_SECS:-$ESCALATE_BATCH_SECS_DEFAULT}s"
   migrate_watcher_pause_markers "$STATE"
+  seed_status_seen_markers "$STATE"
 
   # --- shutdown: flush buffered escalations, reap child, release lock -------
   local WATCHER_PID="" CUR_TMP=""
