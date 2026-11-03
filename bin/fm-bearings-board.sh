@@ -552,10 +552,10 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
     | {schema:"fm-bearings-board.v1", home:$snap.home, generated:$snap.generated, prs_live:false,
        captains_call:($kept + [$open_cards[] | select(.key as $key | $kept_keys | index($key) == null)]),
        underway:[$snap.in_flight[]
-         | {id, repo, name:(.name | text_or(.id)), kind:(.kind | text_or("ship")),
+         | {id, repo, name:(.id as $id | .name | text_or($id)), kind:(.kind | text_or("ship")),
             state:(.state | text_or("unknown")), doing:(.doing | text_or("-"))}],
        landed:[$snap.landed[]
-         | {id, repo:null, what:(.what | text_or(.id)), owner}
+         | {id, repo:null, what:(.id as $id | .what | text_or($id)), owner}
            + (if ((.artifact // "") | test("^https://[^[:space:]]+/pull/[0-9]+$")) then {pr_url:.artifact} else {} end)],
        charted:$charted[:20],
        charted_more:([$charted[20:][] | select(.kind != "warning")] | length),

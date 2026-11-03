@@ -843,6 +843,42 @@ test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
   pass "refresh composes from the snapshot and keeps an authored card only while its call is open"
 }
 
+test_refresh_composes_live_tasks_and_landed_rows() {
+  local home board out
+  home=$(make_home refresh-fleet)
+  board="$home/.lavish/bearings-board.html"
+  cat > "$home/data/backlog.md" <<'EOF'
+## In flight
+- [ ] live-task - Ship the thing (repo: sample) (kind: ship) (since 2026-07-11)
+
+## Queued
+
+## Done
+- [x] done-task - Landed thing https://github.com/example/sample/pull/7 (repo: sample) (kind: ship) (merged 2026-07-10)
+EOF
+  mkdir -p "$home/projects/live-wt"
+  fm_write_meta "$home/state/live-task.meta" \
+    "window=sample:fm-live-task" \
+    "worktree=$home/projects/live-wt" \
+    "project=sample" \
+    "harness=claude" \
+    "kind=ship" \
+    "mode=no-mistakes"
+  printf 'working: building the thing\n' > "$home/state/live-task.status"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed on a fleet with a live task and a landed row: $out"
+  extract_payload "$board" | jq -e '
+    (.underway | any(.id == "live-task" and .repo == "sample" and (.name | test("Ship the thing"))))
+    and (.landed | any(.id == "done-task" and (.what | test("Landed thing"))
+      and .pr_url == "https://github.com/example/sample/pull/7"))
+    and (.lanes | any(.id == "live-task"))
+  ' >/dev/null || fail "refresh misread the live task or landed row: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on a live fleet: $out"
+  assert_contains "$out" "unchanged" "--if-live rewrote an unchanged live fleet: $out"
+  pass "refresh composes a fleet with a live task and a landed row"
+}
+
 test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board() {
   local home board out before
   home=$(make_home refresh-live)
@@ -926,6 +962,7 @@ test_refresh_publishes_the_board_file_without_lavish_axi() {
 test_path_is_stable_and_home_scoped
 test_build_refuses_a_malformed_lane
 test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open
+test_refresh_composes_live_tasks_and_landed_rows
 test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board
 test_refresh_publishes_the_board_file_without_lavish_axi
 test_a_heartbeat_review_refreshes_a_live_board
