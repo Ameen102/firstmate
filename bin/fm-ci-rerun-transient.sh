@@ -16,10 +16,11 @@
 # A run whose jobs all skipped executes nothing (a non-full-ci label event) and
 # supersedes nothing, so it is passed over.
 #
-# The attempt count lives in $FM_HOME/state/ci-rerun/<repo>-pr<N>-<head>.count
-# (FM_HOME defaults to this code root), so a new head starts at zero and the
-# count never passes 3. It is written before the first rerun request, so a
-# request that fails still spends its attempt and the limit holds.
+# The attempt count lives in <state>/ci-rerun/<repo>-pr<N>-<head>.count, where
+# <state> is $FM_STATE_OVERRIDE or else $FM_HOME/state (FM_HOME defaults to this
+# code root), so a new head starts at zero and the count never passes 3. It is
+# written before the first rerun request, so a request that fails still spends
+# its attempt and the limit holds.
 #
 # Output (one line) and exit status:
 #   rerun N     exit 0  attempt N of the limit was started for the transient jobs
@@ -38,7 +39,7 @@ set -u
 
 max=3
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-state_dir=${FM_HOME:-$root}/state/ci-rerun
+state_dir=${FM_STATE_OVERRIDE:-${FM_HOME:-$root}/state}/ci-rerun
 pr='' run='' repo=''
 
 usage() { echo "usage: fm-ci-rerun-transient.sh (--pr N | --run ID) [-R owner/repo]" >&2; exit 2; }
