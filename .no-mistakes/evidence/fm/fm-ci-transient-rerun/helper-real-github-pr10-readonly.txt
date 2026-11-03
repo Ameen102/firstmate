@@ -1,0 +1,19 @@
+real GitHub, Ameen102/firstmate PR #10, gh reads real; mutating gh calls blocked by shim; FM_HOME disposable
+PR head: 59788bfe98596df3ceb3f5ed7f17bd00b3a33fba
+$ fm-ci-rerun-transient.sh --pr 10 -R Ameen102/firstmate
+none
+[exit 0]
+$ fm-ci-rerun-transient.sh --pr 10
+none
+[exit 0]
+$ fm-ci-rerun-transient.sh --run 41711890425 -R Ameen102/firstmate
+none
+[exit 0]
+$ fm-ci-rerun-transient.sh --run 41708358640 -R Ameen102/firstmate
+error: run 41708358640 has no pull request
+[exit 1]
+$ fm-ci-rerun-transient.sh --pr 999999 -R Ameen102/firstmate
+gh: Not Found (HTTP 404)
+error: cannot read PR 999999
+[exit 1]
+ls: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-ci-lab.p1d4pf/realhome/state/ci-rerun: No such file or directory

@@ -1,0 +1,137 @@
+bash under test: 3.2.57(1)-release
+
+### transient — real-shaped runner-less macOS job + success job; lifecycle to the limit
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 1  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+error: run 41690910623 still in progress, retry when complete  [exit 1]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+   (server: run finishes; lane cancelled runner-less again)
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 2  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun 
+   (server: run finishes; lane cancelled runner-less again)
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 3  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun 
+   (server: run finishes; lane cancelled runner-less again)
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+exhausted  [exit 3]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun 
+count file: 3 (o_r-pr9-sha-a.count)
+   (new head pushed)
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 1  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+
+### realfail — lane really failed
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+none  [exit 0]
+   POSTs so far: none
+
+### startedcancel — cancelled AFTER runner started
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+none  [exit 0]
+   POSTs so far: none
+
+### twojobs — two transient jobs in one run
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 1  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+
+### superseded — older same-head run transient, newest has real failure
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+none  [exit 0]
+   POSTs so far: none
+
+### superseded-live — older same-head transient, replacement running
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+none  [exit 0]
+   POSTs so far: none
+
+### pushed — transient only on older head (newer push)
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+none  [exit 0]
+   POSTs so far: none
+
+### twowf — compliance workflow failed for real + CI lane transient
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 1  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+
+### label — non-full-ci label: all-skipped newest over transient
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+rerun 1  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+
+### starting — newer run queued, no jobs listed yet, older transient
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+error: run 214 still in progress, retry when complete  [exit 1]
+   POSTs so far: none
+
+### startingq — newer run with only queued jobs, older transient
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+error: run 216 still in progress, retry when complete  [exit 1]
+   POSTs so far: none
+
+### livetransient — transient on run still in progress
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+error: run 217 still in progress, retry when complete  [exit 1]
+   POSTs so far: none
+
+### refuse — GitHub refuses rerun: bound still holds
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+gh: Resource not accessible (HTTP 403)
+error: rerun of job 126158241687 failed; attempt 1 spent  [exit 1]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+gh: Resource not accessible (HTTP 403)
+error: rerun of job 126158241687 failed; attempt 2 spent  [exit 1]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun 
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+gh: Resource not accessible (HTTP 403)
+error: rerun of job 126158241687 failed; attempt 3 spent  [exit 1]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun 
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+exhausted  [exit 3]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun /repos/o/r/actions/jobs/126158241687/rerun 
+
+### readfail — API 500 on read
+$ fm-ci-rerun-transient.sh --pr 9 -R o/r
+gh: boom (HTTP 500)
+error: cannot read PR 9  [exit 1]
+   POSTs so far: none
+
+### transient — --run path
+$ fm-ci-rerun-transient.sh --run 41690910623 -R o/r
+rerun 1  [exit 0]
+   POSTs so far: /repos/o/r/actions/jobs/126158241687/rerun 
+
+### nopr — --run with no PR attached
+$ fm-ci-rerun-transient.sh --run 219 -R o/r
+error: run 219 has no pull request  [exit 1]
+   POSTs so far: none
+
+### usage errors
+$ fm-ci-rerun-transient.sh 
+usage: need --pr or --run  [exit 2]
+   POSTs so far: none
+$ fm-ci-rerun-transient.sh --pr
+usage: fm-ci-rerun-transient.sh (--pr N | --run ID) [-R owner/repo]  [exit 2]
+   POSTs so far: none
+$ fm-ci-rerun-transient.sh --run
+usage: fm-ci-rerun-transient.sh (--pr N | --run ID) [-R owner/repo]  [exit 2]
+   POSTs so far: none
+$ fm-ci-rerun-transient.sh --pr 9 -R
+usage: fm-ci-rerun-transient.sh (--pr N | --run ID) [-R owner/repo]  [exit 2]
+   POSTs so far: none
+$ fm-ci-rerun-transient.sh --pr x -R o/r
+usage: --pr/--run take a number  [exit 2]
+   POSTs so far: none
+$ fm-ci-rerun-transient.sh --pr 9 --run 1 -R o/r
+usage: give --pr or --run, not both  [exit 2]
+   POSTs so far: none
+$ fm-ci-rerun-transient.sh --bogus
+usage: fm-ci-rerun-transient.sh (--pr N | --run ID) [-R owner/repo]  [exit 2]
+   POSTs so far: none

@@ -1,0 +1,30 @@
+Real Claude primary (tmux -L fm-lab, disposable FM_HOME); gh pointed at disposable API. Prompt did NOT name the helper.
+--- pane transcript ---
+ ▐▛███▛█   Claude Code v2.1.317
+▝▜██████▀  Opus 5.5 with medium effort · Claude Ultra
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/263a936a3c0b/01M6HHBPKBPG2KH993PK0V1BZ6
+  ⎿  SessionStart:startup hook error
+  ⎿  Failed with non-blocking status code: /bin/sh: chrome-devtools-axi: command not found
+❯ Disposable lab drill. A worker supervising validation reports: the no-mistakes CI step on PR 9 of repo o/r failed, with a ci-transient finding: lane 'Stock macOS Bash snapsho
+  compatibility' stopped without running. Handle this exactly as this repo's validation-supervision skill says, before you would escalate or decide it. Use only repo o/r. Do not
+  dispatch crew or touch other repos. End with one line stating the outcome and your next step.
+⏺ Skill(validation-supervision)
+  ⎿  Successfully loaded skill
+⏺ Running skill's transient-lane rerun helper on PR 9 of o/r first.
+  Ran 1 shell command
+⏺ Captain, rerun 1 of PR 9's stopped CI lane in o/r triggered (limit 3 per head), so finding not real failure yet and no escalation; next step: wait for rerun result, then judg
+  CI.
+✻ Worked for 5m 9s · done 12:23 AM
+                                                                                                                                          ✘ Auto-update failed · Run claude doc
+───────────────────────────────────────────────────────────�
+❯ 
+───────────────────────────────────────────────────────────�
+  7d 16%
+  ⏵⏵ auto mode on (shift+tab to cycle) · gh auth login for PR status · ← 2 agents
+--- disposable API request log ---
+GET /repos/o/r/pulls/9
+GET /repos/o/r/actions/runs?head_sha=sha-skill&per_page=100
+GET /repos/o/r/actions/runs/41690910623/jobs?per_page=100
+POST /repos/o/r/actions/jobs/126158241687/rerun
+--- lab count file ---
+o_r-pr9-sha-skill.count: 1
