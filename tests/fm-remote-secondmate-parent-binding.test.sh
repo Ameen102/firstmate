@@ -50,7 +50,7 @@ PUBLISH_PID=
 mkdir -p "$PARENT/data" "$PARENT/state" "$PARENT/config" "$PARENT/projects" "$REMOTE_ROOT" "$CLAIMS"
 
 cleanup() {
-  local worker_pid='' wait_attempt=0
+  local worker_pid=''
   if [ -n "$PUBLISH_PID" ]; then
     touch "$PUBLISH_RELEASE" 2>/dev/null || true
     kill "$PUBLISH_PID" 2>/dev/null || true
@@ -60,11 +60,10 @@ cleanup() {
     "$ROOT/bin/fm-procevent.sh" sweep-home >/dev/null 2>&1 || true
   if [ -f "$TMP_ROOT/remote-jobs/worker.pid" ]; then
     worker_pid=$(cat "$TMP_ROOT/remote-jobs/worker.pid")
-    kill "$worker_pid" 2>/dev/null || true
-    while kill -0 "$worker_pid" 2>/dev/null && [ "$wait_attempt" -lt 100 ]; do
-      wait_attempt=$((wait_attempt + 1))
-      sleep 0.05
-    done
+    # shellcheck source=bin/fm-remote-job-lib.sh
+    . "$ROOT/bin/fm-remote-job-lib.sh"
+    FM_REMOTE_JOB_STATE="$TMP_ROOT/remote-jobs"
+    fm_remote_job_stop_worker_tree "$worker_pid" 2>/dev/null || true
   fi
   rm -rf -- "$TMP_ROOT"
 }
@@ -223,7 +222,10 @@ cmp -s "$REMOTE_HOME/.fm-secondmate-parent" <(
 remote_env "$ROOT/bin/fm-spawn.sh" ios --secondmate >/dev/null \
   || fail "real remote secondmate launch failed"
 
-DELIVERED_LINE=$(grep -F 'FM_PUBLIC_FOLLOWUP_PRIMARY_HOME' "$HERDR_LOG" | tail -1 || true)
+STAGED_LAUNCH=$(sed -n "s/^pane send-text [^ ]* \\. '\([^']*\)' --session [^ ]*\$/\1/p" "$HERDR_LOG" | tail -1)
+[ -n "$STAGED_LAUNCH" ] && [ -f "$STAGED_LAUNCH" ] \
+  || fail "the remote launch did not deliver a staged command to assert against"
+DELIVERED_LINE=$(grep -F 'FM_PUBLIC_FOLLOWUP_PRIMARY_HOME' "$STAGED_LAUNCH" | tail -1 || true)
 DELIVERED=$(printf '%s\n' "$DELIVERED_LINE" | tr ' ' '\n' \
   | sed -n "s/^FM_PUBLIC_FOLLOWUP_PRIMARY_HOME='\{0,1\}\([^']*\)'\{0,1\}\$/\1/p" | tail -1)
 [ -n "$DELIVERED" ] || fail "the remote launch did not deliver a primary-home binding to assert against"
