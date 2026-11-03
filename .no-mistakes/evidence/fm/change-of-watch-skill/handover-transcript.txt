@@ -1,0 +1,119 @@
+
+=== S1 setup: owners table on pc, mac reads over ssh
+| item | owner | since |
+|---|---|---|
+| proj-x | pc | 2026-11-01 |
+[exit 0]
+
+=== S2 pc holds a captain call on proj-x, writes note, flips line, sends over ssh into mac home
+[in pc] fm-captain-hold.sh hold x-call --title Pick X rollout --reason Needs captain (blue or green) --until 2030-01-15
+x-call
+[exit 0]
+| item | owner | since |
+|---|---|---|
+| proj-x | mac | 2026-11-03 |
+queued 1793723439-qF5D3J
+  handoff: proj-x What: proj-x service. Stands: PR open, review pending. In flight: none. Open decisio
+  firstmate will pick this up at its next check.
+[exit 0]
+--- mac wake queue:
+1793723439	1	check	inbox:1793723439-qF5D3J	check: captain inbox note 1793723439-qF5D3J - handoff: proj-x What: proj-x service. Stands: PR open, review pending. In flight: none. Open decisio
+--- mac inbox list:
+1793723439-qF5D3J
+    handoff: proj-x
+    What: proj-x service.
+    Stands: PR open, review pending.
+    In flight: none.
+    Open decisions: x-call | Pick X rollout | Needs captain (blue or green) | until 2030-01-15
+    Links: https://example.invalid/pr/1
+--- pc inbox list (must be empty; FM_HOME names receiver):
+(inbox empty)
+
+=== S3 adversarial: same request id on a NEW body returns replay and discards body
+replay 1793723439-qF5D3J
+  handoff: proj-x What: proj-x service. Stands: PR open, review pending. In flight: none. Open decisio
+  firstmate will pick this up at its next check.
+[exit 0]
+DIFFERENT BODY stored nowhere
+
+=== S4 adversarial: receiver owner-line check - mac reads table over ssh; names mac -> proceed
+| proj-x | mac | 2026-11-03 |
+
+=== S5 mac re-files call with --title/--reason/--until, replies accepted into pc inbox
+[in mac] fm-captain-hold.sh hold x-call --title Pick X rollout --reason Needs captain (blue or green) --until 2030-01-15
+x-call
+[exit 0]
+[in mac] fm-captain-hold.sh open x-call
+[exit 0]
+queued 1793723468-n23cWq
+  accepted proj-x 
+  firstmate will pick this up at its next check.
+[exit 0]
+--- pc wake queue:
+1793723468	1	check	inbox:1793723468-n23cWq	check: captain inbox note 1793723468-n23cWq - accepted proj-x 
+note id: 1793723439-qF5D3J
+$ env FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/mac /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/mac/bin/fm-inbox.sh drain --ack 1793723439-qF5D3J
+acked 1793723439-qF5D3J
+[exit 0]
+(inbox empty)
+
+=== S6 pc closes own copy on accept reply
+[in pc] fm-captain-hold.sh answer x-call --decision-file /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/dec.txt
+answered: x-call
+[exit 0]
+5:- [x] x-call - Pick X rollout (repo: firstmate) (kind: captain) (done 2026-11-03) (hold: fm-hold-v1:TmVlZHMgY2FwdGFpbiAoYmx1ZSBvciBncmVlbik=) (hold-kind: captain) (hold-until: 2030-01-15)
+
+=== S7 adversarial round trip: mac hands back, pc's re-file of closed id refused; fallback <id>-<date> succeeds and is named in accept
+| proj-x | pc | 2026-11-03 |
+queued 1793723473-3fwkYK
+  handoff: proj-x Open decisions: x-call | Pick X rollout | Needs captain 
+  firstmate will pick this up at its next check.
+[exit 0]
+[in pc] fm-captain-hold.sh hold x-call --title Pick X rollout --reason Needs captain
+fm-captain-hold: task x-call is already closed; a new captain call needs its own task
+[exit 1]
+[in pc] fm-captain-hold.sh hold x-call-2026-11-03 --title Pick X rollout --reason Needs captain
+x-call-2026-11-03
+[exit 0]
+queued 1793723477-EguJto
+  accepted proj-x re-filed as x-call-2026-11-03 
+  firstmate will pick this up at its next check.
+[exit 0]
+[in mac] fm-captain-hold.sh answer x-call --decision-file /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/dec.txt
+answered: x-call
+[exit 0]
+
+=== S8 third handover of same item to same home with fresh id is NOT dropped
+queued 1793723483-5Cf8Eg
+  handoff: proj-x Third handover body 
+  firstmate will pick this up at its next check.
+[exit 0]
+/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/mac/state/inbox/1793723483-5Cf8Eg.note
+
+=== S9 item with slash sanitized in request id; raw id refused
+fm-inbox: invalid request id (use 1-128 characters: A-Za-z0-9._:-)
+[exit 1]
+queued 1793723483-wGVveW
+  forward: a/b 
+  firstmate will pick this up at its next check.
+[exit 0]
+
+=== S10 failure: send into unreachable/absent home exits nonzero, no delivery phrase (rollback trigger)
+zsh:cd:1: no such file or directory: /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/nonexistent
+[exit 1]
+
+=== S10b wake append fails: saved but not woken, exit nonzero
+queued 1793723485-Vp31sl
+  handoff: proj-x Third handover body 
+fm-inbox: note saved but NOT announced (missing /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/mac/bin/fm-wake-lib.sh)
+fm-inbox: note 1793723485-Vp31sl is saved at /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/cow.OIcTSi/mac/state/inbox/1793723485-Vp31sl.note but firstmate was NOT woken
+[exit 3]
+notes before=3 after=4
+
+=== S10c resend same id after unconfirmed delivery now wakes (resend rule)
+replay 1793723485-Vp31sl
+  handoff: proj-x Third handover body
+  firstmate will pick this up at its next check.
+[exit 0]
+pending wake rows naming it:
+1

@@ -1,0 +1,44 @@
+⏺ Captain, sm-x is handed to mac and retired here, but mac hasn't accepted yet. Until mac sets it up again, sm-x isn't running anywhere.
+      
+  Done                                                                              
+  - Ownership: the owner table now lists sm-x under mac, since 2026-11-03.                                                          
+  - Notes to mac: both the handover note and the follow-up saying sm-x is retired were delivered, with delivery confirmed each time.
+  - Retirement: normal retirement, nothing forced. sm-x's home and its route here are gone, and its window is closed.                                                          
+  - Brief restart: retirement needs a running record, and sm-x had none, so I restarted it for a few minutes first. I rechecked just before changing ownership and again before
+    retiring, and it had no work in progress both times.
+                
+  Still with mac                                                                                                                                                            
+  - Accept and setup: mac still has to reply that it accepts, set sm-x up on its side, then re-file your decision. I'll see the reply when it reaches my inbox.                 
+  - Your open decision: sm-call, "Pick onboarding copy", is still undecided. Retirement deleted the copy here, so until mac re-files it, the handover note in mac's inbox is the   
+    only record. Please send your answer to mac from now on.                                                                                                                      
+                                                                                                                                                                                    
+  Nothing is needed from you unless mac comes back with a question.
+✻ Worked for 4m 40s · done 7:54 PM                                                                                                                                                  
+                                                                                                                                                                                    
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯                                                                                                                        
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 24%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents  
+--ssh
+mac cd /Users/ameen/firstmate && pwd && ls -a && ls bin 2>/dev/null | grep -c . ; cat data/secondmates.md 2>&1
+mac cd /Users/ameen/firstmate && FM_HOME=/Users/ameen/firstmate bin/fm-inbox.sh note --request-id handoff-sm-x-20261103T165223Z -
+mac cd /Users/ameen/firstmate && FM_HOME=/Users/ameen/firstmate bin/fm-inbox.sh note --request-id handoff-sm-x-20261103T165427Z -
+--owners
+| sm-x | mac | 2026-11-03 |
+--peer-inbox
+1793724744-RWRFdK
+    handoff: sm-x
+    What: persistent second mate, charter "onboarding charter"; scope: alpha onboarding; projects: alpha [direct-PR].
+    Stands: idle on pc. pc retires it next and sends a second note "handoff: sm-x retired"; seed anew only after that note arrives.
+    In flight: nothing. A stale crew1 record was removed by the captain, who confirmed no work in flight.
+    Open decisions: sm-call | Pick onboarding copy | Needs captain | no deferral date
+    Re-file sm-call in the new second mate's home after seeding; pc does not close it, retirement removes pc's copy.
+    Links: none
+1793724868-dbKa2r
+    handoff: sm-x retired
+    Retired on pc: home removed, route removed. Seed sm-x anew on mac now.
+    Then re-file sm-call from the first handoff note in the new second mate's home: Pick onboarding copy | Needs captain | no deferral date.
+--sub-exists
+ls: $SUBP/sm-x: No such file or directory
+--registry

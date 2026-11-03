@@ -1,0 +1,25 @@
+    discard, which needs your explicit word.
+  The worker record looks abandoned, but I can't prove it
+  - No sign of activity: I found no running window for it, its current state reads as unknown, and its isolated copy is gone. The alpha copy in sm-x's home shows no commits and no
+    local changes.
+  - Still uncertain: nobody has confirmed the worker finished or that nothing was lost. sm-x itself doesn't appear to be running either, so it hasn't checked this.
+  Also moving with sm-x: your open decision sm-call, "Pick onboarding copy". The handover note will carry it, and mac will re-file it once sm-x is set up there.
+  How do you want to clear the worker record?
+  1. Restart sm-x here (recommended): it checks its own worker and closes the record if nothing is outstanding. I then do the handover, which keeps every safety check but isn't
+     immediate.
+  2. Discard now: if you say "discard crew1's work and retire sm-x", I'll hand over to mac and force the retirement straight away. This permanently deletes everything in sm-x's
+     home, including anything crew1 left behind.
+✻ Worked for 1m 22s · done 7:48 PM                                                                                                                                                
+                                                                                                                                                                                    
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯                           
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  7d 24%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 2 agents  
+--ssh
+--owners
+| sm-x | pc | 2026-11-01 |
+--peer-inbox
+(inbox empty)
+--sub
+AGENTS.md CLAUDE.md CONTRIBUTING.md GROK_BOT.md LICENSE README.md VISION.md assets bin config data docs projects skills state tests 

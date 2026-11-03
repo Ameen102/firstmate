@@ -1,0 +1,41 @@
+=== mac inbox as delivered by real primary
+1793724744-RWRFdK
+    handoff: sm-x
+    What: persistent second mate, charter "onboarding charter"; scope: alpha onboarding; projects: alpha [direct-PR].
+    Stands: idle on pc. pc retires it next and sends a second note "handoff: sm-x retired"; seed anew only after that note arrives.
+    In flight: nothing. A stale crew1 record was removed by the captain, who confirmed no work in flight.
+    Open decisions: sm-call | Pick onboarding copy | Needs captain | no deferral date
+    Re-file sm-call in the new second mate's home after seeding; pc does not close it, retirement removes pc's copy.
+    Links: none
+1793724868-dbKa2r
+    handoff: sm-x retired
+    Retired on pc: home removed, route removed. Seed sm-x anew on mac now.
+    Then re-file sm-call from the first handoff note in the new second mate's home: Pick onboarding copy | Needs captain | no deferral date.
+=== mac (receiver) reseeds sm-x via normal seed, in peer home
+fatal: repository '$PEER' does not exist
+error: $SUBP/sm-x-new is not a firstmate home (missing AGENTS.md)
+cat: $PEER/data/secondmates.md: No such file or directory
+(eval):4: no such file or directory: $SUBP/sm-x-new/data/backlog.md
+=== re-file call in new second mate home
+(eval):cd:5: no such file or directory: $SUBP/sm-x-new
+[exit 1]
+cat: $SUBP/sm-x-new/data/backlog.md: No such file or directory
+
+=== RETRY: peer fixture made a git repo (firstmate homes are clones)
+warning: remote HEAD refers to nonexistent ref, unable to checkout
+home=$SUBP/sm-x-new
+- sm-x - onboarding charter (home: $SUBP/sm-x-new; scope: alpha onboarding; projects: alpha; added 2026-11-03)
+=== re-file call in new second mate home
+sm-call
+[exit 0]
+## In flight
+
+## Queued
+- [ ] sm-call - Pick onboarding copy (repo: firstmate) (kind: captain) (since 2026-11-03) (hold: fm-hold-v1:TmVlZHMgY2FwdGFpbg==) (hold-kind: captain)
+  Captain hold set: 2026-11-03T16:56:16Z
+## Done
+=== accepted reply to pc
+queued 1793724979-vUjmEt
+  accepted sm-x 
+  firstmate will pick this up at its next check.
+[exit 0]
