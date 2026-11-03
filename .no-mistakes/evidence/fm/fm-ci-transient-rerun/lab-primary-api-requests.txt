@@ -1,0 +1,1 @@
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 201 auth=yes

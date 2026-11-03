@@ -1,0 +1,55 @@
+=== PR 10 head 920d7a92a4d21567df77776be0cd7320d067ec61
+  run 41728002515 PR #10 body compliance - synchronize - event 35 (run 41728002515) wf=346206877 completed/failure
+  run 41728002709 CI wf=346206878 queued/null
+    job 126237729510 Stock macOS Bash snapshot compatibility queued/null runner=[null] steps=0
+    job 126237729523 Behavior portable serial 3 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-3i4snolpzmzgghnv] steps=12
+    job 126237729530 Lint 1 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-taolpdvriwp4tqoy] steps=9
+    job 126237729537 Behavior portable serial 10 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-ljbu5ku6k2pao3hq] steps=12
+    job 126237729552 Behavior portable serial 7 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-abbumd7oclc63m3z] steps=12
+    job 126237729556 Behavior portable serial 2 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-zdtif2l3bm4qi45q] steps=12
+    job 126237729559 Behavior portable serial 6 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-pa3fqspvkpps23jt] steps=12
+    job 126237729573 Behavior portable serial 5 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-v2bjcfwwwaijmsja] steps=12
+    job 126237729592 Behavior portable parallel 2 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-sh3yxndngzgadbh3] steps=10
+    job 126237729618 Behavior portable serial 1 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-vafcim4ydqholsqt] steps=12
+    job 126237729620 Behavior portable serial 8 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-kddrnikyjybuz6j7] steps=12
+    job 126237729669 Behavior portable serial 4 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-ueth33u62udzqsfd] steps=12
+    job 126237729686 Lint 2 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-lopuf7mof6aeivc7] steps=9
+    job 126237729734 Behavior portable parallel 1 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-tv5tmzospotqv7nr] steps=11
+    job 126237729737 Behavior portable serial 9 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-a2bg5tigotwxepwy] steps=12
+    job 126237729768 Behavior tests (Herdr) in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-icyo65xklntkeyad] steps=14
+    job 126237729791 Behavior portable serial 11 in_progress/null runner=[blacksmith-2vcpu-ubuntu-2404-6wtqbkgrhxwz63ph] steps=12
+  helper: 'none' exit=0
+  posts:
+  state:
+=== PR 11 head 0d54c1c55e42463ddda7b76bd7fc88c6d6fd6353
+  run 41722813610 PR #11 body compliance - edited - event 31 (run 41722813610) wf=346206877 completed/failure
+  run 41722802336 PR #11 body compliance - opened - event 30 (run 41722802336) wf=346206877 completed/failure
+  run 41722802349 CI wf=346206878 completed/success
+  helper: 'none' exit=0
+  posts:
+  state:
+=== PR 12 head bd22e107db8271511a78eb461587476f68742a02
+  run 41723169002 PR #12 body compliance - edited - event 33 (run 41723169002) wf=346206877 completed/failure
+  run 41723156212 PR #12 body compliance - opened - event 32 (run 41723156212) wf=346206877 completed/failure
+  run 41723156367 CI wf=346206878 completed/failure
+    job 126220905721 Stock macOS Bash snapshot compatibility completed/cancelled runner=[] steps=0
+  helper: 'rerun 1' exit=0
+  posts:
+    BLOCKED api -X POST repos/Ameen102/firstmate/actions/jobs/126220905721/rerun
+  state:
+    Ameen102_firstmate-pr12-bd22e107db8271511a78eb461587476f68742a02.count:1
+=== PR 12 real reads, POST blocked: continue to limit (state already at 1)
+call 2: 'rerun 2' exit=0 posts=1
+call 3: 'rerun 3' exit=0 posts=1
+call 4: 'exhausted' exit=3 posts=0
+call 5: 'exhausted' exit=3 posts=0
+=== PR 10 real live run, seeded count 1: must defer, not none
+'error: run 41728002709 still in progress, retry when complete' exit=1 posts=0 count=1
+=== nonexistent PR, real API
+'error: cannot read PR 999999' exit=1
+=== usage
+[--pr 9] exit=127 : (eval):12: command not found: timeout
+[-R o/r] exit=127 : (eval):12: command not found: timeout
+[--pr 9 -R] exit=127 : (eval):12: command not found: timeout
+[--pr x -R o/r] exit=127 : (eval):12: command not found: timeout
+[--run 5 -R o/r] exit=127 : (eval):12: command not found: timeout

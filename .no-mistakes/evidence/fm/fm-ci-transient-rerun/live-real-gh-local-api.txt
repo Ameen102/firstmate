@@ -1,0 +1,27 @@
+--- real gh binary, real HTTP, disposable API. jobs: 71 runner-less cancelled, 72 real failure, 73 cancelled after runner
+[transient + real failure] -> 'rerun 1' exit=0 | count=1
+[immediately again, rerun active] -> 'error: run 500 still in progress, retry when complete' exit=1 | count=1
+[cancelled runner-less again (2nd)] -> 'rerun 2' exit=0 | count=2
+[again (3rd)] -> 'rerun 3' exit=0 | count=3
+[again (4th, limit)] -> 'exhausted' exit=3 | count=3
+[new head, same transient] -> 'rerun 1' exit=0 | count=1
+[rerun got runner and passed; only 72 and 73 remain] -> 'none' exit=0 | count=1
+[GitHub refuses POST 403] -> 'gh: This workflow is already running (HTTP 403)
+error: rerun of job 71 failed; attempt 1 spent' exit=1 | count=1
+[next call after refused POST] -> 'gh: This workflow is already running (HTTP 403)
+error: rerun of job 71 failed; attempt 2 spent' exit=1 | count=2
+[count not writable (dir read-only)] -> 'bin/fm-ci-rerun-transient.sh: line 91: /tmp/fmci.gqixkP/state2/ci-rerun/lab_fixture-pr7-jkl000.count: Permission denied
+error: cannot record count; nothing rerun' exit=1 | count=
+--- requests the API saw
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 201 auth=yes
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 201 auth=yes
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 201 auth=yes
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 201 auth=yes
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 403 auth=yes
+POST api.github.localhost/repos/lab/fixture/actions/jobs/71/rerun -> 403 auth=yes
+--- usage errors
+[--pr 9] exit=2 : usage: fm-ci-rerun-transient.sh --pr N -R owner/repo
+[-R o/r] exit=2 : usage: fm-ci-rerun-transient.sh --pr N -R owner/repo
+[--pr 9 -R] exit=2 : usage: fm-ci-rerun-transient.sh --pr N -R owner/repo
+[--pr x -R o/r] exit=2 : usage: fm-ci-rerun-transient.sh --pr N -R owner/repo
+[--run 5 -R o/r] exit=2 : usage: fm-ci-rerun-transient.sh --pr N -R owner/repo
