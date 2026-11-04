@@ -669,20 +669,17 @@ FM_COMPOSER_MODE_HINT_RE_DEFAULT='^[[:space:]]*(⏵|⏸)'
 # then a middle dot (`π` under the unicode preset, `󰵗` under nerd: the
 # `icon.omp` of those omp 18.1.11 presets, never an arbitrary short token, so
 # a wrapped typed row such as `fix · tests` stays composer input), when it
-# opens with omp 18.16.0's ascii-preset footer - the bare word `pi` is also an
-# ordinary word, so that alternative additionally requires omp's own `ctx:`
-# cell and a `pi · typed text` row stays composer input - when it opens with
-# one of omp's spinner frames then an elapsed cell, or when it carries the
-# context-usage cell after a middle dot. The context cell's `K` (thousand) and
-# `M` (million) suffixes are both real: the 18.1.11 captures above show
-# `/272K`, and omp 18.16.0's ascii-preset footer, captured live through Herdr
-# on 2026-11-04, reads
+# opens with one of omp's spinner frames then an elapsed cell, or when it
+# carries the context-usage cell after a middle dot. The context cell's `K`
+# (thousand) and `M` (million) suffixes are both real: the 18.1.11 captures
+# above show `/272K`, and omp 18.16.0's ascii-preset footer, captured live
+# through Herdr on 2026-11-04, reads
 # ` pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓`,
-# whose `pi` marker and `/1M` figure both failed the 18.1.11-era pattern and
-# left an idle omp worker reading `pending`, which silently skipped its
-# doorbell and refused `fm-control` exit and relaunch. It is consulted only as
-# the boundary BELOW a bare composer, never on the composer row itself.
-FM_COMPOSER_OMP_STATUS_RE_DEFAULT='^[[:space:]]*(π|󰵗)[[:space:]]+·[[:space:]]|^[[:space:]]*pi[[:space:]]+·.*[[:space:]]·[[:space:]]ctx:|^[[:space:]]*'"$FM_OMP_SPINNER_FRAMES_RE"'[[:space:]]+[0-9]+[smh]([[:space:]]|$)|[[:space:]]·[[:space:]].*[0-9]+(\.[0-9]+)?%/[0-9]+[KM]'
+# whose `/1M` figure failed the 18.1.11-era pattern and left an idle omp
+# worker reading `pending`, which silently skipped its doorbell and refused
+# `fm-control` exit and relaunch. It is consulted only as the boundary BELOW a
+# bare composer, never on the composer row itself.
+FM_COMPOSER_OMP_STATUS_RE_DEFAULT='^[[:space:]]*(π|󰵗)[[:space:]]+·[[:space:]]|^[[:space:]]*'"$FM_OMP_SPINNER_FRAMES_RE"'[[:space:]]+[0-9]+[smh]([[:space:]]|$)|[[:space:]]·[[:space:]].*[0-9]+(\.[0-9]+)?%/[0-9]+[KM]'
 # Pi's footer stats row opens at column 0 with the session cost when every
 # token counter is zero (`$0.000 (sub) 5.4%/272k (auto)` on pi 0.85.1).
 # That leading `$` is a cost cell, not a dead-shell prompt, only when a digit

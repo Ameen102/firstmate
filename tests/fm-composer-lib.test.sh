@@ -552,8 +552,9 @@ test_matrix_omp_status_row_bounds_bare_composer() {
   # to begin with a short word and a spaced middle dot is composer input.
   _fm_composer_row_is_omp_status 'fix · tests before pushing' \
     && fail "wrapped typed text with a middle dot must not be mistaken for omp status furniture"
-  # The ascii preset's identity cell is `pi`, but that preset separates its
-  # cells with ` - `, so a row opening `pi ·` is never omp furniture.
+  # The ascii preset's identity cell is `pi`, but `pi` is also an ordinary
+  # word: a row opening `pi ·` is composer input because it lacks omp's own
+  # `ctx:` context-usage cell.
   _fm_composer_row_is_omp_status 'pi · e · phi as the three constants' \
     && fail "typed text opening 'pi ·' must not be mistaken for omp status furniture"
   _fm_composer_row_is_omp_status ' ⣾ 3s  · ◔ GPT-6-Astra' \
@@ -576,11 +577,11 @@ test_matrix_omp_status_row_bounds_bare_composer() {
 test_matrix_omp_18_16_ascii_preset_idle_pane() {
   # Real idle omp worker pane captured live through Herdr on omp 18.16.0
   # (2026-11-04): the ascii preset's footer opens with the bare word `pi` and
-  # reports the context cell in millions (`/1M`). Both shapes post-date the
-  # 18.1.11-era pattern above, so the footer stopped being furniture: the idle
-  # worker read `pending`, `bin/fm-send.sh` silently skipped its doorbell, and
-  # every `fm-control` exit and relaunch was refused. The composer row and the
-  # footer row are the capture verbatim.
+  # reports the context cell in millions (`/1M`). The `/1M` figure post-dates
+  # the 18.1.11-era pattern above, so the footer stopped being furniture: the
+  # idle worker read `pending`, `bin/fm-send.sh` silently skipped its doorbell,
+  # and every `fm-control` exit and relaunch was refused. The composer row and
+  # the footer row are the capture verbatim.
   local footer idle typed idle_row
   # shellcheck disable=SC2016 # `$0.00` is omp's literal cost cell, not an expansion
   footer=' pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓'
@@ -595,10 +596,9 @@ test_matrix_omp_18_16_ascii_preset_idle_pane() {
   assert_screen "idle omp 18.16.0 (ascii preset)" empty "$CAPS_STYLED" "$idle"
   assert_screen "idle omp 18.16.0 on a plain capture" empty "$CAPS_PLAIN" "$idle"
   assert_screen "typed omp 18.16.0 text is pending" pending "$CAPS_STYLED" "$typed"
-  # The bare word `pi` is also ordinary typed text, so the ascii-preset
-  # alternative requires omp's own `ctx:` cell: a row that opens `pi ·` and
-  # carries no context cell stays composer input.
-  _fm_composer_row_is_omp_status 'pi · e · phi as the three constants' \
+  # A row opening `pi ·` is composer input because it lacks omp's own `ctx:`
+  # context-usage cell.
+  _fm_composer_row_is_omp_status 'pi · e · phi · ctx: typed text' \
     && fail "typed text opening 'pi ·' must not be mistaken for omp status furniture"
   pass "matrix: omp 18.16.0's ascii-preset footer bounds the bare composer's wrap region"
 }

@@ -3320,7 +3320,7 @@ After the rule, the same live Herdr capture read `empty`, a steer's doorbell lan
 
 #### Footer shape on 18.16.0 (2026-11-04)
 
-omp 18.16.0 under the `ascii` preset changes the two cells that rule keyed on: the identity cell is the bare word `pi`, and the context cell reports millions (`/1M`) where the 18.1.11 captures above show thousands (`/272K`).
+omp 18.16.0 under the `ascii` preset renders a different identity cell (the bare word `pi`) and reports the context cell in millions (`/1M`) where the 18.1.11 captures above show thousands (`/272K`).
 The idle worker pane captured through Herdr read:
 
 ```text
@@ -3328,8 +3328,8 @@ The idle worker pane captured through Herdr read:
  pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓
 ```
 
-Neither shape matched, so an idle omp worker read `pending`: `bin/fm-send.sh` silently skipped its doorbell and `bin/fm-control.sh <id> exit` and `relaunch` refused.
-The status-row pattern now accepts the `M` context suffix on any omp footer, and the ascii preset's `pi` identity cell only when the row also carries omp's own `ctx:` cell, so a wrapped typed row opening `pi ·` stays composer input.
+The `/1M` context figure failed the 18.1.11-era pattern, so an idle omp worker read `pending`: `bin/fm-send.sh` silently skipped its doorbell and `bin/fm-control.sh <id> exit` and `relaunch` refused.
+The status-row pattern now accepts the `M` context suffix, which is what made this footer furniture again; it still keys on the context-usage cell rather than on the bare word `pi`, so a wrapped typed row opening `pi ·` stays composer input.
 `tests/fm-composer-lib.test.sh` pins this captured pane as `empty` and the same pane with typed text as `pending`.
 
 ### Busy state and lifecycle
