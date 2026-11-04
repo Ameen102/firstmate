@@ -376,6 +376,7 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
   printf '%s' "$(hash_text 'idle, holding for the CI rerun')" > "$state/.hash-$key"
   printf '1\n' > "$state/.count-$key"
   export FM_FAKE_CREW_STATE='state: paused · source: status-log · waiting on the CI rerun'
+  export FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok
 
   # Round 1: the declaration is past the cadence and has never been rechecked, so
   # this recheck reaches firstmate and records the wake it belongs to.
@@ -383,7 +384,7 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
   watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
   pid=$!
   wait_for_exit "$pid" 100 || fail "a never-rechecked declared pause did not re-surface"
-  grep -F 'awaiting external' "$out" >/dev/null || fail "the first pause recheck lost its declared-wait reason"
+  grep -Fx "stale: $window" "$out" >/dev/null || fail "the first pause recheck did not reach firstmate: $(cat "$out")"
   [ -e "$state/.paused-woken-$key" ] || fail "a pause recheck that reached firstmate recorded no wake"
   ack_stopped_cycle "$state" || fail "could not acknowledge the first pause recheck"
 
@@ -414,7 +415,7 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
   watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
   pid=$!
   wait_for_exit "$pid" 100 || fail "a declared pause past the absorption ceiling never re-surfaced"
-  grep -F 'awaiting external' "$out" >/dev/null || fail "the ceiling recheck lost its declared-wait reason"
+  grep -Fx "stale: $window" "$out" >/dev/null || fail "the ceiling recheck did not reach firstmate: $(cat "$out")"
   grep -F 'possible wedge' "$out" >/dev/null && fail "a declared pause was mislabeled a possible wedge"
   ack_stopped_cycle "$state" || fail "could not acknowledge the ceiling recheck"
 
@@ -435,8 +436,76 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
     [ -s "$out" ] || fail "a parked crew's recheck printed no wake: $verdict"
     ack_stopped_cycle "$state" || fail "could not acknowledge the parked recheck: $verdict"
   done
-  unset FM_FAKE_CREW_STATE
+  unset FM_FAKE_CREW_STATE FM_FAKE_TMUX_WINDOW FM_FAKE_TMUX_CAPTURE FM_FAKE_TMUX_CURRENT_COMMAND
   pass "a settled declared pause absorbs its rechecks, one still wakes at the ceiling, and a parked crew always wakes"
+}
+
+# The 24-hour ceiling only speaks for a wait whose agent is still there to hold
+# it. Once the agent behind a standing paused: line has gone, crew state still
+# reads the line and reports `state: paused`, so only the backend liveness probe
+# can tell: the recheck falls back to the ordinary cadence inside the ceiling.
+test_dead_agent_behind_a_standing_wait_wakes_on_the_cadence() {
+  local dir state fakebin out capture_file statusf window key sig pid
+  dir=$(make_case pause-dead-agent); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"; capture_file="$dir/pane.txt"; statusf="$state/held.status"
+  window="test:fm-gone"; key=$(printf '%s' "$window" | tr ':/.' '___')
+  printf 'holding for the CI rerun' > "$capture_file"
+  printf 'window=%s\nkind=ship\nharness=grok\nbackend=tmux\n' "$window" > "$state/held.meta"
+  printf 'paused: waiting on the CI rerun of run 1234\n' > "$statusf"
+  sig=$(seen_sig "$statusf"); printf '%s' "$sig" > "$state/.seen-held_status"
+  printf '%s' "$(hash_text 'holding for the CI rerun')" > "$state/.hash-$key"
+  printf '1\n' > "$state/.count-$key"
+  export FM_FAKE_CREW_STATE='state: paused · source: status-log · waiting on the CI rerun'
+
+  # The first recheck records this declaration's wake while the agent is alive.
+  set_mtime "$(( $(date +%s) - 500 ))" "$statusf"
+  FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok watch_bg "$state" "$fakebin" "$out" env \
+    FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+  pid=$!
+  wait_for_exit "$pid" 100 || fail "a never-rechecked declared pause did not re-surface"
+  [ "$(cat "$state/.paused-woken-$key" 2>/dev/null)" = "$(cat "$state/.paused-resurfaced-$key" 2>/dev/null)" ] \
+    || fail "the first recheck did not record its wake"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the first pause recheck"
+
+  # Control: the same due recheck with the agent still alive is absorbed.
+  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+  printf 'holding for the CI rerun (token 2)' > "$capture_file"
+  : > "$out"
+  FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok watch_bg "$state" "$fakebin" "$out" env \
+    FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+  pid=$!
+  if ! wait_poll_cycle "$state" "$pid" || ! wait_poll_cycle "$state" "$pid"; then
+    reap "$pid"; fail "a live agent's settled pause recheck woke firstmate: $(cat "$out")"
+  fi
+  [ ! -s "$out" ] || { reap "$pid"; fail "a live agent's settled pause recheck printed a wake"; }
+  reap "$pid"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the absorbed recheck"
+
+  # The agent dies, leaving a bare shell in the pane. The wake is well inside the
+  # ceiling and crew state still agrees, but the next due recheck reaches firstmate.
+  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+  printf 'bare shell after the agent died' > "$capture_file"
+  : > "$out"
+  FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=zsh watch_bg "$state" "$fakebin" "$out" env \
+    FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+  pid=$!
+  wait_for_exit "$pid" 100 || { reap "$pid"; fail "a dead agent's standing wait was absorbed inside the ceiling"; }
+  grep -F 'awaiting external' "$out" >/dev/null || fail "the dead agent's recheck lost its declared-wait reason"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the dead agent's recheck"
+
+  # It is held to the cadence, not a wake per poll.
+  printf 'bare shell after the agent died (token 2)' > "$capture_file"
+  : > "$out"
+  FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=zsh watch_bg "$state" "$fakebin" "$out" env \
+    FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+  pid=$!
+  if ! wait_poll_cycle "$state" "$pid" || ! wait_poll_cycle "$state" "$pid"; then
+    reap "$pid"; fail "a dead agent's wait woke firstmate inside the cadence: $(cat "$out")"
+  fi
+  [ ! -s "$out" ] || { reap "$pid"; fail "a dead agent's wait printed a wake inside the cadence"; }
+  reap "$pid"
+  unset FM_FAKE_CREW_STATE
+  pass "a dead agent behind a standing wait wakes on the cadence, not the ceiling, while a live agent stays absorbed"
 }
 
 # A dead worker reaches handle_paused_stale rather than the live fallback above.
@@ -1587,6 +1656,7 @@ fm_test_run \
   test_exited_declared_pause_is_bounded_but_live_gate_surfaces \
   test_own_work_wait_keeps_first_alert_then_long_cadence \
   test_pause_recheck_absorption_is_bounded_by_the_ceiling \
+  test_dead_agent_behind_a_standing_wait_wakes_on_the_cadence \
   test_absorbed_replacement_wait_does_not_inherit_the_old_throttle \
   test_live_declared_wait_churn_honors_the_resurface_throttle \
   test_live_paused_until_controls_recheck_time \

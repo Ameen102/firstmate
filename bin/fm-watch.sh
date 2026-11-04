@@ -15,7 +15,7 @@
 # `until <UTC ISO 8601>` is rechecked when that time passes, but a declared time
 # beyond FM_PAUSE_RESURFACE_SECS cannot extend the ordinary recheck cadence, and
 # a recheck for a wait that still stands and whose crew still reports waiting is
-# absorbed, with one wake per 24 hours so a forgotten wait
+# absorbed while its agent is alive, with one wake per 24 hours so a forgotten wait
 # cannot rot invisibly. While an away record (state/.afk-contract, never quiet
 # mode's) exists an item held for the captain is never rechecked at all, in
 # either posture.
@@ -480,8 +480,8 @@ PAUSE_RESURFACE_SECS=${FM_PAUSE_RESURFACE_SECS:-$FM_PAUSE_RESURFACE_SECS_DEFAULT
 # forgotten wait cannot rot invisibly. A wake is measured from the last wake this
 # declaration produced, never from the last absorption, so the ceiling bounds how
 # long firstmate stays uninformed rather than how often the cadence runs. A wait
-# whose own `until` time arrives, or whose crew state stops agreeing, resumes the
-# ordinary cadence at once.
+# whose own `until` time arrives, whose crew state stops agreeing, or whose agent
+# is no longer confirmed alive resumes the ordinary cadence at once.
 PAUSE_ABSORB_CEILING_SECS=86400
 # A declared wait that names WHEN it clears (`paused: ... until <UTC ISO 8601>`,
 # status_paused_until in fm-classify-lib.sh) is condition-aware: it is not
@@ -1569,22 +1569,28 @@ resurface_absorbed() {  # <window> <throttle-marker> <age> <reason> [scope] [min
 
 # 0 when a declared pause's next recheck has nothing new to add: a wake already
 # went out for this exact declaration, the crew's own authoritative state still
-# reports the pause (crew_is_paused), and that wake is younger than
-# PAUSE_ABSORB_CEILING_SECS. The caller then absorbs this recheck with a triage
-# line and restarts the cadence, so the declaration reaches firstmate once per
-# ceiling instead of once per cadence.
+# reports the pause (crew_is_paused), that wake is younger than
+# PAUSE_ABSORB_CEILING_SECS, and the backend confirms a live agent. The caller
+# then absorbs this recheck with a triage line and restarts the cadence, so the
+# declaration reaches firstmate once per ceiling instead of once per cadence.
+# Crew state reads the status line, so it keeps reporting the pause after the
+# agent behind it has gone; only the liveness probe can tell. Anything short of
+# `alive`, including a secondmate whose endpoint liveness is deliberately never
+# read here, keeps the ordinary PAUSE_RESURFACE_SECS cadence.
 # Reaching this requires the recheck to be due at all, which keeps the
 # fm-crew-state.sh read at one per cadence rather than one per poll, and a fresh
 # declaration (its own throttle scope) always takes the ordinary first recheck.
-pause_recheck_settled() {  # <window-key> <task> <throttle-marker> <declaration>
-  local key=$1 task=$2 throttle=$3 declaration=$4 fired
-  fired="$STATE/.paused-woken-$key"
+pause_recheck_settled() {  # <window> <task> <throttle-marker> <declaration>
+  local win=$1 task=$2 throttle=$3 declaration=$4 fired
+  fired="$STATE/.paused-woken-$(window_key "$win")"
   [ -n "$declaration" ] || return 1
   [ "$(cat "$throttle" 2>/dev/null || true)" = "$declaration" ] || return 1
   [ "$(age_of "$throttle")" -ge "$PAUSE_RESURFACE_SECS" ] || return 1
   [ "$(cat "$fired" 2>/dev/null || true)" = "$declaration" ] || return 1
   [ "$(age_of "$fired")" -lt "$PAUSE_ABSORB_CEILING_SECS" ] || return 1
-  crew_is_paused "$task"
+  crew_is_paused "$task" || return 1
+  [ "$(window_kind "$win")" != secondmate ] || return 1
+  [ "$(fm_backend_agent_alive "$(window_backend "$win")" "$win" 2>/dev/null)" = alive ]
 }
 
 # 0 when a task's newest status line already declares a wait firstmate has no
@@ -2604,7 +2610,7 @@ handle_paused_stale() {  # <window> <task> <hash>
   # time never takes this - that time passing is new information - so only the
   # undeclared-time branch is eligible.
   if [ -z "$until" ] && status_is_paused "$last" \
-    && pause_recheck_settled "$key" "$task" "$STATE/.paused-resurfaced-$key" "$declaration"; then
+    && pause_recheck_settled "$win" "$task" "$STATE/.paused-resurfaced-$key" "$declaration"; then
     printf '%s' "$declaration" > "$STATE/.paused-resurfaced-$key"
     triage_log "absorbed stale recheck ($detail, crew state still waiting, one wake per ${PAUSE_ABSORB_CEILING_SECS}s): $win"
     return 0
@@ -3040,7 +3046,7 @@ surface_nonterminal_stale() {  # <window> <hash> [dialog-name]
       # the pause ceiling rather than a wake per cadence (handle_paused_stale owns
       # the same rule for the absorbed paths).
       if [ "$throttled" -ne 0 ] \
-        && pause_recheck_settled "$key" "$task" "$STATE/.paused-resurfaced-$key" "$STALE_WAIT_DECLARATION"; then
+        && pause_recheck_settled "$win" "$task" "$STATE/.paused-resurfaced-$key" "$STALE_WAIT_DECLARATION"; then
         printf '%s' "$STALE_WAIT_DECLARATION" > "$STATE/.paused-resurfaced-$key"
         triage_log "absorbed stale recheck (declared pause unchanged, crew state still waiting, one wake per ${PAUSE_ABSORB_CEILING_SECS}s): $win"
         throttled=0
