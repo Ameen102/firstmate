@@ -1608,9 +1608,18 @@ crew_wait_settled() {  # <task>
   f="$STATE/$task.status"
   last=$(status_declared_wait_line "$f")
   if status_is_paused "$last"; then
-    until=$(status_paused_until "$last") || return 0
-    [ "$(date +%s)" -lt "$until" ] || return 1
-    return 0
+    until=$(status_paused_until "$last") || until=''
+    if [ -n "$until" ] && [ "$(date +%s)" -ge "$until" ]; then
+      return 1
+    fi
+    # The declaration must itself have reached firstmate. A brand-new or
+    # replacement `paused:` line is not work already handled - `paused` is never
+    # captain-relevant, so its own first signal arrives as a no-verb batch and
+    # this predicate is the only thing that would absorb it. Only a presented
+    # declaration settles, so that first signal wakes and commits the marker and
+    # later turn-ends behind it are the re-announcements absorbed here.
+    fm_wake_signal_reported_current "$STATE" "$f"
+    return
   fi
   last=$(last_status_line "$f")
   [ -n "$last" ] || return 1
@@ -4534,21 +4543,45 @@ EOF
               clear_write_tracking "$key"
               triage_log "absorbed stale (open captain call already surfaced for this status): $w"
             else
-              stale_reason=$(stale_reason_naming_dialog "stale: $w" "$dialog")
-              fm_wake_append stale "$w" "$stale_reason" || exit 1
-              stale_wait_record "$key"
-              printf '%s' "$h" > "$sf"
-              # Pre-cap shape kept the count here (keep-count contract).
-              wedge_episode_end "$key" 0 1
-              clear_write_tracking "$key"
-              stale_status="$STATE/$(window_to_task "$w" "$STATE").status"
-              stale_record=$(status_span_first_actionable_record "$stale_status" 0)
-              case $? in
-                0|1) stale_end=${stale_record%%$'\t'*}; stale_rest=${stale_record#*$'\t'}; stale_ident=${stale_rest%%$'\t'*} ;;
-                *) stale_end=''; stale_ident='' ;;
-              esac
-              mark_surfaced "$stale_status" "$stale_end" "$stale_ident"
-              wake "$stale_reason"
+              # The same settled wait that already bounded the turn-end and the
+              # idle wedge also bounds this path, so a delivery firstmate has
+              # does not cost one main-session turn per new settled pane hash
+              # (2026-11-03 counted about 10 such re-announcements). The FIRST
+              # new hash still alarms, as it always has for an unheld delivery;
+              # later hashes inside the window are absorbed, and the shared
+              # FM_PAUSE_RESURFACE_SECS recheck is the safety net that still
+              # surfaces it once the window elapses.
+              STALE_WAIT_DECLARATION=
+              settled_stale_absorb=1
+              if crew_wait_settled "$task"; then
+                STALE_WAIT_DECLARATION=$(stale_wait_declaration "$task")
+                if stale_wait_throttled "$key" "$STALE_WAIT_DECLARATION"; then
+                  settled_stale_absorb=0
+                fi
+              fi
+              if [ "$settled_stale_absorb" -eq 0 ]; then
+                printf '%s' "$h" > "$sf"
+                # Pre-cap shape kept the count here (keep-count contract).
+                wedge_episode_end "$key" 0 1
+                clear_write_tracking "$key"
+                triage_log "absorbed stale (settled delivery already re-surfaced this window): $w"
+              else
+                stale_reason=$(stale_reason_naming_dialog "stale: $w" "$dialog")
+                fm_wake_append stale "$w" "$stale_reason" || exit 1
+                stale_wait_record "$key"
+                printf '%s' "$h" > "$sf"
+                # Pre-cap shape kept the count here (keep-count contract).
+                wedge_episode_end "$key" 0 1
+                clear_write_tracking "$key"
+                stale_status="$STATE/$(window_to_task "$w" "$STATE").status"
+                stale_record=$(status_span_first_actionable_record "$stale_status" 0)
+                case $? in
+                  0|1) stale_end=${stale_record%%$'\t'*}; stale_rest=${stale_record#*$'\t'}; stale_ident=${stale_rest%%$'\t'*} ;;
+                  *) stale_end=''; stale_ident='' ;;
+                esac
+                mark_surfaced "$stale_status" "$stale_end" "$stale_ident"
+                wake "$stale_reason"
+              fi
             fi
           elif [ -e "$ssf" ] \
             || { [ "$FM_WEDGE_MAX_ESCALATIONS" -gt 0 ] && [ -e "$STATE/.wedge-permanent-$key" ]; }; then

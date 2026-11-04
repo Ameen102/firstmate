@@ -2060,6 +2060,31 @@ test_reannounced_signal_keeps_waking_without_a_settled_wait() {
   pass "a presented blocker and a turn-end with no status line each keep waking firstmate"
 }
 
+# A declaration firstmate has never seen is not work already handled. `paused` is
+# never captain-relevant, so its own first signal arrives as a no-verb batch, and
+# requiring the presented marker is the only thing that keeps that first signal
+# waking: without it a worker could declare `paused: need creds rotated until
+# <far future>` and firstmate would hear nothing until that time passed.
+test_reannounced_signal_keeps_waking_for_an_unpresented_wait() {
+  local dir state fakebin out status_file pid
+  dir=$(make_case reannounced-unpresented-wait); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"
+  status_file="$state/task.status"
+  # No `.seen-*` marker at all: this declaration has never been presented.
+  printf 'paused [at=1793700000]: watching the CI rerun until 2099-01-01T00:00Z\n' > "$status_file"
+  : > "$state/task.turn-ended"
+  export FM_FAKE_CREW_STATE='state: paused · source: status-log · watching the CI rerun'
+  watch_bg "$state" "$fakebin" "$out"
+  pid=$!
+  wait_for_exit "$pid" 100 || { reap "$pid"; fail "an unpresented declared wait was absorbed as a re-announcement"; }
+  grep -F "signal: $state/task.status" "$out" >/dev/null \
+    || fail "an unpresented declared wait did not print its signal reason: $(cat "$out")"
+  grep -F "$(printf 'signal\ttask.status\t')" "$state/.wake-queue" >/dev/null \
+    || fail "an unpresented declared wait was not queued: $(cat "$state/.wake-queue")"
+  unset FM_FAKE_CREW_STATE
+  pass "a declared wait firstmate has not been shown still wakes on its own first signal"
+}
+
 # A routine (non-needs-decision) captain-relevant event must keep its ordinary
 # payload: only a genuine needs-decision gets the exclusion marker.
 test_routine_signal_payload_not_marked_needs_decision() {
@@ -5428,6 +5453,7 @@ fm_test_run \
   test_routine_signal_payload_not_marked_needs_decision \
   test_reannounced_signal_for_a_settled_wait_absorbed \
   test_reannounced_signal_keeps_waking_without_a_settled_wait \
+  test_reannounced_signal_keeps_waking_for_an_unpresented_wait \
   test_actionable_signal_survives_a_later_routine_append \
   test_keyed_decision_signal_reads_only_the_new_span \
   test_release_completion_survives_a_later_routine_append \

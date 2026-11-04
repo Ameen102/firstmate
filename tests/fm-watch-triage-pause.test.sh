@@ -440,6 +440,80 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
   pass "a settled declared pause absorbs its rechecks, one still wakes at the ceiling, and a parked crew always wakes"
 }
 
+# --- a delivered worker's terminal stale re-announcements are bounded ----------
+# The sibling path of the absorbed turn-end: once a `done:` line has been
+# presented, every new settled pane hash used to append its own stale wake with no
+# bound and nothing new in it (about 10 of the 2026-11-03 main-session turns). The
+# first new hash still alarms as it always has for an unheld delivery, later hashes
+# inside FM_PAUSE_RESURFACE_SECS are absorbed, and the cadence re-surfaces it after
+# the window so nothing can rot invisibly.
+test_terminal_stale_delivery_reannouncement_is_bounded() {
+  local dir state fakebin out capture_file statusf window key sig pid wakes cycles
+  dir=$(make_case terminal-delivery-bounded); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"; capture_file="$dir/pane.txt"; statusf="$state/delivered.status"
+  window="test:fm-delivered"; key=$(printf '%s' "$window" | tr ':/.' '___')
+  printf 'window=%s\nkind=ship\nharness=grok\nbackend=tmux\n' "$window" > "$state/delivered.meta"
+  printf 'done [at=1793700000]: PR https://example.test/pull/9 checks green\n' > "$statusf"
+  # The delivery was presented: its own signal wake committed this marker.
+  sig=$(seen_sig "$statusf"); printf '%s' "$sig" > "$state/.seen-delivered_status"
+  export FM_FAKE_CREW_STATE='state: unknown · source: none · no current-state source available'
+
+  # Round A: the pane settles on a hash the suppressor has not seen, so this is the
+  # first terminal stale sight for the presented delivery and it still alarms.
+  printf 'idle, finished, tick 1' > "$capture_file"
+  printf '%s' "$(hash_text 'an older frame')" > "$state/.stale-$key"
+  printf '%s' "$(hash_text 'idle, finished, tick 1')" > "$state/.hash-$key"
+  printf '1\n' > "$state/.count-$key"
+  watch_bg "$state" "$fakebin" "$out" env FM_FAKE_TMUX_WINDOW="$window" \
+    FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok FM_PAUSE_RESURFACE_SECS=240
+  pid=$!
+  wait_for_exit "$pid" 300 || fail "the first settled hash of a presented delivery did not alarm"
+  grep -F "stale: $window" "$out" >/dev/null || fail "the first settled hash printed no stale reason"
+  [ -e "$state/.paused-resurfaced-$key" ] || fail "the first settled hash recorded no re-surface throttle"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the first settled-hash alarm"
+
+  # Round B: a second new hash inside the window adds nothing and is absorbed.
+  printf 'idle, finished, tick 2' > "$capture_file"
+  : > "$out"
+  watch_bg "$state" "$fakebin" "$out" env FM_FAKE_TMUX_WINDOW="$window" \
+    FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok FM_PAUSE_RESURFACE_SECS=240
+  pid=$!
+  # Poll cycles, not a fixed sleep: one to record the new hash, then two identical
+  # hashes before the stale decision is made, with slack for a loaded machine.
+  cycles=0
+  while [ "$cycles" -lt 8 ]; do
+    wait_poll_cycle "$state" "$pid" 600 || break
+    cycles=$((cycles + 1))
+    [ -e "$state/.watch-triage.log" ] && break
+    kill -0 "$pid" 2>/dev/null || break
+  done
+  if ! kill -0 "$pid" 2>/dev/null || [ ! -e "$state/.watch-triage.log" ]; then
+    reap "$pid"
+    fail "a settled delivery re-alarmed inside its re-surface window after $cycles polls: $(cat "$out")"
+  fi
+  [ ! -s "$out" ] || { reap "$pid"; fail "an absorbed terminal re-announcement printed a wake"; }
+  wakes=$(awk -F '\t' -v w="$window" '$3 == "stale" && $4 == w { n++ } END { print n + 0 }' \
+    "$state/.wake-queue" 2>/dev/null || echo 0)
+  [ "$wakes" -eq 0 ] || { reap "$pid"; fail "a settled delivery queued $wakes further wake(s) inside the window"; }
+  grep -F 'absorbed stale (settled delivery already re-surfaced this window)' "$state/.watch-triage.log" >/dev/null \
+    || { reap "$pid"; fail "the absorbed terminal re-announcement was not recorded in the triage log"; }
+  reap "$pid"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the absorbed re-announcement"
+
+  # Round C: past the window the same delivery reaches firstmate once more, so a
+  # delivered worker nobody has acted on cannot stay invisible.
+  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+  printf 'idle, finished, tick 3' > "$capture_file"
+  : > "$out"
+  watch_bg "$state" "$fakebin" "$out" env FM_FAKE_TMUX_WINDOW="$window" \
+    FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok FM_PAUSE_RESURFACE_SECS=240
+  pid=$!
+  wait_for_exit "$pid" 300 || fail "a settled delivery past its re-surface window never re-surfaced"
+  grep -F "stale: $window" "$out" >/dev/null || fail "the bounded recheck printed no stale reason"
+  unset FM_FAKE_CREW_STATE
+  pass "a presented delivery alarms once, absorbs later settled hashes, and re-surfaces on the bounded cadence"
+}
+
 # The 24-hour ceiling only speaks for a wait whose agent is still there to hold
 # it. Once the agent behind a standing paused: line has gone, crew state still
 # reads the line and reports `state: paused`, so only the backend liveness probe
@@ -1656,6 +1730,7 @@ fm_test_run \
   test_exited_declared_pause_is_bounded_but_live_gate_surfaces \
   test_own_work_wait_keeps_first_alert_then_long_cadence \
   test_pause_recheck_absorption_is_bounded_by_the_ceiling \
+  test_terminal_stale_delivery_reannouncement_is_bounded \
   test_dead_agent_behind_a_standing_wait_wakes_on_the_cadence \
   test_absorbed_replacement_wait_does_not_inherit_the_old_throttle \
   test_live_declared_wait_churn_honors_the_resurface_throttle \
