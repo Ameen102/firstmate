@@ -573,6 +573,36 @@ test_matrix_omp_status_row_bounds_bare_composer() {
   pass "matrix: omp's status row bounds the bare composer's wrap region"
 }
 
+test_matrix_omp_18_16_ascii_preset_idle_pane() {
+  # Real idle omp worker pane captured live through Herdr on omp 18.16.0
+  # (2026-11-04): the ascii preset's footer opens with the bare word `pi` and
+  # reports the context cell in millions (`/1M`). Both shapes post-date the
+  # 18.1.11-era pattern above, so the footer stopped being furniture: the idle
+  # worker read `pending`, `bin/fm-send.sh` silently skipped its doorbell, and
+  # every `fm-control` exit and relaunch was refused. The composer row and the
+  # footer row are the capture verbatim.
+  local footer idle typed idle_row
+  # shellcheck disable=SC2016 # `$0.00` is omp's literal cost cell, not an expansion
+  footer=' pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓'
+  idle=$'transcript line\n\n❯\n'"$footer"
+  typed=$'transcript line\n\n❯ fix the flaky test\n'"$footer"
+  # Non-vacuousness: the footer really is non-blank content the wrap region
+  # would otherwise swallow, and it must be recognized as furniture.
+  idle_row=$footer
+  fm_composer_normalize_trim_var idle_row
+  _fm_composer_row_is_omp_status "$idle_row" \
+    || fail "the 18.16.0 ascii-preset omp footer must be recognized as furniture"
+  assert_screen "idle omp 18.16.0 (ascii preset)" empty "$CAPS_STYLED" "$idle"
+  assert_screen "idle omp 18.16.0 on a plain capture" empty "$CAPS_PLAIN" "$idle"
+  assert_screen "typed omp 18.16.0 text is pending" pending "$CAPS_STYLED" "$typed"
+  # The bare word `pi` is also ordinary typed text, so the ascii-preset
+  # alternative requires omp's own `ctx:` cell: a row that opens `pi ·` and
+  # carries no context cell stays composer input.
+  _fm_composer_row_is_omp_status 'pi · e · phi as the three constants' \
+    && fail "typed text opening 'pi ·' must not be mistaken for omp status furniture"
+  pass "matrix: omp 18.16.0's ascii-preset footer bounds the bare composer's wrap region"
+}
+
 # codex_cell <grey> <glyph>: one codex 0.154 starfield cell exactly as the
 # harness draws it - a truecolor grey foreground, the composer's grey
 # background, the braille glyph, then a reset.
@@ -1598,6 +1628,7 @@ test_matrix_cursor_reverse_video_placeholder_remnant
 test_matrix_cursor_fully_dim_placeholder
 test_matrix_herdr_halfblock_rule_bounds_bare_wrap
 test_matrix_omp_status_row_bounds_bare_composer
+test_matrix_omp_18_16_ascii_preset_idle_pane
 test_matrix_codex_idle_starfield_furniture
 test_matrix_pi_separated_needs_identity
 test_matrix_pi_dollar_status_footer_is_empty

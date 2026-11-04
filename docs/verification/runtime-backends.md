@@ -3318,6 +3318,20 @@ Before the status-row rule the shared classifier folded that row into the bare c
 After the rule, the same live Herdr capture read `empty`, a steer's doorbell landed, and the worker opened a turn on it.
 `tests/fm-composer-lib.test.sh` pins the unicode idle row, the nerd-preset idle row, the busy spinner row, and typed text over the same fixture in both locales.
 
+#### Footer shape on 18.16.0 (2026-11-04)
+
+omp 18.16.0 under the `ascii` preset changes the two cells that rule keyed on: the identity cell is the bare word `pi`, and the context cell reports millions (`/1M`) where the 18.1.11 captures above show thousands (`/272K`).
+The idle worker pane captured through Herdr read:
+
+```text
+❯
+ pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓
+```
+
+Neither shape matched, so an idle omp worker read `pending`: `bin/fm-send.sh` silently skipped its doorbell and `bin/fm-control.sh <id> exit` and `relaunch` refused.
+The status-row pattern now accepts the `M` context suffix on any omp footer, and the ascii preset's `pi` identity cell only when the row also carries omp's own `ctx:` cell, so a wrapped typed row opening `pi ·` stays composer input.
+`tests/fm-composer-lib.test.sh` pins this captured pane as `empty` and the same pane with typed text as `pending`.
+
 ### Busy state and lifecycle
 
 | Fact | Observed |
