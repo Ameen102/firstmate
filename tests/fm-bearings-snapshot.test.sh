@@ -1594,6 +1594,158 @@ SH
   chmod +x "$fakebin/jq"
 }
 
+test_lanes_are_opt_in_and_carry_current_state_age_and_linear() {
+  local home fakebin json lanes
+  home=$(make_home lanes)
+  fakebin=$(make_fakebin "$home")
+  write_fixture "$home"
+  printf -- '- firstmate [no-mistakes] - fleet tooling; Linear project "P-AME-5" (added 2026-07-11)\n- other [direct-PR] - see https://linear.app/acme/project/other-1 (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  printf 'working [at=1783790000]: first\nblocked [at=1783791000]: second\n' > "$home/state/ship-task.status"
+  printf 'working [at=1783790000]: stamped\nworking: unstamped latest\n' > "$home/state/external-wait.status"
+
+  json=$(run "$home" "$fakebin" --json)
+  printf '%s' "$json" | jq -e 'has("lanes") | not' >/dev/null \
+    || fail "lanes appeared without the opt-in"
+  printf '%s' "$json" | jq -e '[.omitted[].reveal] | index("--fields lanes") != null' >/dev/null \
+    || fail "the default output did not disclose the omitted lanes"
+
+  json=$(run "$home" "$fakebin" --json --fields lanes)
+  lanes=$(printf '%s' "$json" | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '
+    (map(.id) | index("ship-task") != null and index("mate") != null)
+    and all(.[]; has("step") and has("last_event_at") and has("events") and has("open")
+                 and has("pr_url") and has("linear_url") and has("linear_label"))
+  ' >/dev/null || fail "lanes missed a worker or second mate, or a field: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "ship-task")
+    | .owner == "(main)" and .repo == "firstmate"
+      and .last_event_at == 1783791000
+      and .events == [{at:1783790000,state:"working"},{at:1783791000,state:"blocked"}]
+      and .linear_url == null and .linear_label == "P-AME-5"
+  ' >/dev/null || fail "a worker lane misread its age or registry Linear reference: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "external-wait")
+    | .last_event_at == null and .events == [{at:1783790000,state:"working"}]
+  ' >/dev/null || fail "an unstamped latest event borrowed an older time: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate")
+    | .kind == "secondmate" and .owner == "mate"
+      and any(.open[]; .kind == "decision" and (.text | test("subscribe order")))
+  ' >/dev/null || fail "a second mate lane lost its open decision: $lanes"
+
+  printf -- '- other [direct-PR] - Linear project "Some Name" at https://linear.app/acme/project/other-1 (added 2026-07-11)\n- firstmate [no-mistakes] - see https://linear.app/acme/project/fleet-2, details (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  lanes=$(run "$home" "$fakebin" --json --fields lanes | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "ship-task")
+    | .linear_url == "https://linear.app/acme/project/fleet-2"
+  ' >/dev/null || fail "a worker lane did not read its Linear URL from the registry: $lanes"
+
+  local line expected
+  while IFS='|' read -r line expected; do
+    printf -- '- firstmate [no-mistakes] - %s\n' "$line" > "$home/data/projects.md"
+    lanes=$(run "$home" "$fakebin" --json --fields lanes | jq -c '.lanes')
+    printf '%s' "$lanes" | jq -e --argjson expected "$expected" '.[] | select(.id == "ship-task")
+      | {url:.linear_url, label:.linear_label} == $expected
+    ' >/dev/null || fail "registry line [$line] did not read as $expected: $lanes"
+  done <<'EOF'
+Linear project https://linear.app/acme/project/foo-1|{"url":"https://linear.app/acme/project/foo-1","label":null}
+Linear project at https://linear.app/acme/project/foo-1|{"url":"https://linear.app/acme/project/foo-1","label":null}
+Linear project "https://linear.app/acme/project/foo-1"|{"url":"https://linear.app/acme/project/foo-1","label":null}
+no Linear project yet|{"url":null,"label":null}
+Linear project none.|{"url":null,"label":null}
+see https://linear.app/acme/project/q.|{"url":"https://linear.app/acme/project/q","label":null}
+Linear project "Some Name" at https://linear.app/acme/project/q.|{"url":"https://linear.app/acme/project/q","label":"Some Name"}
+Linear project page https://linear.app/acme/project/a-1|{"url":"https://linear.app/acme/project/a-1","label":null}
+Linear project link: https://linear.app/acme/project/a-1|{"url":"https://linear.app/acme/project/a-1","label":null}
+Linear project URL https://linear.app/acme/project/a-1|{"url":"https://linear.app/acme/project/a-1","label":null}
+Linear project for this repo is unset|{"url":null,"label":null}
+Linear project Brand Memory|{"url":null,"label":null}
+Linear project no-mistakes (added 2026-07-11)|{"url":null,"label":null}
+EOF
+  pass "lanes are opt-in and carry current state, event age, open items, and registry Linear references"
+}
+
+test_child_lane_links_only_its_own_project() {
+  local home mate fakebin lanes
+  home=$(make_home child-linear)
+  fakebin=$(make_fakebin "$home")
+  write_fixture "$home"
+  mate=$(fixture_mate_home "$home")
+  printf -- '- mate - fixture domain, Linear project "MATE-1" (home: %s; scope: fixture work; projects: alpha, beta; added 2026-07-11)\n' \
+    "$mate" > "$home/data/secondmates.md"
+  printf -- '- alpha [no-mistakes] - see https://linear.app/acme/project/alpha-1 (added 2026-07-11)\n- beta [no-mistakes] - no tracker (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  fm_write_meta "$home/state/mate.meta" \
+    "window=firstmate:fm-mate" \
+    "worktree=$mate" \
+    "project=$mate" \
+    "harness=codex" \
+    "kind=secondmate" \
+    "mode=secondmate" \
+    "home=$mate" \
+    "projects=alpha,beta"
+  rm -f "$mate/state/mate.meta" "$mate/state/mate.status"
+  printf '## In flight\n' > "$mate/data/backlog.md"
+  seed_working_child "$mate" beta-child "beta work" beta
+  seed_working_child "$mate" alpha-child "alpha work" alpha
+  printf '\n## Queued\n\n## Done\n' >> "$mate/data/backlog.md"
+
+  lanes=$(run "$home" "$fakebin" --json --fields lanes --all-secondmates | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate/beta-child")
+    | .repo == "beta" and .linear_url == null and .linear_label == null
+  ' >/dev/null || fail "a child lane borrowed another Linear entry: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate/alpha-child")
+    | .repo == "alpha" and .linear_url == "https://linear.app/acme/project/alpha-1"
+  ' >/dev/null || fail "a child lane lost its own project Linear link: $lanes"
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "mate") | .linear_label == "MATE-1"
+  ' >/dev/null || fail "the mate lane lost its own registry Linear reference: $lanes"
+  pass "a child lane links only its own project and the mate lane keeps its own reference"
+}
+
+test_snapshot_rows_name_their_project() {
+  local home mate fakebin json lanes
+  home=$(make_home row-repos)
+  : > "$home/data/secondmates.md"
+  mate="$TMP_ROOT/row-repos-mate"
+  make_valid_secondmate_home repo-mate "$mate"
+  append_secondmate_registry "$home" repo-mate "$mate"
+  fakebin=$(make_fakebin "$home")
+  printf -- '- sample [no-mistakes] - see https://linear.app/acme/project/sample-1 (added 2026-07-11)\n' \
+    > "$home/data/projects.md"
+  cat > "$home/data/backlog.md" <<'EOF'
+## In flight
+
+## Queued
+- [ ] main-next - Main queued (repo: /work/main-repo) (kind: ship)
+- [ ] main-bare - Main without a project (kind: ship)
+
+## Done
+- [x] main-done - Main landed https://github.com/example/main-repo/pull/1 (repo: main-repo) (kind: ship) (merged 2026-07-10)
+EOF
+  printf '## In flight\n' > "$mate/data/backlog.md"
+  seed_working_child "$mate" child-a "first live child" /work/sample
+  cat >> "$mate/data/backlog.md" <<'EOF'
+
+## Queued
+- [ ] mate-next - Mate queued (repo: mate-repo) (kind: ship)
+
+## Done
+- [x] mate-done - Mate landed https://github.com/example/mate-repo/pull/2 (repo: mate-repo) (kind: ship) (merged 2026-07-10)
+EOF
+  json=$(run "$home" "$fakebin" --json --fields lanes --all-queued --all-secondmates)
+  printf '%s' "$json" | jq -e '
+    (.gates | any(.id == "main-next" and .repo == "main-repo"))
+    and (.gates | any(.id == "main-bare" and .repo == null))
+    and (.gates | any(.id == "mate-next" and .repo == "mate-repo"))
+    and (.landed | any(.id == "main-done" and .repo == "main-repo"))
+    and (.landed | any(.id == "mate-done" and .repo == "mate-repo"))
+  ' >/dev/null || fail "gate or landed rows lost their project: $json"
+  lanes=$(printf '%s' "$json" | jq -c '.lanes')
+  printf '%s' "$lanes" | jq -e '.[] | select(.id == "repo-mate/child-a")
+    | .repo == "sample" and .linear_url == "https://linear.app/acme/project/sample-1"
+      and .last_event_at == null and .events == [] and .open == [] and .pr_url == null
+  ' >/dev/null || fail "a child lane misread its project, or claimed more than its own: $lanes"
+  pass "gate, landed, and child-lane rows name their project by its registry name"
+}
+
 test_projection_and_toon_fail_closed() {
   local home fakebin out err rc
   home=$(make_home fail-closed); write_fixture "$home"
@@ -3418,4 +3570,7 @@ fm_test_run \
   test_revealed_deferred_holds_show_their_deferral_reason \
   test_pr_repository_cap_and_expansion \
   test_per_repository_pr_cap_is_disclosed \
+  test_lanes_are_opt_in_and_carry_current_state_age_and_linear \
+  test_child_lane_links_only_its_own_project \
+  test_snapshot_rows_name_their_project \
   test_projection_and_toon_fail_closed

@@ -11,6 +11,11 @@ set -u
 BOARD="$ROOT/bin/fm-bearings-board.sh"
 TMP_ROOT=$(fm_test_tmproot fm-bearings-board)
 
+# Every case here builds a board, and each build arms a detached listener that
+# must claim inside fm-procevent.sh's confirm window. Give a loaded machine more
+# room than the 3s default rather than shortening that window.
+export FM_PROCEVENT_LAUNCH_CONFIRM_SECONDS=10
+
 command -v jq >/dev/null 2>&1 || { echo "skip: jq not found"; exit 0; }
 
 # A lavish-axi stub that reproduces the shapes verified against the real
@@ -769,7 +774,343 @@ test_build_refuses_a_nondecision_reconcile_value() {
   pass "build reserves reconcile across non-decision cards"
 }
 
+# refresh reads the real snapshot, so these fixtures are real home records.
+write_held_backlog() {  # <home> <held-task-id>...
+  local home=$1
+  shift
+  {
+    printf '## In flight\n\n## Queued\n'
+    for id in "$@"; do
+      printf -- '- [ ] %s - Pick for %s (repo: sample) (kind: captain) (hold: which route) (hold-kind: captain)\n' "$id" "$id"
+    done
+    printf '\n## Done\n'
+  } > "$home/data/backlog.md"
+}
+
+test_build_refuses_a_malformed_lane() {
+  local home data board rc lane
+  home=$(make_home lane-refusal)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  for lane in \
+    '{"id":"a"}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":"soon","events":[],"open":[],"pr_url":null,"linear_url":null,"linear_label":null}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":null,"events":[],"open":[{"kind":"note","text":"x"}],"pr_url":null,"linear_url":null,"linear_label":null}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":null,"events":[],"open":[],"pr_url":"javascript:alert(1)","linear_url":null,"linear_label":null}' \
+    '{"id":"a","owner":"(main)","kind":"ship","name":"A","repo":null,"state":"working","step":"","last_event_at":null,"events":[],"open":[],"pr_url":null,"linear_url":"http://linear.app/x","linear_label":null}'; do
+    write_valid_payload "$data"
+    jq --argjson lane "$lane" '.lanes = [$lane]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+    set +e; run_board "$home" build "$data" >/dev/null 2>&1; rc=$?; set -e
+    [ "$rc" -ne 0 ] || fail "a malformed lane was accepted: $lane"
+    [ ! -e "$board" ] || fail "a malformed lane touched the board: $lane"
+  done
+  pass "build refuses a malformed lane before touching the board"
+}
+
+test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
+  local home data board out
+  home=$(make_home refresh-cards)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" authored-call plain-call needs-login bare-login
+  write_valid_payload "$data"
+  jq '.captains_call = [
+        {"key":"authored-call","type":"decision","repo":"sample","title":"Authored title",
+         "options":[{"value":"yes","label":"Yes"}]},
+        {"key":"merge.gone-task","type":"merge","repo":"sample","title":"Merge gone",
+         "risk":"low","options":[{"value":"merge","label":"Merge now"}]},
+        {"key":"needs-login","type":"credential","repo":"sample","title":"Log in","close":"release",
+         "options":[{"value":"done","label":"Done"}]},
+        {"key":"bare-login","type":"credential","repo":"sample","title":"Log in too",
+         "options":[{"value":"done","label":"Done"}]},
+        {"key":"stale-login","type":"credential","repo":"sample","title":"Log in again",
+         "options":[{"value":"done","label":"Done"}]}
+      ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+  out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  assert_contains "$out" "board: $board" "refresh did not report the rebuilt board: $out"
+  assert_contains "$out" "dropped-landed-card: stale-login" "refresh did not name a credential card with no open call: $out"
+  assert_not_contains "$out" "dropped-landed-card: needs-login" "refresh named a credential card whose call is open: $out"
+  extract_payload "$board" | jq -e '
+    (.lanes | type == "array")
+    and (.captains_call[] | select(.key == "needs-login") | .type == "credential" and .title == "Log in" and .close == "release")
+    and (.captains_call[] | select(.key == "bare-login") | .type == "credential" and .title == "Log in too" and .close == "release")
+    and ([.captains_call[].key] | sort) == ["authored-call","bare-login","needs-login","plain-call"]
+    and (.captains_call[] | select(.key == "authored-call")
+      | .title == "Authored title" and ([.options[].value] == ["yes","reconcile"]))
+    and (.captains_call[] | select(.key == "plain-call")
+      | .allow_freeform == true and .close == "release"
+        and (.title | test("Pick for plain-call")) and ([.options[].value] == ["reconcile"]))
+  ' >/dev/null || fail "refresh did not keep authored cards or card plain ones: $(extract_payload "$board")"
+
+  write_held_backlog "$home" plain-call
+  out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: needs-login" "refresh did not name a credential card whose call closed: $out"
+  extract_payload "$board" | jq -e '([.captains_call[].key] | sort) == ["plain-call"]' >/dev/null \
+    || fail "refresh kept a card whose call is no longer open: $(extract_payload "$board")"
+  pass "refresh composes from the snapshot and keeps an authored card only while its call is open"
+}
+
+test_refresh_composes_live_tasks_and_landed_rows() {
+  local home board out
+  home=$(make_home refresh-fleet)
+  board="$home/.lavish/bearings-board.html"
+  cat > "$home/data/backlog.md" <<'EOF'
+## In flight
+- [ ] live-task - Ship the thing (repo: sample) (kind: ship) (since 2026-07-11)
+
+## Queued
+- [ ] next-task - Queued work (repo: sample) (kind: ship)
+
+## Done
+- [x] done-task - Landed thing https://github.com/example/sample/pull/7 (repo: sample) (kind: ship) (merged 2026-07-10)
+EOF
+  mkdir -p "$home/projects/live-wt"
+  fm_write_meta "$home/state/live-task.meta" \
+    "window=sample:fm-live-task" \
+    "worktree=$home/projects/live-wt" \
+    "project=sample" \
+    "harness=claude" \
+    "kind=ship" \
+    "mode=no-mistakes"
+  printf 'working: building the thing\n' > "$home/state/live-task.status"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed on a fleet with a live task and a landed row: $out"
+  extract_payload "$board" | jq -e '
+    (.underway | any(.id == "live-task" and .repo == "sample" and (.name | test("Ship the thing"))))
+    and (.landed | any(.id == "done-task" and .repo == "sample" and (.what | test("Landed thing"))
+      and .pr_url == "https://github.com/example/sample/pull/7"))
+    and (.charted | any(.id == "next-task" and .repo == "sample"))
+    and (.lanes | any(.id == "live-task"))
+  ' >/dev/null || fail "refresh misread the live task or landed row: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on a live fleet: $out"
+  assert_contains "$out" "unchanged" "--if-live rewrote an unchanged live fleet: $out"
+  pass "refresh composes a fleet with a live task and a landed row"
+}
+
+test_refresh_never_recards_a_call_whose_task_landed() {
+  local home data board out pr
+  home=$(make_home refresh-landed-call)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  pr="https://github.com/example/sample/pull/9"
+  write_held_backlog "$home" wait-pr
+  write_valid_payload "$data"
+  jq --arg pr "$pr" '.captains_call = [
+        {"key":"wait-pr","type":"decision","repo":"sample","title":"Wait for the PR","pr_url":$pr,
+         "options":[{"value":"yes","label":"Yes"}]}
+      ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+  out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
+  extract_payload "$board" | jq -e '[.captains_call[].key] == ["wait-pr"]' >/dev/null \
+    || fail "the seed build lost the authored card: $(extract_payload "$board")"
+
+  printf -- '- [x] wait-pr - Waited work %s (repo: sample) (kind: ship) (merged 2026-07-10)\n' "$pr" \
+    >> "$home/data/backlog.md"
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: wait-pr" "the first refresh did not name the dropped card: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "the first refresh kept a landed call: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed: $out"
+  assert_contains "$out" "unchanged" "the landed call changed the board again: $out"
+  out=$(run_board "$home" refresh 2>&1) || fail "the later refresh failed: $out"
+  assert_not_contains "$out" "dropped-landed-card" "the landed call was recarded before being dropped: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "a later refresh brought the landed call back: $(extract_payload "$board")"
+  pass "refresh never recards a call whose task landed"
+}
+
+write_held_task_with_pr() {  # <home> <task-id> <pr-url-or-empty>
+  mkdir -p "$1/projects/$2"
+  fm_write_meta "$1/state/$2.meta" \
+    "window=sample:fm-$2" \
+    "worktree=$1/projects/$2" \
+    "project=sample" \
+    "harness=claude" \
+    "kind=ship" \
+    "mode=no-mistakes" \
+    ${3:+"pr=$3"}
+}
+
+test_refresh_never_recards_a_call_whose_pr_landed_under_another_task() {
+  local home data board out pr
+  home=$(make_home refresh-landed-other-id)
+  data="$home/payload.json"
+  board="$home/.lavish/bearings-board.html"
+  pr="https://github.com/example/sample/pull/9"
+  write_held_backlog "$home" wait-pr
+  write_held_task_with_pr "$home" wait-pr "$pr"
+  write_valid_payload "$data"
+  jq --arg pr "$pr" '.captains_call = [
+        {"key":"wait-pr","type":"decision","repo":"sample","title":"Wait for the PR","pr_url":$pr,
+         "options":[{"value":"yes","label":"Yes"}]}
+      ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
+  out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
+
+  printf -- '- [x] ship-it - Shipped work %s (repo: sample) (kind: ship) (merged 2026-07-10)\n' "$pr" \
+    >> "$home/data/backlog.md"
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: wait-pr" "the first refresh did not name the dropped card: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "the first refresh kept a landed call: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
+  assert_contains "$out" "dropped-landed-card: wait-pr" "the second refresh did not name the dropped card: $out"
+  extract_payload "$board" | jq -e '.captains_call == []' >/dev/null \
+    || fail "the second refresh brought the landed call back: $(extract_payload "$board")"
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed: $out"
+  assert_contains "$out" "unchanged" "the dropped call rewrote the live board: $out"
+  pass "refresh never recards a call whose PR landed under another task"
+}
+
+test_refresh_gives_an_open_call_its_recorded_pr() {
+  local home board out pr
+  home=$(make_home refresh-recorded-pr)
+  board="$home/.lavish/bearings-board.html"
+  pr="https://github.com/example/sample/pull/11"
+  write_held_backlog "$home" wait-pr
+  write_held_task_with_pr "$home" wait-pr ""
+  out=$(run_board "$home" refresh 2>&1) || fail "the first refresh failed: $out"
+  extract_payload "$board" | jq -e '.captains_call[] | select(.key == "wait-pr") | has("pr_url") | not' >/dev/null \
+    || fail "a call with no recorded PR gained one: $(extract_payload "$board")"
+
+  write_held_task_with_pr "$home" wait-pr "$pr"
+  out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
+  extract_payload "$board" | jq -e --arg pr "$pr" '
+    .captains_call[] | select(.key == "wait-pr") | .pr_url == $pr and .close == "release"
+  ' >/dev/null || fail "a carded call did not gain its recorded PR: $(extract_payload "$board")"
+  pass "refresh gives an open call its recorded PR"
+}
+
+test_refresh_survives_blank_status_notes() {
+  local home board out line kind text
+  home=$(make_home refresh-blank-note)
+  board="$home/.lavish/bearings-board.html"
+  printf '## In flight\n- [ ] live-task - Ship the thing (repo: sample) (kind: ship) (since 2026-07-11)\n\n## Queued\n\n## Done\n' \
+    > "$home/data/backlog.md"
+  mkdir -p "$home/projects/live-wt"
+  fm_write_meta "$home/state/live-task.meta" \
+    "window=sample:fm-live-task" \
+    "worktree=$home/projects/live-wt" \
+    "project=sample" \
+    "harness=claude" \
+    "kind=ship" \
+    "mode=no-mistakes"
+  while IFS='|' read -r line kind text; do
+    printf '%s\n' "$line" > "$home/state/live-task.status"
+    out=$(run_board "$home" refresh 2>&1) || fail "refresh refused on status line '$line': $out"
+    extract_payload "$board" | jq -e --arg kind "$kind" --arg text "$text" '
+      .lanes[] | select(.id == "live-task") | .open == [{kind:$kind,text:$text}]
+    ' >/dev/null || fail "lane misread status line '$line': $(extract_payload "$board")"
+  done <<'EOF'
+blocked: |blocker|Blocked, no reason given
+needs-decision:|decision|Needs a decision, no detail given
+needs-decision: captain hold live-task: |decision|Needs a decision, no detail given
+EOF
+
+  printf ' working [at=1783790000]: x\n[at=1783790001]: no verb\n' > "$home/state/live-task.status"
+  out=$(run_board "$home" refresh 2>&1) || fail "refresh refused on an indented or verbless stamped line: $out"
+  extract_payload "$board" | jq -e '
+    .lanes[] | select(.id == "live-task")
+    | .events == [{at:1783790000,state:"working"}] and .last_event_at == 1783790001
+  ' >/dev/null || fail "lane misread indented or verbless stamped lines: $(extract_payload "$board")"
+  pass "refresh survives blank status notes and events without a verb"
+}
+
+test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board() {
+  local home board out before
+  home=$(make_home refresh-live)
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" first-call
+
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed with no board: $out"
+  assert_contains "$out" "skipped: no board has been built" "--if-live did not name the missing board: $out"
+  [ ! -e "$board" ] || fail "--if-live created a board"
+
+  out=$(run_board "$home" refresh 2>&1) || fail "the seed refresh failed: $out"
+  before=$(cat "$board")
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on an unchanged fleet: $out"
+  assert_contains "$out" "unchanged" "--if-live did not report an unchanged fleet: $out"
+  [ "$before" = "$(cat "$board")" ] || fail "--if-live rewrote an unchanged board, which reloads the captain's page"
+
+  write_held_backlog "$home" first-call second-call
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on a changed fleet: $out"
+  extract_payload "$board" | jq -e '[.captains_call[].key] | index("second-call") != null' >/dev/null \
+    || fail "--if-live did not publish a real change: $out"
+
+  end_session_as_captain "$home"
+  before=$(cat "$board")
+  write_held_backlog "$home" first-call
+  out=$(run_board "$home" refresh --if-live 2>&1) || fail "--if-live failed on an ended session: $out"
+  assert_contains "$out" "skipped: board session is not open" "--if-live did not name the ended session: $out"
+  [ "$before" = "$(cat "$board")" ] || fail "--if-live touched a board the captain ended"
+  [ -e "$home/lavish-state/user-ended" ] || fail "--if-live reopened a session the captain ended"
+  pass "refresh --if-live never creates or reopens a board and leaves an unchanged one alone"
+}
+
+test_a_heartbeat_review_refreshes_a_live_board() {
+  local home board i=0
+  home=$(make_home refresh-heartbeat)
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" first-call
+  run_board "$home" refresh >/dev/null 2>&1 || fail "the seed refresh failed"
+  write_held_backlog "$home" first-call heartbeat-call
+  touch -t 200001010000 "$home/state/.last-heartbeat"
+  fm_test_track_watcher_state "$home/state"
+  PATH="$home/fakebin:$PATH" FM_HOME="$home" FM_STATE_OVERRIDE="$home/state" FM_DATA_OVERRIDE="$home/data" \
+    FM_CONFIG_OVERRIDE="$home/config" FM_PROCEVENT_CLAIM_ROOT="$home/procevent-claims" \
+    LAVISH_FAKE_STATE="$home/lavish-state" LAVISH_AXI_STATE_DIR="$home/lavish-state" \
+    FM_POLL=1 FM_SIGNAL_GRACE=1 FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=1 \
+    "$ROOT/bin/fm-watch.sh" >/dev/null 2>&1 &
+  while [ "$i" -lt 200 ] && ! extract_payload "$board" | jq -e '[.captains_call[].key] | index("heartbeat-call") != null' >/dev/null 2>&1; do
+    sleep 0.1
+    i=$((i + 1))
+  done
+  FM_HOME="$home" FM_STATE_OVERRIDE="$home/state" "$ROOT/bin/fm-watch-arm.sh" --stop >/dev/null 2>&1 || true
+  extract_payload "$board" | jq -e '[.captains_call[].key] | index("heartbeat-call") != null' >/dev/null \
+    || fail "a heartbeat review did not refresh the live board"
+  pass "a heartbeat review refreshes a live board"
+}
+
+# A home without lavish-axi still gets its board file, so `/bearings` answers
+# there instead of failing on a missing viewer.
+test_refresh_publishes_the_board_file_without_lavish_axi() {
+  local home board out dir path=''
+  home=$(make_home refresh-files-only)
+  board="$home/.lavish/bearings-board.html"
+  write_held_backlog "$home" first-call
+  local IFS=:
+  for dir in $PATH; do
+    [ -n "$dir" ] || continue
+    [ -x "$dir/lavish-axi" ] && continue
+    path=${path:+$path:}$dir
+  done
+  out=$(PATH="$path" FM_HOME="$home" \
+    FM_STATE_OVERRIDE="$home/state" FM_DATA_OVERRIDE="$home/data" \
+    FM_PROCEVENT_CLAIM_ROOT="$home/procevent-claims" \
+    "$BOARD" refresh 2>&1) || fail "refresh failed without lavish-axi: $out"
+  assert_contains "$out" "board: $board" "refresh did not publish the board file: $out"
+  assert_contains "$out" "skipped: lavish-axi is not installed" \
+    "refresh did not report the missing viewer: $out"
+  extract_payload "$board" | jq -e '[.captains_call[].key] == ["first-call"]' >/dev/null \
+    || fail "the published board does not carry the composed payload"
+  pass "refresh publishes the board file even without lavish-axi"
+}
+
 test_path_is_stable_and_home_scoped
+test_build_refuses_a_malformed_lane
+test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open
+test_refresh_composes_live_tasks_and_landed_rows
+test_refresh_never_recards_a_call_whose_task_landed
+test_refresh_never_recards_a_call_whose_pr_landed_under_another_task
+test_refresh_gives_an_open_call_its_recorded_pr
+test_refresh_survives_blank_status_notes
+test_refresh_if_live_never_creates_or_reopens_and_skips_an_unchanged_board
+test_refresh_publishes_the_board_file_without_lavish_axi
+test_a_heartbeat_review_refreshes_a_live_board
 test_build_refuses_malformed_payloads_before_touching_the_board
 test_charted_kind_is_optional_and_accepts_both_values
 test_build_injects_binds_then_arms

@@ -1012,6 +1012,7 @@ secondmate_home_summary_json() {  # <backlog-json-file> <tasks-json-file>
             hold_age_days:(.hold_age_days // null),source:"backlog"} ]) as $captain_holds_all
     | ([ $backlog.records[]? | select(landed_record)
          | {id:(.id | trunc(120)),title:(.title | trunc(120)),
+            repo:((.repo // null) | if . == null then null else trunc(120) end),
             kind:((.kind // null) | if . == null then null else trunc(40) end),
             hold_kind:((.hold_kind // null) | if . == null then null else trunc(40) end),
             pr_url:((.pr_url // null) | if . == null then null else trunc(500) end),

@@ -3777,6 +3777,23 @@ lane_capacity_publish_detached() {
   LANE_CAPACITY_PID=$!
 }
 
+# The fleet board stays current at every heartbeat review, including one absorbed
+# without waking firstmate, at no token cost. Detached for the same beacon-freshness
+# reason as above; bin/fm-bearings-board.sh's header owns --if-live.
+BOARD_REFRESH_PID=
+board_refresh_detached() {
+  if [ -n "$BOARD_REFRESH_PID" ]; then
+    if kill -0 "$BOARD_REFRESH_PID" 2>/dev/null; then
+      return 0
+    fi
+    wait "$BOARD_REFRESH_PID" 2>/dev/null || true
+    BOARD_REFRESH_PID=
+  fi
+  FM_HOME=$FM_HOME FM_STATE_OVERRIDE=$STATE FM_CONFIG_OVERRIDE=$CONFIG \
+    "$SCRIPT_DIR/fm-bearings-board.sh" refresh --if-live </dev/null >/dev/null 2>&1 &
+  BOARD_REFRESH_PID=$!
+}
+
 [ -e "$STATE/.last-heartbeat" ] || touch "$STATE/.last-heartbeat"
 
 # A merged poll may have queued its terminal wake and then lost the process
@@ -4523,6 +4540,7 @@ EOF
   hb=$(( HEARTBEAT * (1 << streak) ))
   [ "$hb" -gt "$HEARTBEAT_MAX" ] && hb=$HEARTBEAT_MAX
   if [ "$(age_of "$STATE/.last-heartbeat")" -ge "$hb" ]; then
+    board_refresh_detached
     # Triage: in always-on mode a heartbeat is benign unless the cheap fleet-scan
     # turns up a captain-relevant status the per-wake path missed. Absorb the
     # no-change case (advance the schedule and back off exactly as wake() would,
