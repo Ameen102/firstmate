@@ -3329,7 +3329,7 @@ The idle worker pane captured through Herdr read:
 ```
 
 The `/1M` context figure failed the 18.1.11-era pattern, so an idle omp worker read `pending`: `bin/fm-send.sh` silently skipped its doorbell and `bin/fm-control.sh <id> exit` and `relaunch` refused.
-The status-row pattern now accepts the `M` context suffix, which is what made this footer furniture again; it still keys on the context-usage cell rather than on the bare word `pi`, so a wrapped typed row opening `pi ·` stays composer input.
+The status-row pattern now accepts the `M` context suffix, which is what made this footer furniture again; it still keys on the context-usage cell rather than on the bare word `pi`, so a typed row opening `pi ·` stays composer input unless it carries a `<pct>%/<n>K|M` figure of its own.
 `tests/fm-composer-lib.test.sh` pins this captured pane as `empty` and the same pane with typed text as `pending`.
 
 ### Busy state and lifecycle
