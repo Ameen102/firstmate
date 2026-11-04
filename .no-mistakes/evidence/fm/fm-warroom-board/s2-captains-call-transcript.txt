@@ -1,0 +1,39 @@
+### seed: lavish-style authored build with authored decision copy + credential cards
+board: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+session:
+session: live
+bound: lavish-5014e5fcd5c78a16
+already-armed: lavish-5014e5fcd5c78a16
+{"key":"authored-call","type":"decision","title":"AUTHORED: Canary or big bang?","close":null,"pr":null,"opts":["canary","bang","reconcile"]}
+{"key":"stale-login","type":"credential","title":"Log in to staging","close":null,"pr":null,"opts":["done"]}
+
+### plain refresh #1: authored copy kept while open; stale credential dropped+named; other open calls get plain close=release cards
+dropped-landed-card: stale-login (no longer an open captain call)
+board: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+session:
+session: live
+{"key":"authored-call","type":"decision","title":"AUTHORED: Canary or big bang?","close":null,"pr":null,"opts":["canary","bang","reconcile"]}
+{"key":"landed-call","type":"decision","title":"Merge the hotfix: merge route","close":"release","pr":null,"opts":["reconcile"]}
+{"key":"mate-decision-race","type":"decision","title":"Choose subscription order: captain choic","close":"release","pr":null,"opts":["reconcile"]}
+{"key":"plain-call","type":"decision","title":"Choose retention window: how long to kee","close":"release","pr":null,"opts":["reconcile"]}
+{"key":"wait-pr","type":"decision","title":"Wait on the PR: route for pr 99","close":"release","pr":"https://github.com/acme/alpha/pull/99","opts":["reconcile"]}
+
+### work lands: landed-call same-id Done row, ship-it Done row carrying wait-pr's PR 99
+--- refresh A
+dropped-landed-card: landed-call (structured subject already landed)
+dropped-landed-card: wait-pr (structured subject already landed)
+{"key":"authored-call","type":"decision","title":"AUTHORED: Canary or big bang?","close":null,"pr":null,"opts":["canary","bang","reconcile"]}
+{"key":"mate-decision-race","type":"decision","title":"Choose subscription order: captain choic","close":"release","pr":null,"opts":["reconcile"]}
+{"key":"plain-call","type":"decision","title":"Choose retention window: how long to kee","close":"release","pr":null,"opts":["reconcile"]}
+--- refresh B (no resurrection)
+dropped-landed-card: wait-pr (structured subject already landed)
+{"key":"authored-call","type":"decision","title":"AUTHORED: Canary or big bang?","close":null,"pr":null,"opts":["canary","bang","reconcile"]}
+{"key":"mate-decision-race","type":"decision","title":"Choose subscription order: captain choic","close":"release","pr":null,"opts":["reconcile"]}
+{"key":"plain-call","type":"decision","title":"Choose retention window: how long to kee","close":"release","pr":null,"opts":["reconcile"]}
+
+### captain answers the authored call through the owner => its card leaves on next refresh
+answered: authored-call
+dropped-landed-card: authored-call (no longer an open captain call)
+dropped-landed-card: wait-pr (structured subject already landed)
+{"key":"mate-decision-race","type":"decision","title":"Choose subscription order: captain choic","close":"release","pr":null,"opts":["reconcile"]}
+{"key":"plain-call","type":"decision","title":"Choose retention window: how long to kee","close":"release","pr":null,"opts":["reconcile"]}

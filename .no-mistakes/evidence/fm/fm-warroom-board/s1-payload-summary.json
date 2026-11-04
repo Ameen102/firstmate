@@ -1,0 +1,116 @@
+{
+  "lanes": [
+    {
+      "id": "fix-beta",
+      "owner": "(main)",
+      "step": "staging webhook secret is missing",
+      "state": "blocked",
+      "last_event_at": 1793792364,
+      "pr_url": null,
+      "linear_url": "https://linear.app/acme/project/beta-2",
+      "linear_label": null,
+      "open": [
+        {
+          "kind": "blocker",
+          "text": "staging webhook secret is missing"
+        }
+      ]
+    },
+    {
+      "id": "scout-gamma",
+      "owner": "(main)",
+      "step": "no stamp on this latest line",
+      "state": "working",
+      "last_event_at": null,
+      "pr_url": null,
+      "linear_url": null,
+      "linear_label": null,
+      "open": []
+    },
+    {
+      "id": "ship-alpha",
+      "owner": "(main)",
+      "step": "Working",
+      "state": "working",
+      "last_event_at": 1793793564,
+      "pr_url": "https://github.com/acme/alpha/pull/41",
+      "linear_url": "https://linear.app/acme/project/alpha-1",
+      "linear_label": "Alpha Payments",
+      "open": []
+    },
+    {
+      "id": "mate",
+      "owner": "mate",
+      "step": "Waiting on your call",
+      "state": "captain_decision",
+      "last_event_at": null,
+      "pr_url": null,
+      "linear_url": null,
+      "linear_label": "Mate Ops",
+      "open": [
+        {
+          "kind": "decision",
+          "text": "Choose subscription order"
+        },
+        {
+          "kind": "decision",
+          "text": "pick subscribe order"
+        }
+      ]
+    },
+    {
+      "id": "mate/child-delta",
+      "owner": "mate",
+      "step": "Working",
+      "state": "working",
+      "last_event_at": null,
+      "pr_url": null,
+      "linear_url": null,
+      "linear_label": "Delta Docs",
+      "open": []
+    }
+  ],
+  "cards": [
+    {
+      "key": "authored-call",
+      "type": "decision",
+      "title": "Pick the rollout: which rollout route",
+      "close": "release",
+      "allow_freeform": true,
+      "opts": [
+        "reconcile"
+      ]
+    },
+    {
+      "key": "landed-call",
+      "type": "decision",
+      "title": "Merge the hotfix: merge route",
+      "close": "release",
+      "allow_freeform": true,
+      "opts": [
+        "reconcile"
+      ]
+    },
+    {
+      "key": "mate-decision-race",
+      "type": "decision",
+      "title": "Choose subscription order: captain choice pending",
+      "close": "release",
+      "allow_freeform": true,
+      "opts": [
+        "reconcile"
+      ]
+    },
+    {
+      "key": "plain-call",
+      "type": "decision",
+      "title": "Choose retention window: how long to keep data",
+      "close": "release",
+      "allow_freeform": true,
+      "opts": [
+        "reconcile"
+      ]
+    }
+  ],
+  "under": 4
+}

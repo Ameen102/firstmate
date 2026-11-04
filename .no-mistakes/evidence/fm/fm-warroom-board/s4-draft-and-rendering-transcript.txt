@@ -1,0 +1,25 @@
+✓ Done
+value before: keep 90 days DRAFT
+### unchanged tick
+mtime=1793794107 inode=341584745
+unchanged
+mtime=1793794107 inode=341584745
+value after no-op tick: keep 90 days DRAFT
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s4-draft-survives-unchanged-tick.png
+✓ Done
+✗ Evaluation error: TypeError: Cannot read properties of null (reading 'hidden')
+    at <anonymous>:1:162
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys,json;print(json.dumps(json.loads(json.loads(sys.stdin.read())),indent=1))
+                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+✓ Done

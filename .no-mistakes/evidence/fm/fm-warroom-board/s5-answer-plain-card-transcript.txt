@@ -1,0 +1,48 @@
+### adversarial step text reaches the board
+session:
+session: live
+served: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+29:        - StaticText "CI </script><img src=x onerror=alert(1)><b>down</b>"
+33:        - StaticText "CI </script><img src=x onerror=alert(1)><b>down</b>"
+63:        - StaticText "Choose subscription order"
+78:        - heading "Choose subscription order: captain choice pending" [level=3, ref=e34]
+10
+### before
+9:- [ ] plain-call - Choose retention window (repo: beta) (kind: captain) (since 2026-11-04) (hold: fm-hold-v1:aG93IGxvbmcgdG8ga2VlcCBkYXRh)
+        - heading "Choose retention window: how long to keep data" [level=3, ref=e46]
+✓ Done
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s5-card-before-queue.png
+✓ Done
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s5-card-queued.png
+✓ Done
+drwx------@  5 ameen  wheel  160 Nov  4 15:08 .
+drwxr-xr-x@ 22 ameen  wheel  704 Nov  4 15:08 ..
+-rw-------@  1 ameen  wheel    7 Nov  4 15:08 lavish-5014e5fcd5c78a16.1.adapter
+-rw-------@  1 ameen  wheel    0 Nov  4 15:08 lavish-5014e5fcd5c78a16.1.handled
+-rw-------@  1 ameen  wheel  595 Nov  4 15:08 lavish-5014e5fcd5c78a16.1.result
+### classify
+ended
+### adapter answers
+### after intake
+9:- [ ] plain-call - Choose retention window (repo: beta) (kind: captain) (since 2026-11-04)
+10-  Resolution recorded by fm-captain-hold.
+11-  Decision digest: 6e17d0cd9ea7a72492abe6d4cece06be1986ef7482b38fccbe371bff36ce137f
+12-  Resolution mode: released
+--
+16:  Task: plain-call
+17-  Answer: Keep it 90 days
+18-  Answer as shown to the captain: Choose retention window: how long to keep data -> Keep it 90 days
+19-
+open rc=1
+### after refresh
+dropped-landed-card: plain-call (no longer an open captain call)
+dropped-landed-card: wait-pr (structured subject already landed)
+session:
+session: live
+["mate-decision-race"]
+["plain-call","next-gamma"]
+== /private/tmp/fm-lab.aCy5s1/state/procevent-inbox/lavish-5014e5fcd5c78a16.1.result
+ended
+== /private/tmp/fm-lab.aCy5s1/state/procevent-inbox/lavish-5014e5fcd5c78a16.2.result
+feedback
+plain-call	Keep it 90 days	Choose retention window: how long to keep data -> Keep it 90 days	release

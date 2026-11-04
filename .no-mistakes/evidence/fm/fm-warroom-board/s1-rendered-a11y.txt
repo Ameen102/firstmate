@@ -1,0 +1,143 @@
+- StaticText "Lavish"
+- StaticText "EDITOR"
+- button "Annotate" [ref=e168]
+  - StaticText "Annotate"
+- button "More" [expanded=false, ref=e169]
+- Iframe [ref=e170]
+  - banner
+    - StaticText "bearings"
+  - main
+    - generic
+      - StaticText "1"
+      - StaticText "NEED YOU"
+      - StaticText "5"
+      - StaticText "UNDERWAY"
+      - StaticText "4"
+      - StaticText "LANDED RECENTLY"
+      - StaticText "2"
+      - StaticText "CHARTED NEXT"
+    - generic
+      - image
+      - StaticText "SWIMLANES"
+      - StaticText "LAST 6 HOURS · LAST CHANGE 3M AGO"
+      - generic
+        - StaticText "Repair flaky webhook"
+        - generic
+          - StaticText "ship · beta · "
+          - link "Linear" [ref=e184]
+        - StaticText "BLOCKED"
+        - StaticText "CI </script><img src=x onerror=alert(1)><b>down</b>"
+        - generic
+        - StaticText "12m ago"
+        - StaticText "BLOCKER"
+        - StaticText "CI </script><img src=x onerror=alert(1)><b>down</b>"
+        - StaticText "Investigate cache drift"
+        - StaticText "scout · gamma"
+        - StaticText "WORKING"
+        - StaticText "no stamp on this latest line"
+        - StaticText "time not recorded"
+        - StaticText "Ship the checkout retry"
+        - generic
+          - StaticText "ship · alpha · "
+          - link "Linear: Alpha Payments" [ref=e185]
+        - StaticText "WORKING"
+        - StaticText "Working"
+        - generic
+        - StaticText "14m ago"
+        - link "PR #41" [ref=e178]
+        - StaticText "Wait on the PR"
+        - generic
+          - StaticText "ship · alpha · "
+          - link "Linear: Alpha Payments" [ref=e186]
+        - StaticText "UNKNOWN"
+        - StaticText "Worker session has ended"
+        - StaticText "time not recorded"
+        - link "PR #99" [ref=e179]
+        - StaticText "mate"
+        - generic
+          - StaticText "second mate · delta · Linear: Mate Ops"
+        - StaticText "NEEDS YOU"
+        - StaticText "Waiting on your call"
+        - StaticText "time not recorded"
+        - StaticText "DECISION"
+        - StaticText "Choose subscription order"
+        - StaticText "DECISION"
+        - StaticText "pick subscribe order"
+        - StaticText "Update docs"
+        - generic
+          - StaticText "ship · delta · Linear: Delta Docs"
+        - StaticText "WORKING"
+        - StaticText "Working"
+        - StaticText "time not recorded"
+    - generic
+      - image
+      - StaticText "CAPTAIN'S CALL"
+      - StaticText "1 ITEM WAIT ON YOU, CAPTAIN"
+      - StaticText "DECISION"
+      - heading "Choose subscription order: captain choice pending" [level=3, ref=e180]
+      - StaticText "ABOUT"
+      - StaticText "Second mate: mate"
+      - StaticText "DECIDE"
+      - StaticText "Answer in your own words"
+      - form
+        - LabelText
+          - radio "Reconcile Re-check the latest state, then close this with evidence or keep it open with a note" [checked=false, ref=e192]
+          - StaticText "Reconcile"
+          - StaticText "Re-check the latest state, then close this with evidence or keep it open with a note"
+        - textbox "or answer in your own words…" [ref=e187]: keep 90 days DRAFT
+          - StaticText "keep 90 days DRAFT"
+        - button "Queue answer" [ref=e188]
+      - StaticText "card 1 of 1"
+      - button "Previous card" [disabled, ref=e176]
+        - image
+      - button "Next card" [disabled, ref=e177]
+        - image
+    - generic
+      - image
+      - StaticText "CHARTED NEXT"
+      - generic
+        - checkbox "Pick plain-call for dispatch" [checked=false, ref=e181]
+        - StaticText "Choose retention window"
+        - StaticText "beta"
+        - checkbox "Pick next-gamma for dispatch" [checked=false, ref=e182]
+        - StaticText "Follow-up on cache"
+        - StaticText "gamma"
+      - generic
+        - StaticText "PICK QUEUED WORK TO DISPATCH"
+        - button "Queue dispatch order" [disabled, ref=e183]
+    - generic
+      - image
+      - StaticText "RECENTLY LANDED"
+      - generic
+        - image
+        - StaticText "Shipped under another id"
+        - StaticText "alpha · (main)"
+        - link "#99" [ref=e189]
+        - image
+        - StaticText "Mate-managed fix"
+        - StaticText "delta · mate"
+        - link "#50" [ref=e190]
+        - image
+        - StaticText "Merge the hotfix"
+        - StaticText "alpha · (main)"
+        - image
+        - StaticText "Landed thing"
+        - StaticText "alpha · (main)"
+        - link "#7" [ref=e191]
+    - sectionfooter
+      - StaticText "fm-bearings-board.v1 · 2026-11-04T12:18:50Z"
+- complementary
+  - heading "Conversation" [level=2, ref=e171]
+  - StaticText "YOU"
+  - generic
+    - StaticText "<choice>"
+    - StaticText "“Choose retention window: how long to keep data -> Keep it 90 days”"
+  - StaticText "Captain's Call answer - Choose retention window: how long to keep data: Keep it 90 days\n\nContext data:\n{\n  \"schema\": \"fm-bearings-answer.v1\",\n  \"question\": \"plain-call\",\n  \"selection\": \"\",\n  \"note\": \"Keep it 90 days\",\n  \"close\": \"release\"\n}"
+  - generic
+    - textbox "Write a message for the agent..." [ref=e172]
+    - button "Attach images" [ref=e173]
+    - status
+    - generic
+      - button "Send & End" [ref=e174]
+        - StaticText "Send & End"
+      - button "Send to Agent" [ref=e175]

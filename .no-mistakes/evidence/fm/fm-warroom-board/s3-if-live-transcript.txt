@@ -1,0 +1,56 @@
+  http://127.0.0.1:57723/session/5014e5fcd5c78a16
+### captain types an unqueued answer in the live page
+✗ Evaluation error: TypeError: Cannot read properties of null (reading 'querySelectorAll')
+    at <anonymous>:1:78
+    at <anonymous>:1:271
+### fleet unchanged, wall clock moved => unchanged, no write, draft survives
+mtime=1793794043 inode=341579897 size=48898
+8b698c0e3b98
+unchanged
+rc=0
+mtime=1793794043 inode=341579897 size=48898
+8b698c0e3b98
+✗ Evaluation error: TypeError: Cannot read properties of null (reading 'querySelectorAll')
+    at <anonymous>:1:53
+### real fleet change => rewrites (a worker reports a new blocker)
+board: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+session:
+session: live
+served: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+mtime=1793794088 inode=341582671 size=48934
+336ff6f7832f
+✗ Evaluation error: SecurityError: Failed to read a named property 'PWNED' from 'Window': Blocked a frame with origin "http://127.0.0.1:57723" from accessing a cross-origin frame.
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys,json;print(json.dumps(json.loads(json.loads(sys.stdin.read())),indent=1))
+                                                ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s3-after-live-change.png
+### captain ends session from the browser route => --if-live never reopens
+ended
+mtime=1793794088 inode=341582671 size=48934
+336ff6f7832f
+skipped: board session is not open
+rc=0
+mtime=1793794088 inode=341582671 size=48934
+336ff6f7832f
+0
+### explicit plain refresh (captain asks for board) does recover
+board: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+session:
+session:
+session: reopened
+bound: lavish-5014e5fcd5c78a16
+armed: lavish-5014e5fcd5c78a16
+1
+### network tools invoked during all of this (stub log):
+   1 curl --version
+0

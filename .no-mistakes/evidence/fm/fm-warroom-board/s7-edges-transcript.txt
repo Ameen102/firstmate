@@ -1,0 +1,91 @@
+### A. --if-live with no board: never creates
+skipped: no board has been built
+rc=0 board-exists=no
+0
+
+### B. no lavish-axi on PATH: refresh publishes file, reports missing session
+lavish-axi: absent
+board: /private/tmp/fm-lab.aCy5s1-nb/.lavish/bearings-board.html
+skipped: lavish-axi is not installed, so the board has no live session
+rc=0 file=bearings-board.html
+{"schema":"fm-bearings-board.v1","lanes":[],"cards":0}
+--- --if-live without lavish
+skipped: lavish-axi is not installed
+rc=0
+
+### C. active away window refuses
+Usage:
+  fm-afk-contract.sh enter [--words-file <path> | --words <text>]
+      [--expected-return <UTC ISO 8601>] [--spend <n>]
+    Write the record now, with no separate confirmation step, then print the
+    entry announcement and the read-back. Exit 0 on success and 2 on a usage
+    error. --words-file keeps the file's bytes verbatim, trailing newlines
+47:# The durable state/.afk-return-catchup file is written BEFORE daemon shutdown,
+64:GATE="$STATE/.afk-return-catchup"
+65:LOCK="$STATE/.afk-return-catchup.lock"
+102:  pending=$(mktemp "$(dirname "$file")/.afk-return-evidence-filter.XXXXXX") || return 1
+110:  pending=$(mktemp "$(dirname "$file")/.afk-return-evidence-filter.XXXXXX") || return 1
+
+### D. malformed lane refused before touching the board; lanes absent still OK
+fm-bearings-board: board data does not satisfy fm-bearings-board.v1: /private/tmp/fm-lab.aCy5s1/bad.json
+rc=1
+board untouched
+
+### E. lanes opt-in and unbounded by Underway cap
+{"hasLanes":false,"reveal":4}
+{"in_flight":1,"lanes":7,"ids":["fix-beta","hb-new","scout-gamma","ship-alpha","wait-pr","mate","mate/child-delta"]}
+
+### F. network stub log (gh/curl/gh-axi): any Linear API call?
+   1 curl
+linear hits: 0
+
+### C. active away window refuses (real away record in a lab home)
+enter rc=0
+.afk-contract
+fm-afk-return: away mode is still active; run bin/fm-afk-return.sh before ordinary captain work
+fm-bearings-board: cannot read the fleet snapshot
+refresh rc=1 board-exists=no
+
+### G. older payload without lanes renders exactly as the Underway list
+  http://127.0.0.1:57723/session/5014e5fcd5c78a16
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s1-board-with-adversarial-step.png
+29:        - StaticText "CI </script><img src=x onerror=alert(1)><b>down</b>"
+33:        - StaticText "CI </script><img src=x onerror=alert(1)><b>down</b>"
+0
+          - link "Linear" [ref=e184]
+          - link "Linear: Alpha Payments" [ref=e185]
+        - link "PR #41" [ref=e178]
+          - link "Linear: Alpha Payments" [ref=e186]
+        - link "PR #99" [ref=e179]
+https://linear.app/acme/project/beta-2
+https://linear.app/acme/project/alpha-1
+https://github.com/acme/alpha/pull/41
+      - StaticText "UNDERWAY"
+      - StaticText "SWIMLANES"
+        - StaticText "Ship the checkout retry"
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s8-older-payload-underway.png
+--- plain refresh restores lanes
+session: live
+1
+
+lavish server restarts seen in lab: 2; inbox: 4
+-rw-r--r--@ 1 ameen  wheel  2757 Nov  4 15:22 /private/tmp/fm-lab.aCy5s1/old.json
+false
+5
+fm-bearings-board: board data does not satisfy fm-bearings-board.v1: /private/tmp/fm-lab.aCy5s1/old.json
+build rc=
+true
+      - StaticText "UNDERWAY"
+      - StaticText "SWIMLANES"
+        - StaticText "Ship the checkout retry"
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s8-older-payload-underway.png
+board: /private/tmp/fm-lab.aCy5s1/.lavish/bearings-board.html
+session: live
+{"hasLanes":false,"underway":6}
+      - StaticText "UNDERWAY"
+        - StaticText "UNDERWAY"
+          - StaticText "Ship the checkout retry"
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s8-older-payload-underway.png
+session: live
+swimlanes back: 1
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s9-final-board.png

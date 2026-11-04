@@ -1,0 +1,16 @@
+board: /private/tmp/fm-lab.aCy5s1-hb/.lavish/bearings-board.html
+session: live
+armed: lavish-b5374a585ac85575
+  http://127.0.0.1:57723/session/b5374a585ac85575
+watcher pid=28052
+quiet heartbeats window: 1793794830/341626080 -> 1793794830/341626080
+no rewrite during quiet heartbeats
+watcher alive
+### fleet changes, no command run: new busy worker + new captain hold
+lane+card appeared with no command run, after 16s
+{"id":"hb-new","state":"working","step":"Working","last_event_at":null}
+["first-call","heartbeat-call"]
+watcher still alive (review absorbed, no wake)
+watcher: stopped pid=28052
+✓ Screenshot saved to /Users/ameen/.no-mistakes/evidence/01M6K3JHE7D2TNVMY6CWDVEVYG/s6-board-after-heartbeat.png
+lane visible in open browser without manual reload: 1
