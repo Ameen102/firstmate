@@ -30,3 +30,9 @@ Judge validation by the resolved state line from [`bin/fm-crew-state.sh`](../../
 Workers parked at approval or fix-review must follow the active gate help.
 A worker hand-editing, committing, aborting, or restarting during an active validation run duplicates pipeline ownership outside the supersession sequence above; steer it back to the gate response flow.
 The worker reports the PR when CI first becomes green rather than waiting for merge monitoring to finish.
+
+## CI transient lanes
+
+Before escalating or deciding a failed CI step (a `ci-transient` finding, or any CI lane that stopped without running), run `bin/fm-ci-rerun-transient.sh --pr <number> -R <owner/repo>`; its header owns detection, the per-head limit of 3, and exit statuses.
+`rerun N` means wait for the rerun; `none` means the failure is real and goes through the ordinary decision unchanged; `exhausted` means escalate the finding with that evidence.
+`error: ...` decides nothing: retry once the named run completes or the named failure clears, and never read it as a real failure.
