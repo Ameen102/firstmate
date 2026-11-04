@@ -372,6 +372,10 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
   printf 'idle, holding for the CI rerun' > "$capture_file"
   printf 'window=%s\nkind=ship\nharness=grok\nbackend=tmux\n' "$window" > "$state/held.meta"
   printf 'paused: waiting on the CI rerun of run 1234\n' > "$statusf"
+  # Backdate BEFORE priming the seen marker: a status signature includes its
+  # mtime, so a marker written first would read as unreported and the signal scan
+  # would pre-empt the stale path this case is about.
+  set_mtime "$(( $(date +%s) - 500 ))" "$statusf"
   sig=$(seen_sig "$statusf"); printf '%s' "$sig" > "$state/.seen-held_status"
   printf '%s' "$(hash_text 'idle, holding for the CI rerun')" > "$state/.hash-$key"
   printf '1\n' > "$state/.count-$key"
@@ -380,7 +384,6 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
 
   # Round 1: the declaration is past the cadence and has never been rechecked, so
   # this recheck reaches firstmate and records the wake it belongs to.
-  set_mtime "$(( $(date +%s) - 500 ))" "$statusf"
   watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
   pid=$!
   wait_for_exit "$pid" 100 || fail "a never-rechecked declared pause did not re-surface"
@@ -526,13 +529,15 @@ test_dead_agent_behind_a_standing_wait_wakes_on_the_cadence() {
   printf 'holding for the CI rerun' > "$capture_file"
   printf 'window=%s\nkind=ship\nharness=grok\nbackend=tmux\n' "$window" > "$state/held.meta"
   printf 'paused: waiting on the CI rerun of run 1234\n' > "$statusf"
+  # Backdate before priming (the status signature includes its mtime), so the
+  # already-presented declaration does not arrive as a pending signal.
+  set_mtime "$(( $(date +%s) - 500 ))" "$statusf"
   sig=$(seen_sig "$statusf"); printf '%s' "$sig" > "$state/.seen-held_status"
   printf '%s' "$(hash_text 'holding for the CI rerun')" > "$state/.hash-$key"
   printf '1\n' > "$state/.count-$key"
   export FM_FAKE_CREW_STATE='state: paused · source: status-log · waiting on the CI rerun'
 
   # The first recheck records this declaration's wake while the agent is alive.
-  set_mtime "$(( $(date +%s) - 500 ))" "$statusf"
   FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" FM_FAKE_TMUX_CURRENT_COMMAND=grok watch_bg "$state" "$fakebin" "$out" env \
     FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
   pid=$!
