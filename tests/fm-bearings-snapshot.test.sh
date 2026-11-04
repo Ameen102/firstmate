@@ -1599,7 +1599,7 @@ test_lanes_are_opt_in_and_carry_current_state_age_and_linear() {
   home=$(make_home lanes)
   fakebin=$(make_fakebin "$home")
   write_fixture "$home"
-  printf -- '- firstmate [no-mistakes] - fleet tooling; Linear project P-AME-5 (added 2026-07-11)\n- other [direct-PR] - see https://linear.app/acme/project/other-1 (added 2026-07-11)\n' \
+  printf -- '- firstmate [no-mistakes] - fleet tooling; Linear project "P-AME-5" (added 2026-07-11)\n- other [direct-PR] - see https://linear.app/acme/project/other-1 (added 2026-07-11)\n' \
     > "$home/data/projects.md"
   printf 'working [at=1783790000]: first\nblocked [at=1783791000]: second\n' > "$home/state/ship-task.status"
   printf 'working [at=1783790000]: stamped\nworking: unstamped latest\n' > "$home/state/external-wait.status"
@@ -1653,7 +1653,12 @@ no Linear project yet|{"url":null,"label":null}
 Linear project none.|{"url":null,"label":null}
 see https://linear.app/acme/project/q.|{"url":"https://linear.app/acme/project/q","label":null}
 Linear project "Some Name" at https://linear.app/acme/project/q.|{"url":"https://linear.app/acme/project/q","label":"Some Name"}
-Linear project no-mistakes (added 2026-07-11)|{"url":null,"label":"no-mistakes"}
+Linear project page https://linear.app/acme/project/a-1|{"url":"https://linear.app/acme/project/a-1","label":null}
+Linear project link: https://linear.app/acme/project/a-1|{"url":"https://linear.app/acme/project/a-1","label":null}
+Linear project URL https://linear.app/acme/project/a-1|{"url":"https://linear.app/acme/project/a-1","label":null}
+Linear project for this repo is unset|{"url":null,"label":null}
+Linear project Brand Memory|{"url":null,"label":null}
+Linear project no-mistakes (added 2026-07-11)|{"url":null,"label":null}
 EOF
   pass "lanes are opt-in and carry current state, event age, open items, and registry Linear references"
 }
@@ -1664,7 +1669,7 @@ test_child_lane_links_only_its_own_project() {
   fakebin=$(make_fakebin "$home")
   write_fixture "$home"
   mate=$(fixture_mate_home "$home")
-  printf -- '- mate - fixture domain, Linear project MATE-1 (home: %s; scope: fixture work; projects: alpha, beta; added 2026-07-11)\n' \
+  printf -- '- mate - fixture domain, Linear project "MATE-1" (home: %s; scope: fixture work; projects: alpha, beta; added 2026-07-11)\n' \
     "$mate" > "$home/data/secondmates.md"
   printf -- '- alpha [no-mistakes] - see https://linear.app/acme/project/alpha-1 (added 2026-07-11)\n- beta [no-mistakes] - no tracker (added 2026-07-11)\n' \
     > "$home/data/projects.md"

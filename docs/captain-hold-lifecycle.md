@@ -350,7 +350,7 @@ Three checks run, all on exact identity and none on prose:
 Dropped cards are named on stderr as `dropped-landed-card:` lines, so a rebuild states what it removed rather than quietly shrinking Captain's Call.
 The landing procedure requires one immediate board rebuild to remove already-stale merged-PR and superseded-version cards without a committed migration or change-worktree state mutation.
 A subject whose state cannot be established is kept, because a wrongly shown card is safer than a wrongly hidden call.
-A refresh keeps a credential card only while its key is still an open captain call or hold, because a credential ask with no open call is stale by construction.
+A refresh keeps a credential card only while its key is still an open captain call or hold, because a credential ask with no open call is stale by construction, and a kept card that declares no `close` releases its hold rather than completing the task.
 The validator's reservation scope must equal the adapter's reconcile-classification scope.
 That scope is all card types, because the captured payload carries no card type.
 

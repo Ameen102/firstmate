@@ -812,14 +812,16 @@ test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
   home=$(make_home refresh-cards)
   data="$home/payload.json"
   board="$home/.lavish/bearings-board.html"
-  write_held_backlog "$home" authored-call plain-call needs-login
+  write_held_backlog "$home" authored-call plain-call needs-login bare-login
   write_valid_payload "$data"
   jq '.captains_call = [
         {"key":"authored-call","type":"decision","repo":"sample","title":"Authored title",
          "options":[{"value":"yes","label":"Yes"}]},
         {"key":"merge.gone-task","type":"merge","repo":"sample","title":"Merge gone",
          "risk":"low","options":[{"value":"merge","label":"Merge now"}]},
-        {"key":"needs-login","type":"credential","repo":"sample","title":"Log in",
+        {"key":"needs-login","type":"credential","repo":"sample","title":"Log in","close":"release",
+         "options":[{"value":"done","label":"Done"}]},
+        {"key":"bare-login","type":"credential","repo":"sample","title":"Log in too",
          "options":[{"value":"done","label":"Done"}]},
         {"key":"stale-login","type":"credential","repo":"sample","title":"Log in again",
          "options":[{"value":"done","label":"Done"}]}
@@ -832,8 +834,9 @@ test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
   assert_not_contains "$out" "dropped-landed-card: needs-login" "refresh named a credential card whose call is open: $out"
   extract_payload "$board" | jq -e '
     (.lanes | type == "array")
-    and (.captains_call[] | select(.key == "needs-login") | .type == "credential" and .title == "Log in")
-    and ([.captains_call[].key] | sort) == ["authored-call","needs-login","plain-call"]
+    and (.captains_call[] | select(.key == "needs-login") | .type == "credential" and .title == "Log in" and .close == "release")
+    and (.captains_call[] | select(.key == "bare-login") | .type == "credential" and .title == "Log in too" and .close == "release")
+    and ([.captains_call[].key] | sort) == ["authored-call","bare-login","needs-login","plain-call"]
     and (.captains_call[] | select(.key == "authored-call")
       | .title == "Authored title" and ([.options[].value] == ["yes","reconcile"]))
     and (.captains_call[] | select(.key == "plain-call")

@@ -44,7 +44,8 @@
 #            hold rather than completing the task, because a released item stays
 #            visible and a wrongly completed one does not. A merge card stays only
 #            while its task is live, and a credential card stays only while its
-#            key is still an open captain call or hold. A secondmate whose state is unavailable shows on its
+#            key is still an open captain call or hold, closing with release
+#            unless it declares otherwise. A secondmate whose state is unavailable shows on its
 #            lane rather than as a Charted Next warning. An active away window
 #            refuses, exactly as the snapshot does. Without lavish-axi it still
 #            publishes the board file and reports the missing session, so a
@@ -563,6 +564,7 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
             or (.type == "credential" and (.key as $key
                 | ($open_keys + $credential_keys) | index($key)) != null))
         | .options |= map(select(.value != "reconcile"))
+        | if .type == "credential" and .close == null then .close = "release" else . end
         | if .type == "decision" and .pr_url == null and $open_prs[.key]
           then .pr_url = $open_prs[.key] else . end]) as $kept
     | ([$kept[].key]) as $kept_keys
