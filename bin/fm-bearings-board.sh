@@ -43,8 +43,8 @@
 #            plain card answered in the captain's own words, which releases the
 #            hold rather than completing the task, because a released item stays
 #            visible and a wrongly completed one does not. A merge card stays only
-#            while its task is live, and a credential card stays until the next
-#            composed build. A secondmate whose state is unavailable shows on its
+#            while its task is live, and a credential card stays only while its
+#            key is still an open captain call or hold. A secondmate whose state is unavailable shows on its
 #            lane rather than as a Charted Next warning. An active away window
 #            refuses, exactly as the snapshot does. Without lavish-axi it still
 #            publishes the board file and reports the missing session, so a
@@ -509,10 +509,25 @@ command_build() {
   fi
 }
 
+# The prior credential cards `bin/fm-captain-hold.sh open` does not rule out. As
+# with a decision card, "cannot tell" (2) keeps the card; only a definite no drops it.
+credential_keys_not_closed() {  # <prior-payload.json>
+  local key rc
+  jq -r '(.captains_call // [])[] | select(.type == "credential") | .key' "$1" \
+    | while IFS= read -r key; do
+        rc=0
+        "$SCRIPT_DIR/fm-captain-hold.sh" open "$key" </dev/null >/dev/null 2>&1 || rc=$?
+        [ "$rc" -eq 1 ] || printf '%s\n' "$key"
+      done \
+    | jq -R -s -c 'split("\n") | map(select(length > 0))'
+}
+
 # The deterministic composer behind `refresh`. Its input is the snapshot's
 # projected model plus the payload already on the board (empty when none).
 compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
-  jq --slurpfile prior "$2" '
+  local credential_keys
+  credential_keys=$(credential_keys_not_closed "$2") || return 1
+  jq --slurpfile prior "$2" --argjson credential_keys "$credential_keys" '
     def slug: type == "string" and test("^[A-Za-z0-9._-]{1,128}$");
     def text_or($fallback):
       if type == "string" and test("[^[:space:]]") then . else $fallback end;
@@ -545,7 +560,8 @@ compose_refresh_payload() {  # <snapshot.json> <prior-payload.json>
             (.type == "decision" and (.key as $key | $open_keys | index($key)) != null)
             or (.type == "merge" and ((.key | ltrimstr("merge.")) as $task
                 | any($live_ids[]; . == $task or endswith("/" + $task))))
-            or (.type == "credential"))
+            or (.type == "credential" and (.key as $key
+                | ($open_keys + $credential_keys) | index($key)) != null))
         | .options |= map(select(.value != "reconcile"))
         | if .type == "decision" and .pr_url == null and $open_prs[.key]
           then .pr_url = $open_prs[.key] else . end]) as $kept

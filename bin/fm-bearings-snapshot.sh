@@ -86,8 +86,10 @@
 # only its own project, state, kind, and step; its parent mate's lane carries the
 # age, open items, and PR link.
 # linear_url and linear_label are read from the project or secondmate registry
-# line itself - the first https://linear.app URL, else the name after
-# `Linear project` - with no Linear API call, and a name alone yields no URL.
+# line itself - the first https://linear.app URL, less any sentence punctuation,
+# and the quoted or bare name after `Linear project` - with no Linear API call.
+# A name alone yields no URL, and a URL or a negation such as `no Linear project
+# yet` is never a name.
 # A secondmate child with a known project reads only that project's line; the
 # mate's own line and project list serve only a lane with no specific project.
 #
@@ -416,9 +418,11 @@ lane_linear_json() {
     [split("\n")[]
      | select(startswith("- "))
      | (.[2:] | split(" ")[0]) as $name
-     | ([match("https://linear\\.app/[^][:space:]<>()\"\u0027,;]+"; "g").string][0]) as $url
-     | ([capture("Linear project \"(?<n>[^\"]+)\"")][0].n
-        // ([capture("Linear project (?<n>[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9])")][0].n)) as $label
+     | ([match("https://linear\\.app/[^][:space:]<>()\"\u0027,;]*[^][:space:]<>()\"\u0027,;.:!?]"; "g").string][0]) as $url
+     | (if test("\\b(?:no|not|without)\\s+(?:a\\s+|any\\s+)?Linear project"; "i") then null
+        else ([capture("Linear project \"(?!(?i:https?:))(?<n>[^\"]+)\"")][0].n
+              // ([capture("Linear project (?!(?i:https?:|(?:no|none|not|tbd|yet|pending|unknown|at)(?:[.,;:)]|\\s|$)))(?<n>[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9])")][0].n))
+        end) as $label
      | select($url != null or $label != null)
      | {key:$name, value:{url:$url, label:$label}}]
     | from_entries'

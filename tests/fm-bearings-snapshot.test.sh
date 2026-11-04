@@ -1637,6 +1637,24 @@ test_lanes_are_opt_in_and_carry_current_state_age_and_linear() {
   printf '%s' "$lanes" | jq -e '.[] | select(.id == "ship-task")
     | .linear_url == "https://linear.app/acme/project/fleet-2"
   ' >/dev/null || fail "a worker lane did not read its Linear URL from the registry: $lanes"
+
+  local line expected
+  while IFS='|' read -r line expected; do
+    printf -- '- firstmate [no-mistakes] - %s\n' "$line" > "$home/data/projects.md"
+    lanes=$(run "$home" "$fakebin" --json --fields lanes | jq -c '.lanes')
+    printf '%s' "$lanes" | jq -e --argjson expected "$expected" '.[] | select(.id == "ship-task")
+      | {url:.linear_url, label:.linear_label} == $expected
+    ' >/dev/null || fail "registry line [$line] did not read as $expected: $lanes"
+  done <<'EOF'
+Linear project https://linear.app/acme/project/foo-1|{"url":"https://linear.app/acme/project/foo-1","label":null}
+Linear project at https://linear.app/acme/project/foo-1|{"url":"https://linear.app/acme/project/foo-1","label":null}
+Linear project "https://linear.app/acme/project/foo-1"|{"url":"https://linear.app/acme/project/foo-1","label":null}
+no Linear project yet|{"url":null,"label":null}
+Linear project none.|{"url":null,"label":null}
+see https://linear.app/acme/project/q.|{"url":"https://linear.app/acme/project/q","label":null}
+Linear project "Some Name" at https://linear.app/acme/project/q.|{"url":"https://linear.app/acme/project/q","label":"Some Name"}
+Linear project no-mistakes (added 2026-07-11)|{"url":null,"label":"no-mistakes"}
+EOF
   pass "lanes are opt-in and carry current state, event age, open items, and registry Linear references"
 }
 

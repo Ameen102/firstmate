@@ -812,7 +812,7 @@ test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
   home=$(make_home refresh-cards)
   data="$home/payload.json"
   board="$home/.lavish/bearings-board.html"
-  write_held_backlog "$home" authored-call plain-call
+  write_held_backlog "$home" authored-call plain-call needs-login
   write_valid_payload "$data"
   jq '.captains_call = [
         {"key":"authored-call","type":"decision","repo":"sample","title":"Authored title",
@@ -820,14 +820,19 @@ test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
         {"key":"merge.gone-task","type":"merge","repo":"sample","title":"Merge gone",
          "risk":"low","options":[{"value":"merge","label":"Merge now"}]},
         {"key":"needs-login","type":"credential","repo":"sample","title":"Log in",
+         "options":[{"value":"done","label":"Done"}]},
+        {"key":"stale-login","type":"credential","repo":"sample","title":"Log in again",
          "options":[{"value":"done","label":"Done"}]}
       ]' "$data" > "$data.tmp" && mv "$data.tmp" "$data"
   out=$(run_board "$home" build "$data" 2>&1) || fail "the seed build failed: $out"
 
   out=$(run_board "$home" refresh 2>&1) || fail "refresh failed: $out"
   assert_contains "$out" "board: $board" "refresh did not report the rebuilt board: $out"
+  assert_contains "$out" "dropped-landed-card: stale-login" "refresh did not name a credential card with no open call: $out"
+  assert_not_contains "$out" "dropped-landed-card: needs-login" "refresh named a credential card whose call is open: $out"
   extract_payload "$board" | jq -e '
     (.lanes | type == "array")
+    and (.captains_call[] | select(.key == "needs-login") | .type == "credential" and .title == "Log in")
     and ([.captains_call[].key] | sort) == ["authored-call","needs-login","plain-call"]
     and (.captains_call[] | select(.key == "authored-call")
       | .title == "Authored title" and ([.options[].value] == ["yes","reconcile"]))
@@ -838,7 +843,8 @@ test_refresh_composes_the_board_and_keeps_authored_cards_only_while_open() {
 
   write_held_backlog "$home" plain-call
   out=$(run_board "$home" refresh 2>&1) || fail "the second refresh failed: $out"
-  extract_payload "$board" | jq -e '([.captains_call[].key] | sort) == ["needs-login","plain-call"]' >/dev/null \
+  assert_contains "$out" "dropped-landed-card: needs-login" "refresh did not name a credential card whose call closed: $out"
+  extract_payload "$board" | jq -e '([.captains_call[].key] | sort) == ["plain-call"]' >/dev/null \
     || fail "refresh kept a card whose call is no longer open: $(extract_payload "$board")"
   pass "refresh composes from the snapshot and keeps an authored card only while its call is open"
 }
