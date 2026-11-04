@@ -15,7 +15,7 @@
 # `until <UTC ISO 8601>` is rechecked when that time passes, but a declared time
 # beyond FM_PAUSE_RESURFACE_SECS cannot extend the ordinary recheck cadence, and
 # a recheck for a wait that still stands and whose crew still reports waiting is
-# absorbed, with one wake per FM_PAUSE_ABSORB_CEILING_SECS so a forgotten wait
+# absorbed, with one wake per 24 hours so a forgotten wait
 # cannot rot invisibly. While an away record (state/.afk-contract, never quiet
 # mode's) exists an item held for the captain is never rechecked at all, in
 # either posture.
@@ -481,9 +481,8 @@ PAUSE_RESURFACE_SECS=${FM_PAUSE_RESURFACE_SECS:-$FM_PAUSE_RESURFACE_SECS_DEFAULT
 # declaration produced, never from the last absorption, so the ceiling bounds how
 # long firstmate stays uninformed rather than how often the cadence runs. A wait
 # whose own `until` time arrives, or whose crew state stops agreeing, resumes the
-# ordinary cadence at once. Set to 0 to restore the plain cadence.
-PAUSE_ABSORB_CEILING_SECS=${FM_PAUSE_ABSORB_CEILING_SECS:-86400}
-case "$PAUSE_ABSORB_CEILING_SECS" in ''|*[!0-9]*) PAUSE_ABSORB_CEILING_SECS=86400 ;; esac
+# ordinary cadence at once.
+PAUSE_ABSORB_CEILING_SECS=86400
 # A declared wait that names WHEN it clears (`paused: ... until <UTC ISO 8601>`,
 # status_paused_until in fm-classify-lib.sh) is condition-aware: it is not
 # rechecked before that time, and it is rechecked once as soon as that time
@@ -1570,7 +1569,7 @@ resurface_absorbed() {  # <window> <throttle-marker> <age> <reason> [scope] [min
 
 # 0 when a declared pause's next recheck has nothing new to add: a wake already
 # went out for this exact declaration, the crew's own authoritative state still
-# agrees it is waiting (crew_wait_agrees), and that wake is younger than
+# reports the pause (crew_is_paused), and that wake is younger than
 # PAUSE_ABSORB_CEILING_SECS. The caller then absorbs this recheck with a triage
 # line and restarts the cadence, so the declaration reaches firstmate once per
 # ceiling instead of once per cadence.
@@ -1581,12 +1580,11 @@ pause_recheck_settled() {  # <window-key> <task> <throttle-marker> <declaration>
   local key=$1 task=$2 throttle=$3 declaration=$4 fired
   fired="$STATE/.paused-woken-$key"
   [ -n "$declaration" ] || return 1
-  [ "$PAUSE_ABSORB_CEILING_SECS" -gt 0 ] || return 1
   [ "$(cat "$throttle" 2>/dev/null || true)" = "$declaration" ] || return 1
   [ "$(age_of "$throttle")" -ge "$PAUSE_RESURFACE_SECS" ] || return 1
   [ "$(cat "$fired" 2>/dev/null || true)" = "$declaration" ] || return 1
   [ "$(age_of "$fired")" -lt "$PAUSE_ABSORB_CEILING_SECS" ] || return 1
-  crew_wait_agrees "$task"
+  crew_is_paused "$task"
 }
 
 # 0 when a task's newest status line already declares a wait firstmate has no

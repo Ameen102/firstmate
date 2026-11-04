@@ -201,12 +201,12 @@ test_own_work_wait_keeps_first_alert_then_long_cadence() {
     # nobody ever closes cannot rot invisibly. The ceiling is measured from the
     # last wake, not from the last absorption.
     set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
-    set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-woken-$key"
+    set_mtime "$(( $(date +%s) - 90000 ))" "$state/.paused-woken-$key"
     PATH="$fakebin:$PATH" FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" \
       FM_FAKE_TMUX_CURRENT_COMMAND=grok \
       FM_FAKE_CREW_STATE='state: paused · source: status-log · waiting for own work' \
       watch_bg "$state" "$fakebin" "$dir/ceiling.out" env \
-        FM_STALE_ESCALATE_SECS=1 FM_PAUSE_RESURFACE_SECS=240 FM_PAUSE_ABSORB_CEILING_SECS=400
+        FM_STALE_ESCALATE_SECS=1 FM_PAUSE_RESURFACE_SECS=240
     pid=$!
     wait_for_exit "$pid" 100 || { reap "$pid"; fail "$wait_kind never rechecked on the long cadence"; }
     grep -F 'awaiting external' "$dir/ceiling.out" >/dev/null || fail "$wait_kind recheck lost its pause reason"
@@ -362,11 +362,10 @@ test_exited_declared_pause_is_bounded_but_live_gate_surfaces() {
 # The 2026-11-03 audit: 21 of 48 main-session turns were stale wakes for workers
 # parked on a declared external wait or simply waiting. A wait that still stands,
 # with its crew still reporting it, has nothing new to say at every cadence tick,
-# so the recheck is absorbed and logged; one wake still fires per
-# FM_PAUSE_ABSORB_CEILING_SECS, measured from the last wake, so a wait nobody ever
-# closes cannot rot invisibly.
+# so the recheck is absorbed and logged; one wake still fires per 24 hours,
+# measured from the last wake, so a wait nobody ever closes cannot rot invisibly.
 test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
-  local dir state fakebin out capture_file statusf window key sig pid
+  local dir state fakebin out capture_file statusf window key sig pid verdict
   dir=$(make_case pause-ceiling); state="$dir/state"; fakebin="$dir/fakebin"
   out="$dir/watch.out"; capture_file="$dir/pane.txt"; statusf="$state/held.status"
   window="test:fm-ceiling"; key=$(printf '%s' "$window" | tr ':/.' '___')
@@ -409,17 +408,35 @@ test_pause_recheck_absorption_is_bounded_by_the_ceiling() {
   # ceiling, so the same recheck reaches firstmate once more. A forgotten wait
   # cannot rot invisibly.
   set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
-  set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-woken-$key"
+  set_mtime "$(( $(date +%s) - 90000 ))" "$state/.paused-woken-$key"
   printf 'idle, holding for the CI rerun (token 3)' > "$capture_file"
   : > "$out"
-  watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1 \
-    FM_PAUSE_ABSORB_CEILING_SECS=400
+  watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
   pid=$!
   wait_for_exit "$pid" 100 || fail "a declared pause past the absorption ceiling never re-surfaced"
   grep -F 'awaiting external' "$out" >/dev/null || fail "the ceiling recheck lost its declared-wait reason"
   grep -F 'possible wedge' "$out" >/dev/null && fail "a declared pause was mislabeled a possible wedge"
+  ack_stopped_cycle "$state" || fail "could not acknowledge the ceiling recheck"
+
+  # A crew parked at a gate does not agree it is simply waiting, whoever owes the
+  # gate and whether or not the verdict names a run: inside the ceiling, the due
+  # recheck still wakes.
+  for verdict in \
+    'state: parked · source: ledger · ask-user: authority decision' \
+    'state: parked · source: run-step · run: r1 · awaiting the crewmate at review'
+  do
+    export FM_FAKE_CREW_STATE="$verdict"
+    set_mtime "$(( $(date +%s) - 500 ))" "$state/.paused-resurfaced-$key"
+    printf 'idle, holding for the CI rerun (%s)' "$verdict" > "$capture_file"
+    : > "$out"
+    watch_bg "$state" "$fakebin" "$out" env FM_PAUSE_RESURFACE_SECS=240 FM_STALE_ESCALATE_SECS=1
+    pid=$!
+    wait_for_exit "$pid" 100 || { reap "$pid"; fail "a parked crew's recheck was absorbed: $verdict"; }
+    [ -s "$out" ] || fail "a parked crew's recheck printed no wake: $verdict"
+    ack_stopped_cycle "$state" || fail "could not acknowledge the parked recheck: $verdict"
+  done
   unset FM_FAKE_CREW_STATE
-  pass "a settled declared pause absorbs its rechecks, and one still wakes at the ceiling"
+  pass "a settled declared pause absorbs its rechecks, one still wakes at the ceiling, and a parked crew always wakes"
 }
 
 # A dead worker reaches handle_paused_stale rather than the live fallback above.
