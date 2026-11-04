@@ -1,0 +1,27 @@
+== rig lab=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.G19VYx tmuxdir=/tmp/fml.n4nH1n
+== agent pane comm=grok-1.0.70-mac, shell pane comm=zsh
+FAIL L1 first recheck reason unexpected: stale: crew:agent
+PASS L1 the wake was recorded for this declaration
+PASS L1b the due recheck inside the 24h ceiling woke nobody
+PASS L1b the absorbed recheck is recorded in the triage log
+DEBUG decl=[declared:r1:3434007374726f6e673a31363737373233323a3334323334333134323a313739333830353934372e30303030303030303000526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65]
+DEBUG resurfaced=[declared:r1:3434007374726f6e673a31363737373233323a3334323334333134323a313739333830353934372e30303030303030303000526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65] age=5
+DEBUG woken=[declared:r1:3434007374726f6e673a31363737373233323a3334323334333134323a313739333830353934372e30303030303030303000526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65] age=9
+DEBUG crew-state=[state: unknown · source: none · backend target gone: crew:agent]
+DEBUG agent-alive=[dead]
+DEBUG triage=[[2026-11-04T18:34:22+0300] absorbed stale recheck (paused, awaiting external, crew state still waiting, one wake per 86400s): crew:agent|[2026-11-04T18:34:24+0300] absorbed stale (paused, awaiting external, age 517s): crew:agent|[2026-11-04T18:34:26+0300] absorbed stale (paused, awaiting external, age 519s): crew:agent|]
+PASS L2 a wait past the 24h ceiling reaches firstmate once more: stale: crew:agent (paused 523s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L3 a standing wait with no live agent still wakes on the cadence: stale: crew:shell (paused 502s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L4 a turn-end behind an already-presented declared wait woke nobody
+PASS L4 the absorbed re-announcement is recorded in the triage log
+PASS L5 a blocker still wakes: signal: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.G19VYx/state/blocked.status
+PASS L6 an idle wedge on an already-presented delivery woke nobody at the threshold
+PASS L6 the deferral is recorded as a settled status
+PASS L7 an undeclared stall still escalates: stale: crew:agent (idle 501s, possible wedge, escalation 1)
+PASS L8a the first new pane hash of a presented delivery still alarms
+PASS L8a the alarm started the re-surface window
+PASS L8b a later new hash inside the window woke nobody
+PASS L8b the absorbed terminal re-announcement is recorded
+PASS L8c the bounded recheck re-surfaces the delivery after the window
+== crew-state verdict for the paused declaration: state: unknown · source: none · no metadata for waiting
+== RESULT: 1 failure(s)

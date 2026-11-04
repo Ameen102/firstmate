@@ -1,0 +1,52 @@
+=== test_secondmate_paused_resurfaces_in_normal_mode
+ok - a declared paused secondmate re-surfaces on the bounded normal-mode cadence
+rc=0
+=== test_secondmate_captain_held_resurfaces_in_normal_mode
+ok - a captain-held secondmate re-surfaces on the bounded normal-mode cadence
+rc=0
+=== test_secondmate_nonpaused_stale_remains_suppressed
+ok - a non-paused secondmate retains normal stale suppression
+rc=0
+=== test_secondmate_unpause_clears_pause_tracking
+ok - a resumed secondmate clears pause and stale tracking before stale exemption
+rc=0
+=== test_nonterminal_stale_pause_transitions_reclassify_unchanged_hash
+ok - unchanged stale hashes reclassify when a crew enters or leaves pause
+rc=0
+=== test_nonterminal_paused_rechecks_authoritative_state
+ok - a declared pause is periodically rechecked against authoritative active-run state
+rc=0
+=== test_paused_authoritative_working_preserves_wedge_timer
+ok - a paused status overridden by authoritative working preserves its wedge timer, is rechecked rather than wedge-escalated while the declaration stands, and escalates once it is lifted
+rc=0
+=== test_captain_held_never_rechecked_while_away_record_exists
+ok - a captain-held item is never rechecked while the away-posture record exists, and the recheck returns once the record is archived
+rc=0
+=== test_live_captain_held_first_sight_silenced_by_away_record
+ok - a live captain-held pane is absorbed on first sight while the away-posture record exists
+rc=0
+=== test_backlog_hold_never_rechecked_while_away_record_exists
+ok - a delivery the captain already holds is never rechecked while the away-posture record exists
+rc=0
+=== test_afk_one_shot_never_hands_off_captain_held_under_away_record
+ok - the daemon-owned one-shot never hands off a captain-held pane while the away-posture record exists
+rc=0
+=== test_captain_held_rechecked_under_a_quiet_record
+ok - quiet mode's record silences no captain-held recheck, on the watcher's cadence or through a quiet daemon's one-shot
+rc=0
+=== test_paused_until_near_future_is_quiet_before_the_cadence
+ok - a declared wait naming a near-future until time stays quiet until that time
+rc=0
+=== test_paused_until_wrong_year_is_bounded_by_the_cadence
+ok - a wrong-year declared time cannot silence the watcher beyond the recheck cadence
+rc=0
+=== test_paused_until_that_passed_is_rechecked_before_the_cadence
+ok - a declared wait whose until time has passed is rechecked at once, then held to the cadence
+rc=0
+=== test_paused_bg_job_without_until_stays_silent_after_the_job_ends
+ok - without until, a worker paused on its own ended background job is not rechecked inside the cadence
+rc=0
+=== test_paused_bg_job_until_timeout_rechecks_after_the_job_ends
+ok - until set to a background job's timeout rechecks the worker paused on it once the job must have ended
+rc=0
+DONE

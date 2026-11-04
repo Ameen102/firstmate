@@ -1,0 +1,7 @@
+wait_for_exit: owned pid 1389 exceeded 100 polls; sending TERM
+ 1389 85210 S    bash /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
+not ok - the second captain call inherited the first call's silence
+
+real	0m46.565s
+user	0m10.826s
+sys	0m10.852s

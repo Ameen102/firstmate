@@ -1,0 +1,15 @@
+STEP first sight of call 1: surfaced (wake=1)
+STEP call 1 churn: absorbed (wake=0)
+== backlog rows: count: 0|tasks: 0 tasks in this backlog|help[2]:|  - "Run `tasks-axi add <id> \"<title>\"` to add a task"|  - Run `tasks-axi list --state done` to see completed work|
+wait_for_exit: owned pid 24617 exceeded 100 polls; sending TERM
+24617 72536 S    bash /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
+STEP second call first sight: SILENCED
+== wake queue: []
+== stale wakes: 0
+== triage:
+[2026-11-04T18:42:31+0300] absorbed stale (settled delivery already re-surfaced this window): test:fm-held-merge
+[2026-11-04T18:42:54+0300] absorbed stale (settled delivery already re-surfaced this window): test:fm-held-merge
+== markers:
+.guard-watcher-stale-banner
+.paused-resurfaced-test_fm-held-merge
+.stale-test_fm-held-merge

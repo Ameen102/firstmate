@@ -1,0 +1,22 @@
+1..32
+ok - all four required captain-hold tests fail when tasks-axi is unavailable
+ok - a not-provably-working non-terminal stale is surfaced immediately (never left to wait out the timer)
+ok - a declared pause is absorbed on first sight, then re-surfaced as a recheck past the threshold, never wedge-escalated
+ok - exited declared-pause and captain-held panes use bounded pause cadence while a live decision gate still surfaces once
+ok - own-work waits keep one first alert, then bounded rechecks without wedges; undeclared idle still alarms
+ok - a settled declared pause absorbs its rechecks, one still wakes at the ceiling, and a parked crew always wakes
+ok - a presented delivery alarms once, absorbs later settled hashes, and re-surfaces on the bounded cadence
+ok - a dead agent behind a standing wait wakes on the cadence, not the ceiling, while a live agent stays absorbed
+ok - absorbed paused and captain-held replacements each start their own re-surface cadence
+ok - a parked live worker surfaces once, absorbs pane churn for the whole re-surface window, then re-surfaces when it elapses
+ok - a live paused worker stays absorbed until its declared time, then rechecks
+ok - work under an open captain call surfaces once, absorbs pane churn, then re-surfaces when the window elapses
+ok - a stale window with no settled wait keeps alarming on every new hash, while a presented delivery is bounded after its first
+ok - a wake that never reached the durable queue arms no re-surface throttle
+wait_for_exit: owned pid 54626 exceeded 100 polls; sending TERM
+54626 47294 S    bash /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
+not ok - the second captain call inherited the first call's silence
+
+real	9m37.507s
+user	2m13.860s
+sys	2m40.804s

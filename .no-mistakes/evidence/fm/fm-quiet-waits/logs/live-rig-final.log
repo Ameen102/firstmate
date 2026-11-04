@@ -1,0 +1,21 @@
+== rig lab=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.Pb8d53 tmuxdir=/tmp/fml.fLJzYP
+== agent pane comm=grok-1.0.70-mac, shell pane comm=zsh
+PASS L1 first recheck of a presented declared wait reached firstmate: stale: crew:agent
+PASS L1 the wake was recorded for this declaration
+PASS L1b the due recheck inside the 24h ceiling woke nobody
+PASS L1b the absorbed recheck is recorded in the triage log
+PASS L2 a wait past the 24h ceiling reaches firstmate once more: stale: crew:agent (paused 551s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L3 a standing wait with no live agent still wakes on the cadence: stale: crew:shell (paused 503s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L4 a turn-end behind an already-presented declared wait woke nobody
+PASS L4 the absorbed re-announcement is recorded in the triage log
+PASS L5 a blocker still wakes: signal: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.Pb8d53/state/blocked.status
+PASS L6 an idle wedge on an already-presented delivery woke nobody at the threshold
+PASS L6 the deferral is recorded as a settled status
+PASS L7 an undeclared stall still escalates: stale: crew:agent (idle 502s, possible wedge, escalation 1)
+PASS L8a the first new pane hash of a presented delivery still alarms
+PASS L8a the alarm started the re-surface window
+PASS L8b a later new hash inside the window woke nobody
+PASS L8b the absorbed terminal re-announcement is recorded
+PASS L8c the bounded recheck re-surfaces the delivery after the window
+== crew-state verdict for the paused declaration: state: unknown · source: none · no metadata for waiting
+== RESULT: 0 failure(s)

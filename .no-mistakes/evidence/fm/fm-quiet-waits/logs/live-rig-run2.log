@@ -1,0 +1,22 @@
+== rig lab=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.jHIHBJ tmuxdir=/tmp/fml.j3EFDs
+== agent pane comm=sleep, shell pane comm=zsh
+PASS L1 first recheck of a presented declared wait reached firstmate: stale: crew:0 (paused 502s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L1 the wake was recorded for this declaration
+FAIL L1b watcher exited inside the ceiling: stale: crew:0 (paused 507s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+FAIL L1b a settled pause recheck woke firstmate: stale: crew:0 (paused 507s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds) / 1793805954	2	stale	crew:0	stale: crew:0 (paused 507s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+FAIL L1b no absorbed-recheck triage line
+PASS L2 a wait past the 24h ceiling reaches firstmate once more: stale: crew:0 (paused 600s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L3 a standing wait with no live agent still wakes on the cadence: stale: crew:shell (paused 503s, awaiting external - declared pause, rechecked on a long cadence not a wedge; confirm the wait still holds)
+PASS L4 a turn-end behind an already-presented declared wait woke nobody
+PASS L4 the absorbed re-announcement is recorded in the triage log
+PASS L5 a blocker still wakes: signal: /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T//fm-lab.jHIHBJ/state/blocked.status
+PASS L6 an idle wedge on an already-presented delivery woke nobody at the threshold
+PASS L6 the deferral is recorded as a settled status
+FAIL L7 undeclared stall not escalated: stale: crew:shell (idle 501s, agent dead - the endpoint is still there with no agent running in it, so this is not a wedge; reported once and not re-escalated while it stays that way - reconcile this record, and check for unlanded work before any cleanup)
+PASS L8a the first new pane hash of a presented delivery still alarms
+PASS L8a the alarm started the re-surface window
+PASS L8b a later new hash inside the window woke nobody
+PASS L8b the absorbed terminal re-announcement is recorded
+PASS L8c the bounded recheck re-surfaces the delivery after the window
+== crew-state verdict for the paused declaration: state: unknown · source: none · no metadata for waiting
+== RESULT: 4 failure(s)

@@ -1,0 +1,40 @@
+FM_TEST_BEGIN 2026-11-04T20:17:26Z tests/fm-watch-triage-pause.test.sh family=watcher-wake-lock expected_gate_skip=none
+1..32
+ok - all four required captain-hold tests fail when tasks-axi is unavailable
+ok - a not-provably-working non-terminal stale is surfaced immediately (never left to wait out the timer)
+ok - a declared pause is absorbed on first sight, then re-surfaced as a recheck past the threshold, never wedge-escalated
+ok - exited declared-pause and captain-held panes use bounded pause cadence while a live decision gate still surfaces once
+ok - own-work waits keep one first alert, then bounded rechecks without wedges; undeclared idle still alarms
+ok - a settled declared pause absorbs its rechecks, one still wakes at the ceiling, and a parked crew always wakes
+ok - a presented delivery alarms once, absorbs later settled hashes, and re-surfaces on the bounded cadence
+ok - a dead agent behind a standing wait wakes on the cadence, not the ceiling, while a live agent stays absorbed
+ok - absorbed paused and captain-held replacements each start their own re-surface cadence
+ok - a parked live worker surfaces once, absorbs pane churn for the whole re-surface window, then re-surfaces when it elapses
+ok - a live paused worker stays absorbed until its declared time, then rechecks
+ok - work under an open captain call surfaces once, absorbs pane churn, then re-surfaces when the window elapses
+ok - a stale window with no settled wait keeps alarming on every new hash, while a presented delivery is bounded after its first
+ok - a wake that never reached the durable queue arms no re-surface throttle
+ok - a released-then-re-held task is a distinct captain call whose first sight still alarms
+ok - a declared paused secondmate re-surfaces on the bounded normal-mode cadence
+ok - a captain-held secondmate re-surfaces on the bounded normal-mode cadence
+ok - a non-paused secondmate retains normal stale suppression
+ok - a resumed secondmate clears pause and stale tracking before stale exemption
+ok - unchanged stale hashes reclassify when a crew enters or leaves pause
+ok - a declared pause is periodically rechecked against authoritative active-run state
+ok - a paused status overridden by authoritative working preserves its wedge timer, is rechecked rather than wedge-escalated while the declaration stands, and escalates once it is lifted
+ok - a captain-held item is never rechecked while the away-posture record exists, and the recheck returns once the record is archived
+ok - a live captain-held pane is absorbed on first sight while the away-posture record exists
+ok - a delivery the captain already holds is never rechecked while the away-posture record exists
+ok - the daemon-owned one-shot never hands off a captain-held pane while the away-posture record exists
+ok - quiet mode's record silences no captain-held recheck, on the watcher's cadence or through a quiet daemon's one-shot
+ok - a declared wait naming a near-future until time stays quiet until that time
+ok - a wrong-year declared time cannot silence the watcher beyond the recheck cadence
+ok - a declared wait whose until time has passed is rechecked at once, then held to the cadence
+ok - without until, a worker paused on its own ended background job is not rechecked inside the cadence
+ok - until set to a background job's timeout rechecks the worker paused on it once the job must have ended
+FM_TEST_COMPLETE
+FM_TEST_END 2026-11-04T20:32:54Z tests/fm-watch-triage-pause.test.sh exit=0 duration_ms=928051 gate_skip=false
+FM_TEST_SUMMARY total=1 failed=0 skipped_gate=0 duration_ms=928156
+FM_TEST_SUMMARY_FAMILY family=watcher-wake-lock count=1 duration_ms=928051 failed=0
+FM_TEST_SLOWEST rank=1 script=tests/fm-watch-triage-pause.test.sh duration_ms=928051
+fm-test-run: wrote timing artifact: /Users/ameen/.no-mistakes/evidence/01M6KGRMKWZME6YWQP2EBCRVX8/pause-suite.json

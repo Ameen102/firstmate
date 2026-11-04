@@ -1,0 +1,2509 @@
++ set -u
+++ dirname tests/fm-watch-triage-pause.test.sh
++ . tests/watch-triage-helpers.sh
+++ set -u
+++ '[' -n '' ']'
+++ FM_WATCH_TRIAGE_HELPERS_SOURCED=1
++++ dirname tests/watch-triage-helpers.sh
+++ . tests/wake-helpers.sh
+++++ dirname tests/wake-helpers.sh
++++ . tests/lib.sh
+++++ '[' -n '' ']'
+++++ FM_TEST_LIB_SOURCED=1
+++++ umask 022
++++++ dirname tests/lib.sh
+++++ . tests/git-config-helpers.sh
++++++ export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
++++++ GIT_CONFIG_GLOBAL=/dev/null
++++++ GIT_CONFIG_NOSYSTEM=1
++++++ unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
+++++ export FM_GATE_REFUSE_BYPASS=1
+++++ FM_GATE_REFUSE_BYPASS=1
+++++ export FM_TEST_SEAM=1
+++++ FM_TEST_SEAM=1
+++++ unset FM_TASK_ID
+++++ unset HERDR_ENV HERDR_PANE_ID HERDR_TAB_ID HERDR_WORKSPACE_ID HERDR_SOCKET_PATH HERDR_SESSION HERDR_BIN_PATH TERM_PROGRAM FM_BACKEND FM_HOME FM_ROOT FM_ROOT_OVERRIDE FM_STATE_OVERRIDE FM_DATA_OVERRIDE FM_CONFIG_OVERRIDE FM_PROJECTS_OVERRIDE
+++++ unset TASKS_AXI_FILE TASKS_AXI_BACKEND
+++++ unset REX_SESSION REX_BLOCK
+++++++ dirname tests/lib.sh
++++++ cd tests/..
++++++ pwd
+++++ ROOT=/Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8
++++++ fm_test_tmpdir
++++++ local base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/ physical
++++++ base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ '[' -n /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T ']'
++++++ case "$base" in
+++++++ CDPATH=
+++++++ cd -- /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++++ pwd -P
++++++ physical=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ '[' -e /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.git ']'
++++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ FM_TEST_TMPDIR=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ FM_TEST_CLEANUP_DIRS=()
++++++ mktemp /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-cleanup.36631.XXXXXX
+++++ FM_TEST_CLEANUP_REGISTRY=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-cleanup.36631.LbVsGj
++++++ fm_test_pid_identity 36631
++++++ local pid=36631
++++++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ bash -c '. "$1"; fm_pid_identity "$2"' _ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-wake-lib.sh 36631
+++++ FM_TEST_OWNER_IDENTITY='Wed Nov  4 16:20:52 2026     bash -x tests/fm-watch-triage-pause.test.sh'
++++++ mktemp /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-procevent.36631.XXXXXX
+++++ FM_TEST_PROCEVENT_REGISTRY=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-procevent.36631.CN5eLj
++++++ mktemp /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-watcher.36631.XXXXXX
+++++ FM_TEST_WATCHER_REGISTRY=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-watcher.36631.1Ya2jN
+++++ FM_TEST_STUB_MAX_BLOCK_SECONDS=120
+++++ export FM_TEST_STUB_MAX_BLOCK_SECONDS
+++++ FM_TEST_SUITE_PID=36631
+++++ export FM_TEST_SUITE_PID
+++++ trap fm_test_cleanup EXIT
+++++ trap 'fm_test_cleanup; exit 130' INT
+++++ trap 'fm_test_cleanup; exit 143' TERM
+++++ trap 'fm_test_cleanup; exit 129' HUP
+++++ trap 'fm_test_cleanup; exit 131' QUIT
+++++ FM_TEST_ORPHAN_MAX_AGE_SECONDS=3600
+++++ '[' 0 '!=' 1 ']'
+++++ fm_test_reap_orphans
+++++ local marker dir mtime now owner_pid owner_identity current_identity
++++++ date +%s
+++++ now=1793809252
+++++ for marker in '"$FM_TEST_TMPDIR"/fm-*/.fm-test-fixture'
+++++ '[' -e '/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-*/.fm-test-fixture' ']'
+++++ continue
++++ '[' -z '' ']'
+++++ fm_test_tmproot fm-wake-tangle-root
+++++ local prefix=fm-wake-tangle-root root tmp_base
++++++ fm_test_tmpdir
++++++ local base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/ physical
++++++ base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ '[' -n /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T ']'
++++++ case "$base" in
+++++++ CDPATH=
+++++++ cd -- /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++++ pwd -P
++++++ physical=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ '[' -e /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.git ']'
++++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ tmp_base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ tmp_base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ mktemp -d /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.XXXXXX
+++++ root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++++++ cd -P -- /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++++++ pwd -P
+++++ root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
+++++ printf '%s\n%s\n' 36631 'Wed Nov  4 16:20:52 2026     bash -x tests/fm-watch-triage-pause.test.sh'
+++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
+++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++++ FM_ROOT_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++++ export FM_ROOT_OVERRIDE
+++++ fm_test_tmproot fm-wedge-rec
+++++ local prefix=fm-wedge-rec root tmp_base
++++++ fm_test_tmpdir
++++++ local base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/ physical
++++++ base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ '[' -n /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T ']'
++++++ case "$base" in
+++++++ CDPATH=
+++++++ cd -- /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++++ pwd -P
++++++ physical=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ '[' -e /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.git ']'
++++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ tmp_base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ tmp_base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++++ mktemp -d /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.XXXXXX
+++++ root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++++++ cd -P -- /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++++++ pwd -P
+++++ root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
+++++ printf '%s\n%s\n' 36631 'Wed Nov  4 16:20:52 2026     bash -x tests/fm-watch-triage-pause.test.sh'
+++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
+++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++++ _fm_wedge_rec_dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++++ cat
++++ chmod +x /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF/rec
++++ export FM_WEDGE_ALARM_EXEC=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF/rec
++++ FM_WEDGE_ALARM_EXEC=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF/rec
+++ . /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-classify-lib.sh
+++++ d=/Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin
+++++ '[' /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin '!=' /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-classify-lib.sh ']'
+++++ cd /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin
+++++ pwd
++++ _FM_CLASSIFY_LIB_DIR=/Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin
+++++ uname -s
++++ _FM_CLASSIFY_UNAME_S=Darwin
++++ FM_CREW_STATE_BIN=/Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-crew-state.sh
++++ case $- in
++++ _fm_classify_nounset=on
++++ . /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-timeout-lib.sh
+++++ set -u
++++ '[' on = on ']'
++++ unset _fm_classify_nounset
++++ FM_CLASSIFY_CAPTAIN_RE_DEFAULT='done:|needs-decision:|blocked:|failed:|PR ready|checks green|ready in branch|merged'
++++ FM_CLASSIFY_PAUSED_VERB_DEFAULT=paused
++++ FM_PAUSE_RESURFACE_SECS_DEFAULT=14400
++++ FM_CLASSIFY_RESOLVE_VERB_DEFAULT=resolved
++++ FM_CLASSIFY_CAPTAIN_HELD_VERB_DEFAULT=captain-held
++++ FM_CLASSIFY_EVENT_WINDOW_LINES=200
++++ FM_CLASSIFY_RESERVED_KEY_PREFIXES_DEFAULT=pending-reply-
++++ FM_OPEN_DECISIONS_FOLD_VERSION=9
++++ FM_STATUS_SNAPSHOT_EVENT_LINE=
++++ FM_STATUS_SNAPSHOT_EVENT_MTIME=
++++ FM_STATUS_SNAPSHOT_EVENT_ENDPOINT=
++++ STATUS_PRESENTATION_REPORTED=
++++ STATUS_PRESENTATION_CLASSIFIED=
++++ _FM_CLASSIFY_KEYLESS_PHASE=$'\036default'
++++ FM_GATE_HUMAN_DECISION='ask-user: authority decision'
++++ FM_WORKTREE_WRITE_PRUNE='.git node_modules .venv venv __pycache__ .mypy_cache .pytest_cache .ruff_cache .tox target dist build .next .cache vendor'
++++ FM_WORKTREE_WRITE_MAXDEPTH=6
++++ FM_WORKTREE_WRITE_TIMEOUT=10
+++ WATCH=/Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
+++ DRAIN=/Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-wake-drain.sh
+++ fm_test_tmproot fm-watch-triage-pause-tests
+++ local prefix=fm-watch-triage-pause-tests root tmp_base
++++ fm_test_tmpdir
++++ local base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/ physical
++++ base=/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++ '[' -n /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T ']'
++++ case "$base" in
+++++ CDPATH=
+++++ cd -- /var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++++ pwd -P
++++ physical=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++ base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++ '[' -e /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.git ']'
++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++ tmp_base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
+++ tmp_base=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T
++++ mktemp -d /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.XXXXXX
+++ root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++++ cd -P -- /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++++ pwd -P
+++ root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
+++ printf '%s\n%s\n' 36631 'Wed Nov  4 16:20:52 2026     bash -x tests/fm-watch-triage-pause.test.sh'
+++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
+++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++ TMP_ROOT=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++ mkdir -p /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/crew-state-bin
+++ make_fake_crew_state /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/crew-state-bin
+++ local fakebin=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/crew-state-bin
+++ cat
+++ chmod +x /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/crew-state-bin/fm-crew-state.sh
+++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/crew-state-bin/fm-crew-state.sh
++ FM_CREW_STATE_BIN=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/crew-state-bin/fm-crew-state.sh
++ export FM_CREW_STATE_BIN
++ HOLD_WATCH_PID=
++ '[' -n test_reheld_captain_call_starts_its_own_resurface_window ']'
++ test_reheld_captain_call_starts_its_own_resurface_window
++ local dir state out capture wakes
++ command -v tasks-axi
+++ make_hold_home reheld-call 'done: PR https://example.invalid/pull/1 checks green' hold
+++ local name=reheld-call 'line=done: PR https://example.invalid/pull/1 checks green' hold=hold dir state
++++ make_case reheld-call
++++ local name=reheld-call dir fakebin
++++ dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++++ fakebin=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin
++++ mkdir -p /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin
++++ fm_test_track_watcher_state /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state ']'
++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++++ cat
++++ chmod +x /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin/tmux
++++ make_fake_crew_state /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin
++++ local fakebin=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin
++++ cat
++++ chmod +x /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin/fm-crew-state.sh
++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin/fm-crew-state.sh
++++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
+++ dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
+++ state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
+++ mkdir -p /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
+++ fm_test_tasks_toml /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/.tasks.toml
+++ cat
+++ printf '## In flight\n\n## Queued\n\n## Done\n'
+++ '[' hold = hold ']'
+++ run_hold /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call hold held-merge --reason 'awaiting the captain on the merge'
+++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
+++ shift
+++ FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
+++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
+++ FM_DATA_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data
+++ FM_CONFIG_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
+++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-captain-hold.sh hold held-merge --reason 'awaiting the captain on the merge'
+++ printf 'window=test:fm-held-merge\nkind=ship\nharness=grok\nbackend=tmux\n'
+++ printf '%s\n' 'done: PR https://example.invalid/pull/1 checks green'
++++ seen_sig /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++ local reported size ident
++++ case "$1" in
+++++ status_observed_signature /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ local f=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status size= ident= path_state link_target=- access kind encoded
++++++ _status_observed_path_state /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++++ '[' Darwin = Darwin ']'
++++++ LC_ALL=C
++++++ /usr/bin/stat -f %HT:%p /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ path_state='Regular File:100644'
+++++ '[' -L /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status ']'
+++++ '[' '!' -e /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status ']'
+++++ '[' '!' -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status ']'
+++++ '[' -r /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status ']'
+++++ kind=readable
+++++ '[' -z '' ']'
++++++ _fm_status_file_size /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++++ local f=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++++ '[' -n '' ']'
++++++ '[' Darwin = Darwin ']'
++++++ LC_ALL=C
++++++ /usr/bin/stat -f %z /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ size=53
+++++ size=53
+++++ case "$size" in
+++++ '[' -z '' ']'
++++++ _fm_open_decisions_file_ident /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++++ local f=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status epoch birth ident
++++++ '[' -n '' ']'
++++++ _fm_status_stat_fields /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++++ local out dev_ino epoch birth rest
++++++ '[' Darwin = Darwin ']'
+++++++ LC_ALL=C
+++++++ /usr/bin/stat -f %d:%i%t%z%t%B%t%FB /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
++++++ out='16777232:342576591	53	1793809254	1793809254.260697617'
++++++ dev_ino=16777232:342576591
++++++ rest='53	1793809254	1793809254.260697617'
++++++ _FM_STAT_SIZE=53
++++++ rest='1793809254	1793809254.260697617'
++++++ epoch=1793809254
++++++ birth=1793809254.260697617
++++++ '[' 1793809254 '!=' 0 ']'
++++++ case "$dev_ino$birth" in
++++++ '[' -n 1793809254.260697617 ']'
++++++ _FM_STAT_IDENTITY=strong:16777232:342576591:1793809254.260697617
++++++ printf %s strong:16777232:342576591:1793809254.260697617
+++++ ident=strong:16777232:342576591:1793809254.260697617
+++++ '[' -n strong:16777232:342576591:1793809254.260697617 ']'
+++++ '[' -r /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status ']'
+++++ access=readable
++++++ printf '%s\0%s\0%s\0%s\0%s\0%s' 53 strong:16777232:342576591:1793809254.260697617 'Regular File:100644' - readable readable
++++++ LC_ALL=C
++++++ od -An -v -tx1
++++++ tr -d ' \n'
+++++ encoded=3533007374726f6e673a31363737373233323a3334323537363539313a313739333830393235342e32363036393736313700526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65
+++++ printf r1:%s 3533007374726f6e673a31363737373233323a3334323537363539313a313739333830393235342e32363036393736313700526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65
++++ reported=r1:3533007374726f6e673a31363737373233323a3334323537363539313a313739333830393235342e32363036393736313700526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65
+++++ size_of /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ LC_ALL=C
+++++ wc -c
+++++ tr -d '[:space:]'
++++ size=53
+++++ _fm_open_decisions_file_ident /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ local f=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status epoch birth ident
+++++ '[' -n '' ']'
+++++ _fm_status_stat_fields /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ local out dev_ino epoch birth rest
+++++ '[' Darwin = Darwin ']'
++++++ LC_ALL=C
++++++ /usr/bin/stat -f %d:%i%t%z%t%B%t%FB /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/held-merge.status
+++++ out='16777232:342576591	53	1793809254	1793809254.260697617'
+++++ dev_ino=16777232:342576591
+++++ rest='53	1793809254	1793809254.260697617'
+++++ _FM_STAT_SIZE=53
+++++ rest='1793809254	1793809254.260697617'
+++++ epoch=1793809254
+++++ birth=1793809254.260697617
+++++ '[' 1793809254 '!=' 0 ']'
+++++ case "$dev_ino$birth" in
+++++ '[' -n 1793809254.260697617 ']'
+++++ _FM_STAT_IDENTITY=strong:16777232:342576591:1793809254.260697617
+++++ printf %s strong:16777232:342576591:1793809254.260697617
++++ ident=strong:16777232:342576591:1793809254.260697617
++++ printf 'v2\t%s\t%s@%s' r1:3533007374726f6e673a31363737373233323a3334323537363539313a313739333830393235342e32363036393736313700526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65 53 strong:16777232:342576591:1793809254.260697617
+++ printf %s 'v2	r1:3533007374726f6e673a31363737373233323a3334323537363539313a313739333830393235342e32363036393736313700526567756c61722046696c653a313030363434002d007265616461626c65007265616461626c65	53@strong:16777232:342576591:1793809254.260697617'
+++ printf '%s\n' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out
++ capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ hold_watch_surface /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt 'idle, elapsed 1s'
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt 'text=idle, elapsed 1s'
++ printf '%s\n' 'idle, elapsed 1s'
++ hold_watch_launch /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ HOLD_WATCH_PID=37579
++ wait_for_exit 37579 100
++ local pid=37579 limit=100 i=0
++ PATH=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin:/Users/ameen/.pi/agent/bin:/Users/ameen/.local/bin:/Users/ameen/go/bin:/Users/ameen/.cargo/bin:/Users/ameen/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin
++ FM_FAKE_TMUX_WINDOW=test:fm-held-merge
++ FM_FAKE_TMUX_CAPTURE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ FM_FAKE_TMUX_CURRENT_COMMAND=zsh
++ FM_FAKE_CREW_STATE='state: stopped · source: pane · bare shell'
++ FM_WATCH_HANDLING_SUCCESSOR=1
++ FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ FM_DATA_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data
++ FM_CONFIG_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
++ '[' 0 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ FM_CREW_STATE_BIN=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin/fm-crew-state.sh
++ FM_PAUSE_RESURFACE_SECS=999
++ FM_POLL=1
++ FM_SIGNAL_GRACE=1
++ FM_CHECK_INTERVAL=999999
++ FM_HEARTBEAT=999999
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
+++ ps -p 37579 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=1
++ '[' 1 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=2
++ '[' 2 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=3
++ '[' 3 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=4
++ '[' 4 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=5
++ '[' 5 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=6
++ '[' 6 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=7
++ '[' 7 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=8
++ '[' 8 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=9
++ '[' 9 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=10
++ '[' 10 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=11
++ '[' 11 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=12
++ '[' 12 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=13
++ '[' 13 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=14
++ '[' 14 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=15
++ '[' 15 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=16
++ '[' 16 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=17
++ '[' 17 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=18
++ '[' 18 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=19
++ '[' 19 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=20
++ '[' 20 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=21
++ '[' 21 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=22
++ '[' 22 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=23
++ '[' 23 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=24
++ '[' 24 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=25
++ '[' 25 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
+++ ps -p 37579 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=26
++ '[' 26 -lt 100 ']'
++ is_live_non_zombie 37579
++ local pid=37579 stat
++ kill -0 37579
++ return 1
++ wait 37579
++ return 0
++ return 0
++ ack_stopped_cycle /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ local state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state err sequence generation
++ err=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.test-cycle-drain.err
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-wake-drain.sh
+++ sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through \([0-9][0-9]*\) --recovery-generation [A-Za-z0-9._-][A-Za-z0-9._-]*$/\1/p' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.test-cycle-drain.err
++ sequence=1
+++ sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through [0-9][0-9]* --recovery-generation \([A-Za-z0-9._-][A-Za-z0-9._-]*\)$/\1/p' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.test-cycle-drain.err
++ generation=37579.1793809260.EIBH6a
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.test-cycle-drain.err
++ '[' -n 1 ']'
++ '[' -n 37579.1793809260.EIBH6a ']'
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-wake-drain.sh --ack-through 1 --recovery-generation 37579.1793809260.EIBH6a
++ hold_watch_churn /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt 'idle, tick' 1
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt 'label=idle, tick' count=1 i=1 c
++ local state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ printf '%s 0\n' 'idle, tick'
++ hold_watch_launch /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ HOLD_WATCH_PID=43087
++ '[' 1 -le 1 ']'
++ printf '%s %s\n' 'idle, tick' 1
++ PATH=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin:/Users/ameen/.pi/agent/bin:/Users/ameen/.local/bin:/Users/ameen/go/bin:/Users/ameen/.cargo/bin:/Users/ameen/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin
++ c=0
++ FM_FAKE_TMUX_WINDOW=test:fm-held-merge
++ '[' 0 -lt 3 ']'
++ wait_poll_cycle /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state 43087 300
++ FM_FAKE_TMUX_CAPTURE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ FM_FAKE_TMUX_CURRENT_COMMAND=zsh
++ FM_FAKE_CREW_STATE='state: stopped · source: pane · bare shell'
++ FM_WATCH_HANDLING_SUCCESSOR=1
++ local state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state pid=43087 limit=300 beat first now i=0
++ FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ FM_DATA_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data
++ FM_CONFIG_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
++ beat=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ FM_CREW_STATE_BIN=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin/fm-crew-state.sh
++ FM_PAUSE_RESURFACE_SECS=999
++ FM_POLL=1
++ FM_SIGNAL_GRACE=1
++ FM_CHECK_INTERVAL=999999
++ FM_HEARTBEAT=999999
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
++ first=
++ '[' 0 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=1
++ '[' 1 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=2
++ '[' 2 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=3
++ '[' 3 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=4
++ '[' 4 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=1793809262
++ '[' -n 1793809262 ']'
++ break
++ '[' 4 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=5
++ '[' 5 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=6
++ '[' 6 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=7
++ '[' 7 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=8
++ '[' 8 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=9
++ '[' 9 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=10
++ '[' 10 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=11
++ '[' 11 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809262
++ '[' -n 1793809262 ']'
++ '[' 1793809262 '!=' 1793809262 ']'
++ sleep 0.1
++ i=12
++ '[' 12 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809264
++ '[' -n 1793809264 ']'
++ '[' 1793809264 '!=' 1793809262 ']'
++ return 0
++ c=1
++ '[' 1 -lt 3 ']'
++ wait_poll_cycle /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state 43087 300
++ local state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state pid=43087 limit=300 beat first now i=0
++ beat=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' 0 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=1
++ '[' 1 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=2
++ '[' 2 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=3
++ '[' 3 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=4
++ '[' 4 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=5
++ '[' 5 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=6
++ '[' 6 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=7
++ '[' 7 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=1793809266
++ '[' -n 1793809266 ']'
++ break
++ '[' 7 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=8
++ '[' 8 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=9
++ '[' 9 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=10
++ '[' 10 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=11
++ '[' 11 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=12
++ '[' 12 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=13
++ '[' 13 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=14
++ '[' 14 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=15
++ '[' 15 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=16
++ '[' 16 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=17
++ '[' 17 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=18
++ '[' 18 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809266
++ '[' -n 1793809266 ']'
++ '[' 1793809266 '!=' 1793809266 ']'
++ sleep 0.1
++ i=19
++ '[' 19 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809269
++ '[' -n 1793809269 ']'
++ '[' 1793809269 '!=' 1793809266 ']'
++ return 0
++ c=2
++ '[' 2 -lt 3 ']'
++ wait_poll_cycle /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state 43087 300
++ local state=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state pid=43087 limit=300 beat first now i=0
++ beat=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' 0 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=1
++ '[' 1 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=2
++ '[' 2 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=3
++ '[' 3 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=4
++ '[' 4 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=5
++ '[' 5 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=
++ '[' -n '' ']'
++ sleep 0.1
++ i=6
++ '[' 6 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ first=1793809270
++ '[' -n 1793809270 ']'
++ break
++ '[' 6 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=7
++ '[' 7 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=8
++ '[' 8 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=9
++ '[' 9 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=10
++ '[' 10 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=11
++ '[' 11 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=12
++ '[' 12 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809270
++ '[' -n 1793809270 ']'
++ '[' 1793809270 '!=' 1793809270 ']'
++ sleep 0.1
++ i=13
++ '[' 13 -lt 300 ']'
++ kill -0 43087
+++ file_mtime /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++++ uname
+++ '[' Darwin = Darwin ']'
+++ stat -f %m /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.last-watcher-beat
++ now=1793809272
++ '[' -n 1793809272 ']'
++ '[' 1793809272 '!=' 1793809270 ']'
++ return 0
++ c=3
++ '[' 3 -lt 3 ']'
++ i=2
++ '[' 2 -le 1 ']'
++ reap 43087
++ local rc
++ kill 43087
++ wait_for_exit 43087 100
++ local pid=43087 limit=100 i=0
++ '[' 0 -lt 100 ']'
++ is_live_non_zombie 43087
++ local pid=43087 stat
++ kill -0 43087
+++ ps -p 43087 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=1
++ '[' 1 -lt 100 ']'
++ is_live_non_zombie 43087
++ local pid=43087 stat
++ kill -0 43087
++ return 1
++ wait 43087
++ return 143
++ rc=143
++ '[' 143 -ne 124 ']'
++ return 0
+++ hold_stale_wakes /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
+++ awk -F '\t' '$3 == "stale" && $4 == "test:fm-held-merge" { n++ } END { print n + 0 }' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.wake-queue
++ '[' 0 -eq 0 ']'
++ printf 'go ahead\n'
++ run_hold /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call answer held-merge --decision-file /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/decision.txt --release
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ shift
++ FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ FM_DATA_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data
++ FM_CONFIG_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-captain-hold.sh answer held-merge --decision-file /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/decision.txt --release
++ run_hold /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call hold held-merge --reason 'awaiting the captain a second time'
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ shift
++ FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ FM_DATA_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data
++ FM_CONFIG_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-captain-hold.sh hold held-merge --reason 'awaiting the captain a second time'
++ hold_watch_surface /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt 'idle, elapsed 3s'
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt 'text=idle, elapsed 3s'
++ printf '%s\n' 'idle, elapsed 3s'
++ hold_watch_launch /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call out=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/watch.out capture=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ HOLD_WATCH_PID=53533
++ PATH=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin:/Users/ameen/.pi/agent/bin:/Users/ameen/.local/bin:/Users/ameen/go/bin:/Users/ameen/.cargo/bin:/Users/ameen/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin
++ FM_FAKE_TMUX_WINDOW=test:fm-held-merge
++ FM_FAKE_TMUX_CAPTURE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/pane.txt
++ FM_FAKE_TMUX_CURRENT_COMMAND=zsh
++ FM_FAKE_CREW_STATE='state: stopped · source: pane · bare shell'
++ wait_for_exit 53533 100
++ FM_WATCH_HANDLING_SUCCESSOR=1
++ FM_HOME=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call
++ local pid=53533 limit=100 i=0
++ FM_DATA_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/data
++ '[' 0 -lt 100 ']'
++ FM_CONFIG_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/config
++ is_live_non_zombie 53533
++ FM_STATE_OVERRIDE=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
++ local pid=53533 stat
++ kill -0 53533
++ FM_CREW_STATE_BIN=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/fakebin/fm-crew-state.sh
++ FM_PAUSE_RESURFACE_SECS=999
++ FM_POLL=1
++ FM_SIGNAL_GRACE=1
++ FM_CHECK_INTERVAL=999999
++ FM_HEARTBEAT=999999
++ /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
+++ ps -p 53533 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=1
++ '[' 1 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=2
++ '[' 2 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=3
++ '[' 3 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=4
++ '[' 4 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=5
++ '[' 5 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=6
++ '[' 6 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=7
++ '[' 7 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=8
++ '[' 8 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=9
++ '[' 9 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=10
++ '[' 10 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=11
++ '[' 11 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=12
++ '[' 12 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=13
++ '[' 13 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=14
++ '[' 14 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=15
++ '[' 15 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=16
++ '[' 16 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=17
++ '[' 17 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=18
++ '[' 18 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=19
++ '[' 19 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=20
++ '[' 20 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=21
++ '[' 21 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=22
++ '[' 22 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=23
++ '[' 23 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=24
++ '[' 24 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=25
++ '[' 25 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=26
++ '[' 26 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=27
++ '[' 27 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=28
++ '[' 28 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=29
++ '[' 29 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=30
++ '[' 30 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=31
++ '[' 31 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=32
++ '[' 32 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=33
++ '[' 33 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=34
++ '[' 34 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=35
++ '[' 35 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=36
++ '[' 36 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=37
++ '[' 37 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=38
++ '[' 38 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=39
++ '[' 39 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=40
++ '[' 40 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=41
++ '[' 41 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=42
++ '[' 42 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=43
++ '[' 43 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=44
++ '[' 44 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=45
++ '[' 45 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=46
++ '[' 46 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=47
++ '[' 47 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=48
++ '[' 48 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=49
++ '[' 49 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=50
++ '[' 50 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=51
++ '[' 51 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=52
++ '[' 52 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=53
++ '[' 53 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=54
++ '[' 54 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=55
++ '[' 55 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=56
++ '[' 56 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=57
++ '[' 57 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=58
++ '[' 58 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=59
++ '[' 59 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=60
++ '[' 60 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=61
++ '[' 61 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=62
++ '[' 62 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=63
++ '[' 63 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=64
++ '[' 64 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=65
++ '[' 65 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=66
++ '[' 66 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=67
++ '[' 67 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=68
++ '[' 68 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=69
++ '[' 69 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=70
++ '[' 70 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=71
++ '[' 71 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=72
++ '[' 72 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=73
++ '[' 73 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=74
++ '[' 74 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=75
++ '[' 75 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=76
++ '[' 76 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=77
++ '[' 77 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=78
++ '[' 78 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=79
++ '[' 79 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=80
++ '[' 80 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=81
++ '[' 81 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=82
++ '[' 82 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=83
++ '[' 83 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=84
++ '[' 84 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=85
++ '[' 85 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=86
++ '[' 86 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=87
++ '[' 87 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=88
++ '[' 88 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=89
++ '[' 89 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=90
++ '[' 90 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=91
++ '[' 91 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=92
++ '[' 92 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=93
++ '[' 93 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='R   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=94
++ '[' 94 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=95
++ '[' 95 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=96
++ '[' 96 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=97
++ '[' 97 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=98
++ '[' 98 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=99
++ '[' 99 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=100
++ '[' 100 -lt 100 ']'
++ printf 'wait_for_exit: owned pid %s exceeded %s polls; sending TERM\n' 53533 100
+wait_for_exit: owned pid 53533 exceeded 100 polls; sending TERM
++ ps -p 53533 -o pid= -o ppid= -o stat= -o command=
+53533 36631 S    bash /Users/ameen/.no-mistakes/worktrees/263a936a3c0b/01M6KGRMKWZME6YWQP2EBCRVX8/bin/fm-watch.sh
++ kill -TERM 53533
++ i=0
++ '[' 0 -lt 20 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
+++ ps -p 53533 -o stat=
++ stat='S   '
++ case "$stat" in
++ return 0
++ sleep 0.1
++ i=1
++ '[' 1 -lt 20 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
++ return 1
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
++ return 1
++ wait 53533
++ true
++ return 124
++ reap 53533
++ local rc
++ kill 53533
++ true
++ wait_for_exit 53533 100
++ local pid=53533 limit=100 i=0
++ '[' 0 -lt 100 ']'
++ is_live_non_zombie 53533
++ local pid=53533 stat
++ kill -0 53533
++ return 1
++ wait 53533
++ return 143
++ rc=143
++ '[' 143 -ne 124 ']'
++ return 1
++ fail 'the second captain call inherited the first call'\''s silence'
++ printf 'not ok - %s\n' 'the second captain call inherited the first call'\''s silence'
+not ok - the second captain call inherited the first call's silence
++ exit 1
++ fm_test_cleanup
++ local d
++ fm_test_reap_watchers
++ local state lock_home 'seen=
+'
++ '[' -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-watcher.36631.1Ya2jN ']'
++ IFS=
++ read -r state
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state ']'
++ case "$seen" in
++ seen+='/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state
+'
++ '[' -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/reheld-call/state/.watch.lock/pid ']'
++ continue
++ IFS=
++ read -r state
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-watcher.36631.1Ya2jN
++ fm_test_reap_procevent_homes
++ local home claim_root 'seen=
+'
++ '[' -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-procevent.36631.CN5eLj ']'
++ IFS='	'
++ read -r home claim_root
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-procevent.36631.CN5eLj
++ for d in '"${FM_TEST_CLEANUP_DIRS[@]:-}"'
++ '[' -n '' ']'
++ '[' -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-cleanup.36631.LbVsGj ']'
++ IFS=
++ read -r d
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W ']'
++ fm_test_reap_root_processes /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++ local root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W chain pid pids signal i
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W ']'
++ '[' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W '!=' / ']'
++ chain=' '
++ pid=36631
++ '[' -n 36631 ']'
++ '[' 36631 -gt 1 ']'
++ chain=' 36631 '
+++ ps -o ppid= -p 36631
+++ tr -d '[:space:]'
++ pid=36630
++ '[' -n 36630 ']'
++ '[' 36630 -gt 1 ']'
++ chain=' 36631 36630 '
+++ ps -o ppid= -p 36630
+++ tr -d '[:space:]'
++ pid=61144
++ '[' -n 61144 ']'
++ '[' 61144 -gt 1 ']'
++ chain=' 36631 36630 61144 '
+++ ps -o ppid= -p 61144
+++ tr -d '[:space:]'
++ pid=2370
++ '[' -n 2370 ']'
++ '[' 2370 -gt 1 ']'
++ chain=' 36631 36630 61144 2370 '
+++ ps -o ppid= -p 2370
+++ tr -d '[:space:]'
++ pid=1
++ '[' -n 1 ']'
++ '[' 1 -gt 1 ']'
++ for signal in TERM KILL
++ i=0
++ '[' 0 -lt 20 ']'
+++ ps -ww -eo pid=,args=
+++ FM_TEST_REAP_ROOT=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W/
+++ awk -v 'chain= 36631 36630 61144 2370 ' 'index($0, ENVIRON["FM_TEST_REAP_ROOT"]) && index(chain, " " $1 " ") == 0 { print $1 }'
++ pids=
++ '[' -n '' ']'
++ return 0
++ fm_test_remove_tree /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++ '[' -d /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W ']'
++ '[' '!' -L /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W ']'
++ find /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W -type d -exec chmod u+rwx '{}' +
++ rm -rf /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wake-tangle-root.LJdj2W
++ IFS=
++ read -r d
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF ']'
++ fm_test_reap_root_processes /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++ local root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF chain pid pids signal i
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF ']'
++ '[' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF '!=' / ']'
++ chain=' '
++ pid=36631
++ '[' -n 36631 ']'
++ '[' 36631 -gt 1 ']'
++ chain=' 36631 '
+++ ps -o ppid= -p 36631
+++ tr -d '[:space:]'
++ pid=36630
++ '[' -n 36630 ']'
++ '[' 36630 -gt 1 ']'
++ chain=' 36631 36630 '
+++ ps -o ppid= -p 36630
+++ tr -d '[:space:]'
++ pid=61144
++ '[' -n 61144 ']'
++ '[' 61144 -gt 1 ']'
++ chain=' 36631 36630 61144 '
+++ ps -o ppid= -p 61144
+++ tr -d '[:space:]'
++ pid=2370
++ '[' -n 2370 ']'
++ '[' 2370 -gt 1 ']'
++ chain=' 36631 36630 61144 2370 '
+++ ps -o ppid= -p 2370
+++ tr -d '[:space:]'
++ pid=1
++ '[' -n 1 ']'
++ '[' 1 -gt 1 ']'
++ for signal in TERM KILL
++ i=0
++ '[' 0 -lt 20 ']'
+++ ps -ww -eo pid=,args=
+++ FM_TEST_REAP_ROOT=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF/
+++ awk -v 'chain= 36631 36630 61144 2370 ' 'index($0, ENVIRON["FM_TEST_REAP_ROOT"]) && index(chain, " " $1 " ") == 0 { print $1 }'
++ pids=
++ '[' -n '' ']'
++ return 0
++ fm_test_remove_tree /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++ '[' -d /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF ']'
++ '[' '!' -L /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF ']'
++ find /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF -type d -exec chmod u+rwx '{}' +
++ rm -rf /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-wedge-rec.5WUfOF
++ IFS=
++ read -r d
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV ']'
++ fm_test_reap_root_processes /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++ local root=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV chain pid pids signal i
++ '[' -n /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV ']'
++ '[' /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV '!=' / ']'
++ chain=' '
++ pid=36631
++ '[' -n 36631 ']'
++ '[' 36631 -gt 1 ']'
++ chain=' 36631 '
+++ ps -o ppid= -p 36631
+++ tr -d '[:space:]'
++ pid=36630
++ '[' -n 36630 ']'
++ '[' 36630 -gt 1 ']'
++ chain=' 36631 36630 '
+++ ps -o ppid= -p 36630
+++ tr -d '[:space:]'
++ pid=61144
++ '[' -n 61144 ']'
++ '[' 61144 -gt 1 ']'
++ chain=' 36631 36630 61144 '
+++ ps -o ppid= -p 61144
+++ tr -d '[:space:]'
++ pid=2370
++ '[' -n 2370 ']'
++ '[' 2370 -gt 1 ']'
++ chain=' 36631 36630 61144 2370 '
+++ ps -o ppid= -p 2370
+++ tr -d '[:space:]'
++ pid=1
++ '[' -n 1 ']'
++ '[' 1 -gt 1 ']'
++ for signal in TERM KILL
++ i=0
++ '[' 0 -lt 20 ']'
+++ ps -ww -eo pid=,args=
+++ FM_TEST_REAP_ROOT=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV/
+++ awk -v 'chain= 36631 36630 61144 2370 ' 'index($0, ENVIRON["FM_TEST_REAP_ROOT"]) && index(chain, " " $1 " ") == 0 { print $1 }'
++ pids=
++ '[' -n '' ']'
++ return 0
++ fm_test_remove_tree /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++ local dir=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++ '[' -d /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV ']'
++ '[' '!' -L /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV ']'
++ find /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV -type d -exec chmod u+rwx '{}' +
++ rm -rf /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-watch-triage-pause-tests.5Qd5lV
++ IFS=
++ read -r d
++ rm -f /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/.fm-test-cleanup.36631.LbVsGj
