@@ -976,11 +976,12 @@ test_open_captain_call_bounds_stale_churn() {
 # wait was safe: the identical fixtures with NO hold must keep alarming on every
 # new hash, on both branches.
 test_stale_churn_without_a_captain_call_still_alarms() {
-  local spec name line dir state out capture round wakes
+  local spec name line dir state out capture round wakes cycles
   command -v tasks-axi >/dev/null 2>&1 \
     || fail "tasks-axi is required (unheld stale alarm)"
+  # A blocker and a plain worker line have no settled evidence at all, so every
+  # new hash keeps alarming exactly as before.
   for spec in \
-    'unheld-delivery|done: PR https://example.invalid/pull/1 checks green' \
     'unheld-blocker|blocked: cannot reach the release host' \
     'unheld-worker-line|working: still tidying the branch'
   do
@@ -999,7 +1000,39 @@ test_stale_churn_without_a_captain_call_still_alarms() {
       round=$((round + 1))
     done
   done
-  pass "a stale window with no open captain call keeps alarming on every new hash"
+
+  # A presented delivery is the one bounded case, and only after its first new
+  # hash: the settled evidence bounds the repetition, never the first look, and
+  # the shared recheck cadence still re-surfaces it later.
+  dir=$(make_hold_home unheld-delivery 'done: PR https://example.invalid/pull/1 checks green' nohold) \
+    || fail "[unheld-delivery] could not build an unheld backlog fixture"
+  state="$dir/state"; out="$dir/watch.out"; capture="$dir/pane.txt"
+  hold_watch_surface "$dir" "$out" "$capture" 'idle, elapsed 1s' \
+    || fail "[unheld-delivery] the first settled hash stopped alarming"
+  wakes=$(hold_stale_wakes "$state")
+  [ "$wakes" -eq 1 ] || fail "[unheld-delivery] the first settled hash produced $wakes wakes instead of one"
+  ack_stopped_cycle "$state" || fail "[unheld-delivery] could not acknowledge the first alarm"
+
+  : > "$out"
+  printf 'idle, elapsed 2s\n' > "$capture"
+  hold_watch_launch "$dir" "$out" "$capture"
+  cycles=0
+  while [ "$cycles" -lt 8 ]; do
+    wait_poll_cycle "$state" "$HOLD_WATCH_PID" 300 || break
+    cycles=$((cycles + 1))
+    [ -e "$state/.watch-triage.log" ] && break
+  done
+  if ! kill -0 "$HOLD_WATCH_PID" 2>/dev/null || [ ! -e "$state/.watch-triage.log" ]; then
+    reap "$HOLD_WATCH_PID"
+    fail "[unheld-delivery] a presented delivery re-alarmed inside its window after $cycles polls: $(cat "$out")"
+  fi
+  [ ! -s "$out" ] || { reap "$HOLD_WATCH_PID"; fail "[unheld-delivery] the absorbed re-announcement printed a wake"; }
+  wakes=$(hold_stale_wakes "$state")
+  [ "$wakes" -eq 0 ] \
+    || { reap "$HOLD_WATCH_PID"; fail "[unheld-delivery] queued $wakes wake(s) inside the window"; }
+  reap "$HOLD_WATCH_PID"
+  ack_stopped_cycle "$state" || fail "[unheld-delivery] could not acknowledge the absorbed re-announcement"
+  pass "a stale window with no settled wait keeps alarming on every new hash, while a presented delivery is bounded after its first"
 }
 
 

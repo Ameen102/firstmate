@@ -1602,8 +1602,8 @@ pause_recheck_settled() {  # <window> <task> <throttle-marker> <declaration>
 # when its `until` time arrives, or when the line was never presented. A blocker,
 # a decision, or a failure is deliberately NOT settled: those are the events that
 # must keep reaching firstmate.
-crew_wait_settled() {  # <task>
-  local task=$1 f last verb until
+crew_wait_settled() {  # <task> [<already-known working evidence>]
+  local task=$1 known=${2-} f last verb until
   [ -n "$task" ] || return 1
   f="$STATE/$task.status"
   last=$(status_declared_wait_line "$f")
@@ -1629,7 +1629,14 @@ crew_wait_settled() {  # <task>
   # A delivery line explains a quiet pane only while nothing is still executing
   # on it: an actively validating run keeps the wedge ladder, because a pipeline
   # that wedges after a done: line must reach firstmate on the wedge schedule
-  # rather than the long recheck cadence.
+  # rather than the long recheck cadence. A caller that already read the crew's
+  # state on this path passes its verdict as `working` or `not-working`, so the
+  # targeted population - a delivered worker's repeated terminal stale - costs one
+  # authoritative read instead of two.
+  case "$known" in
+    working) return 1 ;;
+    not-working) return 0 ;;
+  esac
   ! crew_is_provably_working "$task"
 }
 
@@ -4522,7 +4529,9 @@ EOF
           # authoritative source fm-crew-state.sh itself already prioritizes
           # over the log) a chance to override before trusting the log.
           if [ "$(cat "$sf" 2>/dev/null || true)" != "$h" ]; then
-            if crew_is_provably_working "$(window_to_task "$w" "$STATE")"; then
+            terminal_working=0
+            crew_is_provably_working "$(window_to_task "$w" "$STATE")" && terminal_working=1
+            if [ "$terminal_working" -eq 1 ]; then
               printf '%s' "$h" > "$sf"
               # Pre-cap shape kept the count here (keep-count contract).
               wedge_episode_end "$key" 0 1
@@ -4553,7 +4562,7 @@ EOF
               # surfaces it once the window elapses.
               STALE_WAIT_DECLARATION=
               settled_stale_absorb=1
-              if crew_wait_settled "$task"; then
+              if crew_wait_settled "$task" not-working; then
                 STALE_WAIT_DECLARATION=$(stale_wait_declaration "$task")
                 if stale_wait_throttled "$key" "$STALE_WAIT_DECLARATION"; then
                   settled_stale_absorb=0
