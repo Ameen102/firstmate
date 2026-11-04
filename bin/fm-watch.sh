@@ -4560,10 +4560,18 @@ EOF
               # later hashes inside the window are absorbed, and the shared
               # FM_PAUSE_RESURFACE_SECS recheck is the safety net that still
               # surfaces it once the window elapses.
+              # captain_call_stale_bound above already answered 'not throttled'
+              # for this sighting, and when a call IS open that answer was bound
+              # to the call's own identity. Keep that identity as the scope here:
+              # binding this bound to the status signature alone let a task
+              # answered with --release and held again inherit the first call's
+              # silence, swallowing the one decision that had to reach the
+              # captain. A churning call still matches its own identity.
+              terminal_captain_decl=$STALE_WAIT_DECLARATION
               STALE_WAIT_DECLARATION=
               settled_stale_absorb=1
               if crew_wait_settled "$task" not-working; then
-                STALE_WAIT_DECLARATION=$(stale_wait_declaration "$task")
+                STALE_WAIT_DECLARATION=${terminal_captain_decl:-$(stale_wait_declaration "$task")}
                 if stale_wait_throttled "$key" "$STALE_WAIT_DECLARATION"; then
                   settled_stale_absorb=0
                 fi
