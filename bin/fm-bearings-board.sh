@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# fm-bearings-board.sh - build and arm the /bearings lavish fleet board.
+# fm-bearings-board.sh - build, refresh, and arm the interactive fleet board.
 #
-# The board is the captain-facing interactive surface of /bearings lavish: the
-# shipped template (.agents/skills/bearings/assets/board-template.html) plus one
-# injected fm-bearings-board.v1 JSON payload. This script owns the mechanics so
-# the invoking agent's per-run work stays "compose the JSON, run build" - the
-# agent never authors board UI at invocation time.
+# The board is the captain-facing interactive surface of /bearings: the shipped
+# template (.agents/skills/bearings/assets/board-template.html) plus one injected
+# fm-bearings-board.v1 JSON payload. This script owns the mechanics so the
+# invoking agent's per-run work stays one command - `refresh` by default, or
+# `build` after composing the JSON under /bearings lavish - and the agent never
+# authors board UI at invocation time.
 #
 # Usage:
 #   fm-bearings-board.sh build <data.json>

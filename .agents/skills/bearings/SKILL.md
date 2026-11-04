@@ -12,9 +12,9 @@ metadata:
 # bearings
 
 Generate a complete current snapshot from the fleet's current state, so the captain can resume in one read after a break, a night, or a context reset.
-The interactive fleet board is the default place to see the fleet, so every invocation leaves it current instead of making the captain ask for a recap in chat.
+The interactive fleet board is the default place to see the fleet, so plain and lavish invocations leave it current instead of making the captain ask for a recap in chat.
 Plain `/bearings` refreshes that board with one command and returns the concise four-section chat digest carrying the board's URL.
-`/bearings file` also writes the dated markdown report artifact and returns the concise four-section chat digest linked to that report.
+`/bearings file` leaves the board alone, writes the dated markdown report artifact, and returns the concise four-section chat digest linked to that report.
 `/bearings lavish` authors the board's Captain's Call cards itself and builds the board from that payload, which is the register for cards that deserve copy the composer cannot write.
 `bin/fm-bearings-board.sh` owns every board mechanic and the fm-bearings-board.v1 payload contract.
 A digest/build invocation is operationally read-only apart from observational remote-ledger cache refreshes, durable per-target reconcile-notify requests when the captured state needs them, plus the explicit per-mode artifacts: the dated report in file mode, and the board file with the answer binding and source registration that `bin/fm-bearings-board.sh` records through their own owners.
@@ -75,7 +75,7 @@ For a contribution wake or linked-issue filing, go directly to Contribution foll
 3. **Compose the four-section chat digest from the fresh snapshot.**
    The gather step is deterministic; your judgment is scoped to ranking the command's facts by what matters right now and writing scannable captain-facing prose.
    The chat response uses the four complete sections in the chat-response contract below, in the same order, each always present.
-   Plain mode stops here and writes no report artifact.
+   Plain mode refreshes the board (the "Board mode" section below) for the URL the digest carries, and writes no report artifact.
 
 4. **In explicit file mode only, compose and replace the detailed report file.**
    The report uses the same four complete sections as the chat, in the same order, and adds the detail the chat omits.
@@ -102,13 +102,14 @@ Plain `/bearings` runs `bin/fm-bearings-board.sh refresh`, which composes the pa
 A refresh keeps an authored card unchanged while its task is still an open captain's call, gives every other open call a plain card answered in the captain's own words, and drops a card whose subject landed, so authoring once survives later refreshes.
 
 The board opens with a swimlane per live worker and per second mate: its project, its current state and step from the same current-state source the snapshot projects, the age of its last recorded event, any open decision or blocker in plain words, its PR link, and the Linear project the registry records for that project.
-Below them sit the same four sections as the chat digest.
+Below them sit the chat digest's other three sections, because the swimlanes take Underway's place.
 The watcher refreshes an already-live board at each heartbeat review, so it stays current without spending a chat turn, and it never creates a board or reopens one the captain ended.
 
 Compose the payload from the same snapshot with the same ranking judgment as the chat digest, plus these board rules:
 
 - A Captain's Call decision key is the captain-held TASK ID from `decisions_open` (legacy `<origin>-decision-<key>` rows are already task ids); a merge card's key is `merge.<task-id>`; a credential card's key is the task id of the open captain call or hold waiting on it, because a refresh drops one with no open call; the Charted Next dispatch picker's key is `dispatch.charted`. A credential card whose key is a held work task must declare `close: "release"`, because its answer reaches the keyed-answer intake and would otherwise complete the task instead of releasing it; a refresh gives a kept credential card that declares no `close` the same release.
 - Before carding a hold, check that its SUBJECT has not already landed, and omit it when it has. `build` drops a card whose task or PR appears in the payload's own landed rows, and one whose task is no longer an open captain call. When a hold waits on one specific PR, put that PR in the card's `pr_url`. When it concerns a published version, put the artifact and numeric three-part version in the card's structured `subject`; landed rows for releases carry the same identity, and a matching or newer version drops the card. Identity matching is structured only, so verify any subject without one of these identities against current reality before carding it.
+- Carry the swimlanes by gathering with `--fields lanes` and copying the snapshot's `lanes` array verbatim; a payload without it renders the Underway list until the next refresh.
 - Never author a `reconcile` option on any card. `build` gives every decision card the standard reconcile choice itself, and the payload validator reserves that value across all card types; recommendations must name an authored option.
 - Compose exactly one decision card per captain-held task id. When one task carries multiple questions, consolidate all of them and their options into that card; never emit duplicate cards with the same task-id key.
 - Decision cards carry agent-authored copy: a short noun-phrase title, one-line `about` and `decide` context rows, and option labels with hints, with the recommended option marked.
@@ -125,6 +126,7 @@ Compose the payload from the same snapshot with the same ranking judgment as the
 
 Run `build` once after composing the payload in lavish mode.
 Its serve-first sequence publishes the board, establishes and verifies its Lavish session with `lavish-axi`, reopens an ended session when necessary, and only then binds the answer source and proves a live polling listener; use the session URL it prints in the chat digest.
+`refresh` runs the same sequence, except that without `lavish-axi` it publishes the board file and reports the missing session, so give the board path in the digest instead of a URL.
 Never bind or arm the board before its session is listed open.
 Never run `lavish-axi poll` for the board yourself: the armed source's supervised runner owns the blocking poll, and both the build and the watcher's ordinary reconcile repair a missing listener, so no conversational turn ever blocks on the board.
 
@@ -183,7 +185,7 @@ Rules that keep the contract unambiguous:
 - Include the required direct address to the captain inside one item or empty-state sentence.
 - Every PR appears as the full `https://...` URL; a shorthand `#number` is fine only as a back-reference after the full URL has already appeared in the same digest.
 - The chat follows `AGENTS.md` section 9 and carries one scannable line per item.
-- Detailed decisions, plans, full gate reasons, and evidence stay out of chat; file mode puts them in the report, while lavish mode puts only its payload-backed interactive detail on the board.
+- Detailed decisions, plans, full gate reasons, and evidence stay out of chat; file mode puts them in the report, while plain and lavish modes put only payload-backed interactive detail on the board.
 - In file mode, include the report path or link inside the four-section digest without adding another heading.
 - In plain and lavish modes, include the board URL inside the four-section digest the same way.
 
