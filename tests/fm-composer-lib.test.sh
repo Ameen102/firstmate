@@ -553,8 +553,8 @@ test_matrix_omp_status_row_bounds_bare_composer() {
   _fm_composer_row_is_omp_status 'fix · tests before pushing' \
     && fail "wrapped typed text with a middle dot must not be mistaken for omp status furniture"
   # The ascii preset's identity cell is `pi`, but `pi` is also an ordinary
-  # word: a row opening `pi ·` is composer input because it lacks omp's own
-  # `ctx:` context-usage cell.
+  # word: a `pi ·` row is composer input unless it carries omp's
+  # `<pct>%/<n>K|M` context-usage figure, the only cell that admits it.
   _fm_composer_row_is_omp_status 'pi · e · phi as the three constants' \
     && fail "typed text opening 'pi ·' must not be mistaken for omp status furniture"
   _fm_composer_row_is_omp_status ' ⣾ 3s  · ◔ GPT-6-Astra' \
@@ -596,8 +596,8 @@ test_matrix_omp_18_16_ascii_preset_idle_pane() {
   assert_screen "idle omp 18.16.0 (ascii preset)" empty "$CAPS_STYLED" "$idle"
   assert_screen "idle omp 18.16.0 on a plain capture" empty "$CAPS_PLAIN" "$idle"
   assert_screen "typed omp 18.16.0 text is pending" pending "$CAPS_STYLED" "$typed"
-  # A row opening `pi ·` is composer input because it lacks omp's own `ctx:`
-  # context-usage cell.
+  # A `pi ·` typed row carries no `<pct>%/<n>K|M` context figure, and that
+  # figure is the only cell that admits a `pi ·` row as furniture.
   _fm_composer_row_is_omp_status 'pi · e · phi · ctx: typed text' \
     && fail "typed text opening 'pi ·' must not be mistaken for omp status furniture"
   pass "matrix: omp 18.16.0's ascii-preset footer bounds the bare composer's wrap region"
