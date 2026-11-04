@@ -1798,21 +1798,25 @@ wedge_wait_evidence() {  # <task> -> one wait_record on stdout
       external 'confirm the wait still holds' "$statusf"
     return 0
   fi
-  # A worker whose newest line already told firstmate everything it has to say -
-  # a delivery already presented, or a declared wait whose own clearing time has
-  # not arrived - is not a wedge candidate: its pane is quiet because there is
-  # nothing left for it to do. The 2026-11-03 audit counted 11 idle-wedge alarms
-  # on exactly one such worker. Same DEFERRAL shape as the declarations above, so
-  # the bounded recheck cadence still surfaces it and a line that stops declaring
-  # a wait escalates on the unchanged ladder.
-  if crew_wait_settled "$task"; then
-    wait_record 'settled status' 'its newest line was already presented and needs nothing' \
-      supervisor 'confirm the delivered work landed, then clean up or relaunch the worker' "$statusf"
-    return 0
-  fi
+  # The backlog hold is read BEFORE the settled status below: a delivery the
+  # captain is already holding is a hold on the captain, and naming firstmate
+  # instead would point the recheck at someone who cannot clear the lane.
   if task_captain_call_open "$task"; then
     wait_record "$WEDGE_BACKLOG_HOLD_KIND" 'awaiting the captain - held in the backlog' \
       captain 'answer the held decision or release the hold' ''
+    return 0
+  fi
+  # A worker whose newest line already told firstmate everything it has to say -
+  # a delivery already presented, or a declared wait whose own clearing time has
+  # not arrived - and which nothing holds for the captain is not a wedge
+  # candidate: its pane is quiet because there is nothing left for it to do. The
+  # 2026-11-03 audit counted 11 idle-wedge alarms on exactly one such worker.
+  # Same DEFERRAL shape as the declarations above, so the bounded recheck cadence
+  # still surfaces it and a line that stops declaring a wait escalates on the
+  # unchanged ladder.
+  if crew_wait_settled "$task"; then
+    wait_record 'settled status' 'its newest line was already presented and needs nothing' \
+      supervisor 'confirm the delivered work landed, then clean up or relaunch the worker' "$statusf"
     return 0
   fi
   if [ -e "$CONFIG/wedge-defer-worker-wait" ] && verb=$(status_worker_wait_verb "$statusf"); then
@@ -2551,7 +2555,9 @@ busy_stream_snapshot_current() {  # <task> <observed snapshot>
 # dead-agent captain-held transfer, and re-surface it once every
 # PAUSE_RESURFACE_SECS for a recheck so it cannot rot invisibly. Called on any
 # stale poll once pause_state_class permits the bounded cadence, so it must be
-# cheap: it NEVER re-reads crew state. The re-surface age is anchored on the
+# cheap: its single crew-state read happens at most once per
+# PAUSE_RESURFACE_SECS, behind the recheck gate inside pause_recheck_settled, and
+# never on an ordinary poll. The re-surface age is anchored on the
 # status file mtime, not a per-hash marker, so a churny idle pane (a ticking
 # clock, a token counter) cannot keep resetting the cadence the way a hash-tied
 # timer would. The bounded re-surface itself is the shared resurface_absorbed
