@@ -1,0 +1,38 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ⏺ Read bin/fm-composer-lib.sh (668-690)
+
+  The status-row pattern is the only boundary for the bare composer.
+
+❯
+ pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓

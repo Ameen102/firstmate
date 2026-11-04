@@ -1,0 +1,2 @@
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-lab.kCZegs/home2
+error: task h1's composer visibly holds pending text; refusing to type the /quit exit command because it would concatenate onto that text. Clear or submit the pending text, then retry 'exit'

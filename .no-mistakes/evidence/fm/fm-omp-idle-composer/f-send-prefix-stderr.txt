@@ -1,0 +1,3 @@
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-lab.kCZegs/home2
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+fm-send: doorbell skipped (composer visibly holds pending text); the steer is durably recorded at /private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-lab.kCZegs/home2/state/h1.inbox/001.msg and the watcher will re-ring

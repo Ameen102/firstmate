@@ -1,0 +1,8 @@
+# committed regression test: fixed build
+ok - matrix: omp 18.16.0's ascii-preset footer bounds the bare composer's wrap region
+FM_TEST_COMPLETE
+exit=0
+
+# committed regression test: pre-fix build (same test, base bin/fm-composer-lib.sh)
+not ok - the 18.16.0 ascii-preset omp footer must be recognized as furniture
+exit=1

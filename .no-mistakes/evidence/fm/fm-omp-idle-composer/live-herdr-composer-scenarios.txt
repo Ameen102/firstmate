@@ -1,0 +1,44 @@
+# Live Herdr lab: omp 18.16.0 idle-footer composer classification, fm-send, fm-control
+# Fixed build = this change (7446abba). Pre-fix build = ca41ecd8's bin/ tree (the
+# only file that differs is bin/fm-composer-lib.sh).
+# Every pane is a real Herdr pane in a throwaway fm-lab-* session running a
+# lab-only `omp`-named stand-in that paints the real captured omp 18.16.0 idle
+# screen and logs the bytes typed into it. The omp CLI itself is not installed on
+# this host, so the harness rendering is a stand-in; everything under test
+# (firstmate's herdr adapter, shared composer classifier, fm-send, fm-control) is
+# the shipped code.
+A session=fm-lab-A-idle-1816-81419-18854 pane=w1:p1
+A captured footer rows (1 = unwrapped, the captured shape): 1
+A composer state, pre-fix build: pending
+A composer state, fixed build:   empty
+B session=fm-lab-B-typed-1816-86531-18375 pane=w1:p1
+B composer state, pre-fix build: pending
+B composer state, fixed build:   pending
+C session=fm-lab-C-wrapped-pi-typ-88778-25665 pane=w1:p1
+C composer state, pre-fix build: pending
+C composer state, fixed build:   pending
+D session=fm-lab-D-idle-18111-91314-863 pane=w1:p1
+D composer state, pre-fix build: empty
+D composer state, fixed build:   empty
+E session=fm-lab-E-send-fixed-2497-14523 pane=w1:p1 pre-send state: empty
+E send exit=0
+E 'doorbell skipped' lines: 0
+E bytes typed into the pane:
+E   | : Firstmate instruction waiting: list "$FM_TASK_INBOX"/*.msg in your 'h1.inbox' steering inbox, read and act on each in numeric order, then mv each into its handled/.
+E durable records: 001.msg 
+F session=fm-lab-F-send-prefix-8371-17524 pane=w1:p1 pre-send state: pending
+F send exit=0
+F 'doorbell skipped' lines: 1
+F bytes typed into the pane:
+
+G-control-fixed session=fm-lab-G-control-fixed-46180-8427 pane=w1:p1 pre-exit composer state: empty
+G-control-fixed control exit=0
+G-control-fixed stdout: stopped h1 harness=omp backend=herdr endpoint=fm-lab-G-control-fixed-46180-8427:w1:p1 worktree=/private/var/folders/29/jjv5r2_x2jv3fm_3xv78zkdr0000gn/T/fm-lab.kCZegs/wt
+G-control-fixed stderr: 
+G-control-fixed bytes typed into the pane: /quit 
+H-control-prefix session=fm-lab-H-control-prefix-56149-4491 pane=w1:p1 pre-exit composer state: pending
+H-control-prefix control exit=1
+H-control-prefix stdout: 
+H-control-prefix stderr: error: task h1's composer visibly holds pending text; refusing to type the /quit exit command because it would concatenate onto that text. Clear or submit the pending text, then retry 'exit' 
+H-control-prefix bytes typed into the pane: 
+=== done ===
