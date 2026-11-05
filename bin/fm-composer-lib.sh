@@ -668,14 +668,18 @@ FM_COMPOSER_MODE_HINT_RE_DEFAULT='^[[:space:]]*(⏵|⏸)'
 # worker. A row is omp status furniture when it opens with omp's identity cell
 # then a middle dot (`π` under the unicode preset, `󰵗` under nerd: the
 # `icon.omp` of those omp 18.1.11 presets, never an arbitrary short token, so
-# a wrapped typed row such as `fix · tests` stays composer input; the ascii
-# preset's `pi` is deliberately absent because that preset's `sep.dot` is
-# ` - `, so its status row never carries a middle dot and a `pi ·` alternative
-# could only ever match typed text), when it opens with one of omp's spinner
-# frames then an elapsed cell, or when it carries the context-usage cell after
-# a middle dot. It is consulted only as the boundary BELOW a bare composer,
-# never on the composer row itself.
-FM_COMPOSER_OMP_STATUS_RE_DEFAULT='^[[:space:]]*(π|󰵗)[[:space:]]+·[[:space:]]|^[[:space:]]*'"$FM_OMP_SPINNER_FRAMES_RE"'[[:space:]]+[0-9]+[smh]([[:space:]]|$)|[[:space:]]·[[:space:]].*[0-9]+(\.[0-9]+)?%/[0-9]+K'
+# a wrapped typed row such as `fix · tests` stays composer input), when it
+# opens with one of omp's spinner frames then an elapsed cell, or when it
+# carries the context-usage cell after a middle dot. The context cell's `K`
+# (thousand) and `M` (million) suffixes are both real: the 18.1.11 captures
+# above show `/272K`, and omp 18.16.0's ascii-preset footer, captured live
+# through Herdr on 2026-11-04, reads
+# ` pi · [low] DeepSeek-V4.1-Flash · [wt] small-scratch/small-scratch · @ detached · ctx: 1.9%/1M [A] · $0.00 ↓`,
+# whose `/1M` figure failed the 18.1.11-era pattern and left an idle omp
+# worker reading `pending`, which silently skipped its doorbell and refused
+# `fm-control` exit and relaunch. It is consulted only as the boundary BELOW a
+# bare composer, never on the composer row itself.
+FM_COMPOSER_OMP_STATUS_RE_DEFAULT='^[[:space:]]*(π|󰵗)[[:space:]]+·[[:space:]]|^[[:space:]]*'"$FM_OMP_SPINNER_FRAMES_RE"'[[:space:]]+[0-9]+[smh]([[:space:]]|$)|[[:space:]]·[[:space:]].*[0-9]+(\.[0-9]+)?%/[0-9]+[KM]'
 # Pi's footer stats row opens at column 0 with the session cost when every
 # token counter is zero (`$0.000 (sub) 5.4%/272k (auto)` on pi 0.85.1).
 # That leading `$` is a cost cell, not a dead-shell prompt, only when a digit
