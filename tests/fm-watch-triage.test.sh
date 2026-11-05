@@ -1997,6 +1997,94 @@ test_ordinary_blocked_signal_payload_remains_branch_eligible() {
   pass "an ordinary blocked event remains branch-eligible"
 }
 
+# --- a re-announced signal for settled work is absorbed ------------------------
+# The 2026-11-03 audit counted about 10 main-session turns spent re-announcing
+# work already handled: a turn-end or a routine note behind a `paused:` wait or a
+# `done:` delivery firstmate had already presented. Every file in the batch is
+# checked, so one unsettled member keeps the whole batch waking.
+test_reannounced_signal_for_a_settled_wait_absorbed() {
+  local dir state fakebin out status_file sig pid
+  dir=$(make_case reannounced-settled-wait); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"
+  status_file="$state/task.status"
+  printf 'paused [at=1793700000]: watching the CI rerun of run 1234 until 2099-01-01T00:00Z\n' \
+    > "$status_file"
+  # The declaration itself was already presented: its own signal wake advanced the
+  # marker, so only the turn-end that follows it is pending.
+  sig=$(seen_sig "$status_file"); printf '%s' "$sig" > "$state/.seen-task_status"
+  : > "$state/task.turn-ended"
+  export FM_FAKE_CREW_STATE='state: paused · source: status-log · watching the CI rerun'
+  watch_bg "$state" "$fakebin" "$out"
+  pid=$!
+  if ! wait_poll_cycle "$state" "$pid"; then
+    reap "$pid"
+    fail "watcher exited for a turn-end behind a settled declared wait: $(cat "$out")"
+  fi
+  [ ! -s "$out" ] || { reap "$pid"; fail "a settled declared wait printed a signal wake"; }
+  [ ! -s "$state/.wake-queue" ] || { reap "$pid"; fail "a settled declared wait queued a signal wake"; }
+  grep -F 'absorbed re-announced signal:' "$state/.watch-triage.log" >/dev/null \
+    || { reap "$pid"; fail "an absorbed re-announcement was not recorded in the triage log"; }
+  [ -s "$state/.seen-task_turn-ended" ] \
+    || { reap "$pid"; fail "an absorbed re-announcement did not advance its marker"; }
+  unset FM_FAKE_CREW_STATE
+  reap "$pid"
+  pass "a turn-end behind a declared wait firstmate already has is absorbed as a re-announcement"
+}
+
+# The disconfirming half: only a wait or a delivery accounts for a quiet worker.
+# A presented blocker must keep waking firstmate, and a turn that wrote no status
+# line is still the swallowed finish the triage exists to catch.
+test_reannounced_signal_keeps_waking_without_a_settled_wait() {
+  local dir state fakebin out status_file sig pid spec name log
+  for spec in \
+    'blocker|blocked [at=1793700000]: the pipeline agent died twice with no findings' \
+    'no-status-line|working [at=1793700000]: implementing the change'
+  do
+    name=${spec%%|*}; log=${spec#*|}
+    dir=$(make_case "reannounced-$name"); state="$dir/state"; fakebin="$dir/fakebin"
+    out="$dir/watch.out"
+    status_file="$state/task.status"
+    printf '%s\n' "$log" > "$status_file"
+    sig=$(seen_sig "$status_file"); printf '%s' "$sig" > "$state/.seen-task_status"
+    : > "$state/task.turn-ended"
+    export FM_FAKE_CREW_STATE='state: unknown · source: none · no current-state source available'
+    watch_bg "$state" "$fakebin" "$out"
+    pid=$!
+    wait_for_exit "$pid" 100 || { reap "$pid"; fail "a $name turn-end no longer woke firstmate"; }
+    grep -F "signal: $state/task.turn-ended" "$out" >/dev/null \
+      || fail "a $name turn-end did not print its signal reason: $(cat "$out")"
+    grep -F "$(printf 'signal\ttask.turn-ended\t')" "$state/.wake-queue" >/dev/null \
+      || fail "a $name turn-end was not queued: $(cat "$state/.wake-queue")"
+    unset FM_FAKE_CREW_STATE
+  done
+  pass "a presented blocker and a turn-end with no status line each keep waking firstmate"
+}
+
+# A declaration firstmate has never seen is not work already handled. `paused` is
+# never captain-relevant, so its own first signal arrives as a no-verb batch, and
+# requiring the presented marker is the only thing that keeps that first signal
+# waking: without it a worker could declare `paused: need creds rotated until
+# <far future>` and firstmate would hear nothing until that time passed.
+test_reannounced_signal_keeps_waking_for_an_unpresented_wait() {
+  local dir state fakebin out status_file pid
+  dir=$(make_case reannounced-unpresented-wait); state="$dir/state"; fakebin="$dir/fakebin"
+  out="$dir/watch.out"
+  status_file="$state/task.status"
+  # No `.seen-*` marker at all: this declaration has never been presented.
+  printf 'paused [at=1793700000]: watching the CI rerun until 2099-01-01T00:00Z\n' > "$status_file"
+  : > "$state/task.turn-ended"
+  export FM_FAKE_CREW_STATE='state: paused · source: status-log · watching the CI rerun'
+  watch_bg "$state" "$fakebin" "$out"
+  pid=$!
+  wait_for_exit "$pid" 100 || { reap "$pid"; fail "an unpresented declared wait was absorbed as a re-announcement"; }
+  grep -F "signal: $state/task.status" "$out" >/dev/null \
+    || fail "an unpresented declared wait did not print its signal reason: $(cat "$out")"
+  grep -F "$(printf 'signal\ttask.status\t')" "$state/.wake-queue" >/dev/null \
+    || fail "an unpresented declared wait was not queued: $(cat "$state/.wake-queue")"
+  unset FM_FAKE_CREW_STATE
+  pass "a declared wait firstmate has not been shown still wakes on its own first signal"
+}
+
 # A routine (non-needs-decision) captain-relevant event must keep its ordinary
 # payload: only a genuine needs-decision gets the exclusion marker.
 test_routine_signal_payload_not_marked_needs_decision() {
@@ -5401,6 +5489,9 @@ fm_test_run \
   test_pending_reply_escalation_signal_payload_marked_for_branch_exclusion \
   test_ordinary_blocked_signal_payload_remains_branch_eligible \
   test_routine_signal_payload_not_marked_needs_decision \
+  test_reannounced_signal_for_a_settled_wait_absorbed \
+  test_reannounced_signal_keeps_waking_without_a_settled_wait \
+  test_reannounced_signal_keeps_waking_for_an_unpresented_wait \
   test_actionable_signal_survives_a_later_routine_append \
   test_keyed_decision_signal_reads_only_the_new_span \
   test_release_completion_survives_a_later_routine_append \
