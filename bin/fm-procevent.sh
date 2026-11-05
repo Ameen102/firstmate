@@ -66,7 +66,8 @@
 #            registered until its owner concludes it with `handled`.
 # reconcile  Idempotent liveness entry the watcher calls on its ordinary cycle:
 #            republish every durably captured result with no handled
-#            acknowledgement yet - regardless of any earlier publication - and
+#            acknowledgement yet and no row for it still queued - regardless
+#            of any earlier publication - and
 #            start a runner for any registered source that has no live owner and
 #            no open task-owned round. This is liveness repair only - it never
 #            discovers results by
@@ -102,7 +103,7 @@
 #            "already-handled: id seq" on every repeat call, atomically
 #            deduplicated so a paired external effect is never authorized
 #            twice. Until this is called, the result stays eligible for
-#            bounded re-announcement on every reconcile. Marking a result
+#            bounded re-announcement by reconcile. Marking a result
 #            handled does not retire its source registration or claim, with one
 #            exception: acknowledging the terminal round of a task-owned source
 #            is that board's conclude step, so it also drops the registration
@@ -177,8 +178,8 @@
 # announcement and a byte-identical replay produces none at all. Every other
 # adapter keeps the strict publish-before-apply order, because without a
 # declared downstream channel an applied-and-acknowledged result would otherwise
-# go silent. An unhandled result stays eligible for bounded re-announcement on
-# every reconcile in both modes, exactly as before.
+# go silent. An unhandled result stays eligible for bounded re-announcement by
+# reconcile in both modes (see publish_result).
 #
 # Polling again is adapter-owned through the same kind of seam. An adapter that
 # answers exit 0 to `bin/fm-procevent-<adapter>.sh relisten` keeps this runner
@@ -804,11 +805,19 @@ cmd_register_extension() {
   printf 'retire: bin/fm-procevent.sh retire %s --if-owner %s\n' "$id" "$registration_token"
 }
 
+# True while no check row for <queue-key> is queued. Runs under the wake-queue
+# lock inside fm_wake_append_guarded, so the test and the append are one step.
+procevent_key_unqueued() {  # <queue-key>
+  ! fm_wake_queued_keys_locked check | grep -Fx -- "$1" >/dev/null
+}
+
 # Publish every durably captured result with no handled acknowledgement yet.
 # Capture already happened, so this only turns durable state into durable
-# events - and it republishes on every call regardless of any earlier
-# publication, so a result stays eligible for re-announcement across restarts
-# and drains until `fm_procevent_mark_handled` records it.
+# events. A result stays eligible for re-announcement across restarts and
+# drains until `fm_procevent_mark_handled` records it, but only while no row
+# for its key is still queued: every appended row closes a watcher cycle, so
+# re-appending on each poll turned one unhandled result into a burst of wakes.
+# Acknowledging the row removes it, and the next call then announces again.
 publish_result() {  # <result-file>
   local result=$1 id seq adapter line status=1 owner_task='' message='' record=''
   local ring_backend ring_target ring_meta inbox_dir handled_dir pre_existing existing new_record
@@ -892,7 +901,7 @@ EOF
       esac
     fi
     unset FM_PROCEVENT_CAPTURE_SOURCE_LOCK_HELD
-    if fm_wake_append check "procevent:$id:$seq" "check: $line"; then
+    if fm_wake_append_guarded procevent_key_unqueued check "procevent:$id:$seq" "check: $line" "procevent:$id:$seq"; then
       status=0
     fi
   fi

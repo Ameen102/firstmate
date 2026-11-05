@@ -4242,6 +4242,44 @@ test_procevent_unacknowledged_result_redrains_until_handled() {
   pass "an unacknowledged process-event result re-drains until handling is acknowledged"
 }
 
+# Every appended row closes a watcher cycle, so reconcile must not stack a
+# second row behind a still-queued one - yet an acknowledged row must come
+# back until the result is handled.
+test_procevent_unhandled_result_queues_one_row_until_acknowledged() {
+  local dir state key i drain_err sequence generation
+  dir=$(make_case procevent-single-row); state="$dir/state"; key="procevent:delivery-src:1"
+  seed_captured_procevent_result "$dir" || fail "the fixture captured no process-event result"
+  rows() { awk -F '\t' -v k="$key" '$4 == k { n++ } END { print n + 0 }' "$state/.wake-queue" 2>/dev/null; }
+  [ "$(rows)" = 1 ] || fail "capture queued $(rows) rows instead of one"
+
+  for i in 1 2 3; do pe_case "$dir" reconcile >/dev/null || fail "reconcile $i failed"; done
+  [ "$(rows)" = 1 ] || fail "reconcile stacked $(rows) rows behind an unacknowledged one"
+
+  drain_err="$dir/ack.err"
+  FM_STATE_OVERRIDE="$state" "$DRAIN" >/dev/null 2> "$drain_err" || fail "drain failed"
+  sequence=$(sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through \([0-9][0-9]*\) --recovery-generation [A-Za-z0-9._-][A-Za-z0-9._-]*$/\1/p' "$drain_err")
+  generation=$(sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through [0-9][0-9]* --recovery-generation \([A-Za-z0-9._-][A-Za-z0-9._-]*\)$/\1/p' "$drain_err")
+  [ -n "$sequence" ] && [ -n "$generation" ] || fail "the drain omitted its acknowledgement boundary"
+  FM_STATE_OVERRIDE="$state" "$DRAIN" --ack-through "$sequence" --recovery-generation "$generation" >/dev/null 2>&1 \
+    || fail "could not acknowledge the row"
+  [ "$(rows)" = 0 ] || fail "acknowledgement left the row queued"
+
+  pe_case "$dir" reconcile >/dev/null || fail "reconcile after acknowledgement failed"
+  [ "$(rows)" = 1 ] || fail "an acknowledged but unhandled result was not re-announced ($(rows) rows)"
+  pe_case "$dir" reconcile >/dev/null || fail "second reconcile after acknowledgement failed"
+  [ "$(rows)" = 1 ] || fail "re-announcement stacked rows ($(rows))"
+
+  pe_case "$dir" handled delivery-src 1 >/dev/null || fail "could not mark the result handled"
+  FM_STATE_OVERRIDE="$state" "$DRAIN" >/dev/null 2> "$drain_err" || fail "drain after handling failed"
+  sequence=$(sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through \([0-9][0-9]*\) --recovery-generation [A-Za-z0-9._-][A-Za-z0-9._-]*$/\1/p' "$drain_err")
+  generation=$(sed -n 's/^WAKE_ACK_REQUIRED:.*--ack-through [0-9][0-9]* --recovery-generation \([A-Za-z0-9._-][A-Za-z0-9._-]*\)$/\1/p' "$drain_err")
+  FM_STATE_OVERRIDE="$state" "$DRAIN" --ack-through "$sequence" --recovery-generation "$generation" >/dev/null 2>&1 \
+    || fail "could not acknowledge after handling"
+  pe_case "$dir" reconcile >/dev/null || fail "reconcile after handling failed"
+  [ "$(rows)" = 0 ] || fail "a handled result was announced again"
+  pass "an unhandled process-event result keeps one queued row, returns after acknowledgement, and stops at handled"
+}
+
 test_procevent_marker_keys_are_injective() {
   local dir state out pid marker_count
   dir=$(make_case procevent-marker-identity); state="$dir/state"; out="$dir/watch.out"
@@ -5405,6 +5443,7 @@ fm_test_run \
   test_triage_log_size_cap_accepts_spaced_wc_counts \
   test_procevent_captured_result_surfaces_proactively \
   test_procevent_unacknowledged_result_redrains_until_handled \
+  test_procevent_unhandled_result_queues_one_row_until_acknowledged \
   test_procevent_marker_keys_are_injective \
   test_procevent_headlines_classify_queue_keys \
   test_procevent_launch_failed_episodes_are_each_delivered \
