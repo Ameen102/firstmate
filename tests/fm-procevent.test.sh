@@ -362,9 +362,10 @@ pass "public start never claims an inherited caller process group"
 
 # --- an unhandled result remains eligible for re-announcement on restart ----
 # A result is durable but nothing has ever acknowledged handling it. Every
-# reconcile call - not just the first restart after a crash - must keep
-# re-announcing it, because the only thing that stops re-announcement is an
-# explicit handled acknowledgement, never a prior publication.
+# reconcile call after the previous row was consumed - not just the first
+# restart after a crash - must keep re-announcing it, because the only thing
+# that stops re-announcement is an explicit handled acknowledgement, never a
+# prior publication. A row still queued for the key is never stacked behind.
 H2="$TMP_ROOT/h2"; new_home "$H2"
 future_status=0
 future_out=$(pe "$H2" handled src-cut 7 2>&1) || future_status=$?
@@ -582,6 +583,9 @@ TERMINAL_RESULT=$(first_result "$HTERM" ends-src || true)
 assert_grep 'terminal payload' "$TERMINAL_RESULT" "automatic retirement retains the captured output verbatim"
 out=$(pe_adapter "$HTERM" reconcile)
 assert_contains "$out" "started=0" "a retired terminal source is never restarted"
+assert_contains "$out" "published=0" "a still-queued terminal result is not stacked a second time"
+mv "$HTERM/state/.wake-queue" "$HTERM/state/.wake-queue.drained-1"
+out=$(pe_adapter "$HTERM" reconcile)
 assert_contains "$out" "published=1" "an unhandled terminal result is still re-announced until acknowledged"
 [ "$(count_results "$HTERM" ends-src)" = 1 ] || fail "a retired terminal source ran its poll again"
 out=$(pe_adapter "$HTERM" retire ends-src)
