@@ -66,7 +66,8 @@
 #            registered until its owner concludes it with `handled`.
 # reconcile  Idempotent liveness entry the watcher calls on its ordinary cycle:
 #            republish every durably captured result with no handled
-#            acknowledgement yet - regardless of any earlier publication - and
+#            acknowledgement yet and no row for it still queued - regardless
+#            of any earlier publication - and
 #            start a runner for any registered source that has no live owner and
 #            no open task-owned round. This is liveness repair only - it never
 #            discovers results by
@@ -102,7 +103,7 @@
 #            "already-handled: id seq" on every repeat call, atomically
 #            deduplicated so a paired external effect is never authorized
 #            twice. Until this is called, the result stays eligible for
-#            bounded re-announcement on every reconcile. Marking a result
+#            bounded re-announcement by reconcile. Marking a result
 #            handled does not retire its source registration or claim, with one
 #            exception: acknowledging the terminal round of a task-owned source
 #            is that board's conclude step, so it also drops the registration
@@ -177,8 +178,8 @@
 # announcement and a byte-identical replay produces none at all. Every other
 # adapter keeps the strict publish-before-apply order, because without a
 # declared downstream channel an applied-and-acknowledged result would otherwise
-# go silent. An unhandled result stays eligible for bounded re-announcement on
-# every reconcile in both modes, exactly as before.
+# go silent. An unhandled result stays eligible for bounded re-announcement by
+# reconcile in both modes (see publish_result).
 #
 # Polling again is adapter-owned through the same kind of seam. An adapter that
 # answers exit 0 to `bin/fm-procevent-<adapter>.sh relisten` keeps this runner
