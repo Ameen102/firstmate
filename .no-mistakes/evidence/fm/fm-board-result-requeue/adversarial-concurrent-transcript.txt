@@ -1,0 +1,20 @@
+reconciled: published=0 started=2 stopped=0 uncertain=0 failed=0
+after capture of two sources (src-a, src-ab):
+   queue keys:
+        1 procevent:src-a:1
+        1 procevent:src-ab:1
+after drain+ack (both unhandled):
+   queue keys:
+$ 12 concurrent reconciles
+     11 reconciled: published=0 started=0 stopped=0 uncertain=0 failed=0
+      1 reconciled: published=2 started=0 stopped=0 uncertain=0 failed=0
+   queue keys:
+        1 procevent:src-a:1
+        1 procevent:src-ab:1
+$ handled src-a 1 only, drain+ack, reconcile x3
+handled: src-a 1
+reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+reconciled: published=0 started=0 stopped=0 uncertain=0 failed=0
+reconciled: published=0 started=0 stopped=0 uncertain=0 failed=0
+   queue keys:
+        1 procevent:src-ab:1

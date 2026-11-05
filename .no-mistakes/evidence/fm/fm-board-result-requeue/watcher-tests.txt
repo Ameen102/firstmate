@@ -1,0 +1,3 @@
+ok - an unhandled process-event result keeps one queued row, returns after acknowledgement, and stops at handled
+ok - an unacknowledged process-event result re-drains until handling is acknowledged
+ok - a captured process-event result wakes a healthy watcher proactively, with no manual drain

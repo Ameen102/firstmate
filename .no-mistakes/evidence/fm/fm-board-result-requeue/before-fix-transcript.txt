@@ -1,0 +1,42 @@
+== bin under test: <base bb54ee56 archive>/bin (base-archive)
+$ register lavish delivery-src; reconcile (runner captures one result)
+reconciled: published=0 started=1 stopped=0 uncertain=0 failed=0
+   queued rows for procevent:delivery-src:1: 1
+$ reconcile #1 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #2 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #3 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #4 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #5 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #6 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #7 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #8 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #9 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile #10 -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+   queued rows for procevent:delivery-src:1: 11
+-- queue rows (kind, key, payload):
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+   check	procevent:delivery-src:1	check: procevent lavish delivery-src 1
+$ drain + acknowledge (result still NOT handled)
+   drain presented through seq=11; acknowledging
+   queued rows for procevent:delivery-src:1: 0
+$ reconcile after ack -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+   queued rows for procevent:delivery-src:1: 1
+$ reconcile again -> reconciled: published=1 started=0 stopped=0 uncertain=0 failed=0
+   queued rows for procevent:delivery-src:1: 2
+$ handled delivery-src 1
+handled: delivery-src 1
+   drain presented through seq=13; acknowledging
+   queued rows for procevent:delivery-src:1: 0
+$ reconcile after handled #1 -> reconciled: published=0 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile after handled #2 -> reconciled: published=0 started=0 stopped=0 uncertain=0 failed=0
+$ reconcile after handled #3 -> reconciled: published=0 started=0 stopped=0 uncertain=0 failed=0
+   queued rows for procevent:delivery-src:1: 0
