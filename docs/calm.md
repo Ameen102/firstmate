@@ -177,6 +177,7 @@ FM_PI_LIVE_E2E=1 tests/fm-pi-primary-live-e2e.test.sh
 
 The tracked `.omp/extensions/fm-calm.ts` extension is auto-discovered alongside Firstmate's OMP watcher and turn-end extensions.
 Run `/reload` or restart OMP after adding it, then use `/calm` in the interactive main agent to toggle presentation.
+Use `/calm on` or `/calm off` to set the choice explicitly; repeating either command keeps that state and reports it in the notice.
 
 Calm sets runtime-only overrides for `display.hideToolActivity`, `hideThinkingBlock`, and `extensionRenderers.assistantText`.
 It hides tool activity, thinking blocks, and settled mid-turn narration governed by the [shared preservation rule](#shared-preservation-rule-for-assistant-text).
@@ -190,18 +191,27 @@ The toggle does not rewrite OMP's configuration.
 If a native visibility key changes a persisted setting during Calm, turning Calm off still restores the original effective value for the current session.
 
 OMP exposes neither a user-message display filter nor an API to hide or replace the stock working row.
-Firstmate operational user messages therefore stay visible, and there is no Calm sailboat on OMP.
+Firstmate operational user messages therefore stay visible.
 The native live `Thinking…` header can also remain visible.
+
+### Working boat
+
+While Calm is on and an agent run is active, a widget above the editor draws the same two-row boat as Pi using the shared sprite geometry and Pi's ANSI renderer.
+The sea is blue, the whole boat is yellow, the waves advance every 220ms, and the boat crosses one column every 880ms.
+Rendering clamps the boat to the current width on every frame, including after a resize.
+Turning Calm off, finishing or aborting a run, a failed run, or shutting down removes the widget and stops its timer.
+Turning Calm on during an active run restores the boat.
+The stock working row remains beside the widget; Calm shortens its label to a space while the boat is shown and restores the default label when the boat is removed.
 
 ### Startup visibility caveat
 
 OMP 18.18 attaches its live visibility listener after `session_start`.
 Starting with Calm already on can hide narration while leaving previously visible tool or thinking rows on screen.
-Run `/calm` twice as separate commands (off, then on) to refresh those rows using runtime-only settings.
+Run `/calm off` and then `/calm on` as separate commands to refresh those rows using runtime-only settings.
 The startup notice also names the applicable default visibility keys, `Ctrl+Shift+O` for tools and `Ctrl+T` for thinking, but those native keys persist their choices in OMP configuration.
 Prefer the double-toggle when keeping that configuration unchanged.
 
-Portable regression: `bash tests/fm-calm-omp-extension.test.sh` exercises presentation boundaries and settings restoration without OMP or a model.
+Portable regression: `bash tests/fm-calm-omp-extension.test.sh` exercises presentation boundaries, settings restoration, explicit controls, and boat lifecycle and cadence without OMP or a model.
 
 ## Claude Code
 

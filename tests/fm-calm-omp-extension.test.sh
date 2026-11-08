@@ -11,9 +11,11 @@ command -v node >/dev/null 2>&1 || { echo "skip: node not found for OMP Calm che
 prepare_fixture() {
   local repo="$TMP_ROOT/repo" package
   package="$repo/node_modules/@oh-my-pi/pi-coding-agent"
-  mkdir -p "$repo/.omp/extensions" "$repo/.claude/mods/firstmate-calm/lib" "$package/config"
+  mkdir -p "$repo/.omp/extensions" "$repo/.pi/extensions/lib" "$repo/.claude/mods/firstmate-calm/lib" "$package/config"
   cp "$ROOT/.omp/extensions/fm-calm.ts" "$repo/.omp/extensions/" || fail "OMP Calm extension is missing"
   cp "$ROOT/.claude/mods/firstmate-calm/lib/fm-calm-preservation.ts" "$repo/.claude/mods/firstmate-calm/lib/"
+  cp "$ROOT/.pi/extensions/lib/fm-calm-working-ship.ts" "$repo/.pi/extensions/lib/"
+  cp "$ROOT/.claude/mods/firstmate-calm/lib/fm-calm-working-ship-sprite.ts" "$repo/.pi/extensions/lib/"
   printf '{"type":"module","exports":{"./config/*":"./config/*.mjs"}}\n' >"$package/package.json"
   # Layered settings double at the vendor boundary: the extension under test owns
   # all presentation decisions and snapshot/restore logic, not this fixture.
@@ -183,4 +185,109 @@ JS
   pass "OMP Calm preserves substantive/final/streaming text and restores layered settings and home-scoped preference"
 }
 
-fm_test_run test_calm_rendering_and_restore
+test_calm_controls_and_boat() {
+  prepare_fixture
+  local out
+  out=$(REPO="$TMP_ROOT/repo" node --input-type=module 2>&1 <<'JS'
+import assert from "node:assert/strict";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+const repo = process.env.REPO;
+process.env.FM_HOME = `${repo}/boat-home`;
+mkdirSync(`${process.env.FM_HOME}/config`, { recursive: true });
+writeFileSync(`${process.env.FM_HOME}/config/calm`, "off\n");
+const { Settings, use } = await import(pathToFileURL(`${repo}/node_modules/@oh-my-pi/pi-coding-agent/config/settings.mjs`));
+const { default: calm } = await import(pathToFileURL(`${repo}/.omp/extensions/fm-calm.ts`));
+use(new Settings());
+const intervals = new Map();
+let intervalId = 0;
+const originalSet = globalThis.setInterval, originalClear = globalThis.clearInterval;
+globalThis.setInterval = (callback, ms) => { const id = { id: ++intervalId, unref() {} }; intervals.set(id, { callback, ms }); return id; };
+globalThis.clearInterval = id => intervals.delete(id);
+try {
+  const handlers = new Map(), widgets = new Map(), notices = [];
+  let command;
+  const tui = { requestRender() {} };
+  const ctx = { mode: "tui", agent: { kind: "main" }, cwd: repo,
+    sessionManager: { getBranch: () => [] },
+    ui: {
+      notify: (...args) => notices.push(args), rerenderMessage() {}, setWorkingMessage() {},
+      setWidget(key, factory) {
+        widgets.get(key)?.dispose();
+        widgets.delete(key);
+        if (factory) widgets.set(key, factory(tui));
+      },
+    },
+  };
+  calm({ on: (name, handler) => handlers.set(name, handler), registerAssistantTextRenderer() {}, registerCommand: (_name, value) => { command = value.handler; } });
+  const preference = () => readFileSync(`${process.env.FM_HOME}/config/calm`, "utf8");
+  const boat = () => widgets.get("calm-working-ship");
+  const strip = value => value.replace(/\x1b\[[0-9;]*m/g, "");
+  const tick = () => { for (const timer of [...intervals.values()]) timer.callback(); };
+  handlers.get("session_start")({}, ctx);
+  await command("off", ctx);
+  assert.equal(preference(), "off\n", "explicit off must not toggle on");
+  assert.deepEqual(notices.at(-1), ["Calm off", "info"]);
+  await command("on", ctx);
+  await command("on", ctx);
+  assert.equal(preference(), "on\n", "repeated on stays on");
+  assert.deepEqual(notices.at(-1), ["Calm on", "info"]);
+  assert.equal(widgets.size, 0, "idle Calm never animates");
+  handlers.get("agent_start")({}, ctx);
+  assert.equal(intervals.size, 1, "one live scheduler");
+  assert.equal([...intervals.values()][0].ms, 220);
+  let rows = boat().render(40);
+  assert.equal(rows.length, 2);
+  assert.ok(strip(rows[0]).length <= 40);
+  assert.equal(strip(rows[1]).length, 40);
+  assert.ok(rows[0].includes("\x1b[33m◿│◣"), "yellow sail");
+  assert.ok(rows[1].includes("\x1b[34m"), "blue sea");
+  const initial = rows.map(strip);
+  tick();
+  rows = boat().render(40).map(strip);
+  assert.equal(rows[0].indexOf("◿"), initial[0].indexOf("◿"), "wave tick does not move boat");
+  assert.notEqual(rows[1], initial[1], "wave changes at 220ms");
+  tick(); tick(); tick();
+  rows = boat().render(40).map(strip);
+  assert.equal(rows[0].indexOf("◿"), initial[0].indexOf("◿") + 1, "boat moves at 880ms");
+  for (let i = 0; i < 200; i++) tick();
+  rows = boat().render(7).map(strip);
+  assert.ok(rows[0].length <= 7);
+  assert.equal(rows[1].length, 7, "resize clamps geometry");
+  assert.ok(rows[1].indexOf("╲") >= 0 && rows[1].indexOf("╱") < 7);
+  handlers.get("agent_start")({}, ctx);
+  assert.equal(intervals.size, 1, "duplicate starts cannot duplicate schedulers");
+  await command("off", ctx);
+  assert.equal(widgets.size, 0);
+  assert.equal(intervals.size, 0, "off clears animation");
+  await command("on", ctx);
+  assert.equal(widgets.size, 1, "on during run resumes boat");
+  handlers.get("agent_end")({ messages: [] }, ctx);
+  assert.equal(widgets.size, 0, "run end removes boat");
+  assert.equal(intervals.size, 0);
+  for (const stopReason of ["aborted", "error"]) {
+    handlers.get("agent_start")({}, ctx);
+    assert.equal(widgets.size, 1);
+    handlers.get("agent_end")({ messages: [{ role: "assistant", stopReason }] }, ctx);
+    assert.equal(widgets.size, 0, `${stopReason} clears boat`);
+    assert.equal(intervals.size, 0);
+  }
+  handlers.get("agent_start")({}, ctx);
+  handlers.get("session_shutdown")({}, ctx);
+  assert.equal(widgets.size, 0, "shutdown clears boat");
+  assert.equal(intervals.size, 0, "shutdown disposes scheduler");
+  handlers.get("session_start")({}, ctx);
+  await command("", ctx);
+  assert.equal(preference(), "off\n", "bare command still toggles");
+} finally {
+  globalThis.setInterval = originalSet;
+  globalThis.clearInterval = originalClear;
+}
+console.log("controls-and-boat-ok");
+JS
+) || fail "OMP Calm controls and boat: $out"
+  assert_contains "$out" "controls-and-boat-ok" "OMP Calm controls and boat checks did not complete"
+  pass "explicit Calm controls and active-only shared boat preserve cadence, resize bounds and cleanup"
+}
+
+fm_test_run test_calm_rendering_and_restore test_calm_controls_and_boat

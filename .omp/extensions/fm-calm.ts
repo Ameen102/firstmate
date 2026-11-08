@@ -7,6 +7,11 @@ import type { ExtensionAPI, ExtensionContext } from "@oh-my-pi/pi-coding-agent";
 import { findScopedSettings, type Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { lookup, type AnySetting } from "@oh-my-pi/pi-coding-agent/config/registry";
 import { calmTextIsSubstantive } from "../../.claude/mods/firstmate-calm/lib/fm-calm-preservation.ts";
+import {
+  CALM_WORKING_SHIP_WIDGET_KEY,
+  createCalmWorkingShipAnimation,
+  createCalmWorkingShipWidget,
+} from "../../.pi/extensions/lib/fm-calm-working-ship.ts";
 
 export default function (pi: ExtensionAPI): void {
   const codeRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -18,6 +23,22 @@ export default function (pi: ExtensionAPI): void {
   // OMP's display segments rewrite stopReason to "stop" and omit tool calls.
   // Keep only classification metadata from the original messages, never change them.
   const midTurnMessages = new Set<number>();
+  let agentRunActive = false;
+  let shipShown = false;
+  const animation = createCalmWorkingShipAnimation();
+
+  function updateWorking(ctx: ExtensionContext): void {
+    const show = active && agentRunActive;
+    if (show === shipShown) return;
+    shipShown = show;
+    if (show) {
+      ctx.ui.setWorkingMessage(" ");
+      ctx.ui.setWidget(CALM_WORKING_SHIP_WIDGET_KEY, tui => createCalmWorkingShipWidget(tui, animation));
+    } else {
+      ctx.ui.setWidget(CALM_WORKING_SHIP_WIDGET_KEY, undefined);
+      ctx.ui.setWorkingMessage();
+    }
+  }
 
   function rememberStep(message: {
     timestamp: number; stopReason: string; content: readonly { type: string }[];
@@ -79,6 +100,7 @@ export default function (pi: ExtensionAPI): void {
       }
       previous = [];
     }
+    updateWorking(ctx);
     // OMP observes setting changes and rebuilds tool/thinking visibility itself.
     // Explicitly rerun text transforms as well when the renderer gate was already on.
     for (const entry of ctx.sessionManager.getBranch()) {
@@ -98,6 +120,9 @@ export default function (pi: ExtensionAPI): void {
 
   pi.on("session_start", (_event, ctx) => {
     if (ctx.mode !== "tui" || ctx.agent.kind !== "main") return;
+    agentRunActive = false;
+    updateWorking(ctx);
+    animation.reset();
     settings = findScopedSettings(ctx.cwd);
     midTurnMessages.clear();
     for (const entry of ctx.sessionManager.getBranch()) {
@@ -120,15 +145,35 @@ export default function (pi: ExtensionAPI): void {
     if (active) ctx.ui.rerenderMessage(event.message.timestamp);
   });
 
+  pi.on("agent_start", (_event, ctx) => {
+    if (ctx.mode !== "tui" || ctx.agent.kind !== "main") return;
+    agentRunActive = true;
+    updateWorking(ctx);
+  });
+
+  pi.on("agent_end", (_event, ctx) => {
+    if (ctx.mode !== "tui" || ctx.agent.kind !== "main") return;
+    agentRunActive = false;
+    updateWorking(ctx);
+  });
+
   pi.on("session_shutdown", (_event, ctx) => {
-    if (ctx.mode === "tui" && ctx.agent.kind === "main") apply(false, ctx);
+    if (ctx.mode !== "tui" || ctx.agent.kind !== "main") return;
+    agentRunActive = false;
+    updateWorking(ctx);
+    apply(false, ctx);
   });
 
   pi.registerCommand("calm", {
-    description: "Toggle Firstmate Calm (display only; persists across restarts).",
-    handler: async (_args, ctx) => {
+    description: "Toggle Firstmate Calm, or set /calm on or /calm off (display only; persists across restarts).",
+    handler: async (args, ctx) => {
       if (ctx.mode !== "tui" || ctx.agent.kind !== "main") return;
-      const enabled = !active;
+      const choice = args.trim().toLowerCase();
+      if (choice !== "" && choice !== "on" && choice !== "off") {
+        ctx.ui.notify("Usage: /calm [on|off]", "error");
+        return;
+      }
+      const enabled = choice === "" ? !active : choice === "on";
       try {
         persistPreference(enabled);
       } catch (error) {
