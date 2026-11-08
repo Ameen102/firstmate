@@ -158,14 +158,13 @@ harness_marker() {
   return 0
 }
 
-# True when an exact `omp` process sits within eight parents of this one. The
-# same anchored match as the ancestry walk below, kept separate so the marker
-# precedence above can demand real process evidence before trusting FM_OMP_HARNESS.
+# True when an exact `omp` executable or bun script entry sits within eight
+# parents of this one. Reuse the ancestry verdict so the marker precedence above
+# demands the same structural process evidence before trusting FM_OMP_HARNESS.
 ancestry_names_omp() {
-  local pid=$$ comm
+  local pid=$$
   for _ in 1 2 3 4 5 6 7 8; do
-    comm=$(ps -o comm= -p "$pid" 2>/dev/null) || return 1
-    [ "$(basename -- "$comm")" = omp ] && return 0
+    [ "$(harness_process_verdict "$pid")" = "comm omp" ] && return 0
     pid=$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ')
     [ -n "$pid" ] && [ "$pid" -gt 1 ] || return 1
   done
@@ -174,14 +173,14 @@ ancestry_names_omp() {
 
 # Print "<strength> <harness>" when one process identifies a harness, or nothing.
 # Strength records how the match was made:
-#   comm - the ancestor's own executable name identifies the harness. This is a
-#          structural fact about the running program, so it outranks a marker.
+#   comm - the ancestor's executable name or exact bun script entry identifies
+#          the harness. This structural program identity outranks a marker.
 #   args - a bare interpreter matched only because a harness name appears in the
 #          script path it was handed. This is the weakest inference in this file
 #          (any node process holding a harness-shaped path matches it), so it is
 #          used only when no marker is present.
 harness_process_verdict() {  # <pid>
-  local pid=$1 comm args argv0
+  local pid=$1 comm args argv0 script
   comm=$(ps -o comm= -p "$pid" 2>/dev/null) || return 0
   argv0=$(fm_cursor_argv0_for_pid "$pid" "$comm" 2>/dev/null || true)
   if fm_cursor_process_matches "$comm" '' "$argv0"; then
@@ -223,14 +222,9 @@ harness_process_verdict() {  # <pid>
     # is why detect_own keeps a marker that agrees on the family.
     pi-signed) echo "comm pi"; return ;;
     pi) echo "comm pi"; return ;;
-    # omp is a Bun-compiled single binary whose process name is exactly `omp`
-    # (verified, omp 18.1.11: `ps -o comm=` reports omp from both its `!`
-    # bash path and the model's bash tool). Anchored, never *omp*, so ompd,
-    # comp, and similar unrelated commands are not misread as this harness.
-    # It sits above the node*|python* interpreter fallback deliberately: the
-    # optional claude-bridge extension runs a nested executable literally
-    # named `claude` with its own node child, and that fallback's *claude*
-    # args glob would otherwise claim it if that subtree were ever walked.
+    # omp can be a Bun-compiled binary named exactly `omp` (verified, 18.1.11)
+    # or a bun-hosted script entry (the bun arm below). Anchored, never *omp*,
+    # so ompd, comp, and similar unrelated commands are not this harness.
     omp) echo "comm omp"; return ;;
     # agy (Antigravity CLI) is a Go-compiled single binary whose process name
     # is exactly `agy` (verified, agy 1.2.0: `ps -o comm=` reports agy and
@@ -278,6 +272,18 @@ harness_process_verdict() {  # <pid>
     # crewmate/scout adapter only and is never a primary or secondmate, so
     # this arm only lets a kiro crewmate identify its own harness.
     kiro-cli) echo "comm kiro"; return ;;
+    bun)
+      # Only argv[1] identifies the entry script. Later arguments can name a
+      # different harness in a model id such as anthropic/claude-opus-5-5.
+      args=$(ps -o args= -p "$pid" 2>/dev/null)
+      script=${args#* }
+      script=${script%% *}
+      if [ "$script" != "$args" ]; then
+        case "/$script/" in
+          */omp/*) echo "comm omp"; return ;;
+        esac
+      fi
+      ;;
     node*|python*)
       # Bare interpreter: match the harness name in its script path.
       args=$(ps -o args= -p "$pid" 2>/dev/null)

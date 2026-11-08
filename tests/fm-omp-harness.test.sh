@@ -13,8 +13,8 @@
 # catches vendor drift against a real omp. Neither replaces the other.
 #
 # The load-bearing contracts:
-#   1. omp publishes no marker; the anchored process name `omp` is the ancestry
-#      evidence, and ompd/comp never identify.
+#   1. omp publishes no marker; the anchored process name `omp` or a bun
+#      script path with an exact omp component is ancestry evidence.
 #   2. FM_OMP_HARNESS=omp is a precedence override that needs a real omp
 #      ancestor: it beats an inherited CLAUDECODE under omp and is inert when it
 #      leaks into a worker whose ancestry holds no omp.
@@ -56,7 +56,7 @@ export NODE_NO_WARNINGS=1
 make_named_shells() {  # <dir> -> echoes <bindir>
   local dir=$1 name
   mkdir -p "$dir"
-  for name in omp ompd comp; do
+  for name in omp ompd comp codex claude; do
     ln -sf /bin/bash "$dir/$name"
   done
   printf '%s' "$dir"
@@ -72,21 +72,23 @@ test_detection_anchored_name_and_marker_precedence() {
     "$bin/omp" -c '"$1"; :' _ "$HARNESS")
   [ "$out" = omp ] || fail "a process named omp must detect as omp, got '$out'"
   for decoy in ompd comp; do
+    # A known parent prevents the real harness running the suite from deciding
+    # a decoy's result, including a bun-hosted omp now visible to the walk.
     # shellcheck disable=SC2016 # the quoted body expands inside the named shell
     out=$(env -u CLAUDECODE -u FM_OMP_HARNESS -u PI_CODING_AGENT -u CURSOR_AGENT -u CURSOR_INVOKED_AS \
-      "$bin/$decoy" -c '"$1"; :' _ "$HARNESS")
-    [ "$out" != omp ] || fail "'$decoy' merely contains omp and must not detect as omp"
+      "$bin/codex" -c '"$@"; :' _ "$bin/$decoy" -c '"$1"; :' _ "$HARNESS")
+    [ "$out" = codex ] || fail "'$decoy' must leave the real codex parent visible, got '$out'"
   done
   # The marker beats an inherited CLAUDECODE only under a real omp ancestor.
   # shellcheck disable=SC2016 # the quoted body expands inside the named shell
   out=$(env -u PI_CODING_AGENT -u CURSOR_AGENT -u CURSOR_INVOKED_AS CLAUDECODE=1 FM_OMP_HARNESS=omp \
     "$bin/omp" -c '"$1"; :' _ "$HARNESS")
   [ "$out" = omp ] || fail "FM_OMP_HARNESS under an omp ancestor must outrank an inherited CLAUDECODE, got '$out'"
-  # ...and is inert when it leaks into a worker with no omp ancestor.
+  # ...and cannot rename a worker whose nearest harness is Claude.
   # shellcheck disable=SC2016 # the quoted body expands inside the named shell
   out=$(env -u PI_CODING_AGENT -u CURSOR_AGENT -u CURSOR_INVOKED_AS CLAUDECODE=1 FM_OMP_HARNESS=omp \
-    bash -c '"$1"; :' _ "$HARNESS")
-  [ "$out" = claude ] || fail "a leaked FM_OMP_HARNESS without an omp ancestor must not relabel a claude worker, got '$out'"
+    "$bin/claude" -c '"$1"; :' _ "$HARNESS")
+  [ "$out" = claude ] || fail "a leaked FM_OMP_HARNESS must not relabel a claude worker, got '$out'"
   pass "fm-harness: omp detects by its anchored name; the marker is a precedence override that needs real omp ancestry"
 }
 
@@ -103,6 +105,59 @@ test_lock_identity_and_liveness_classification() {
   [ "$(fm_agent_process_classify_name ompd)" != agent ] || fail "tmux liveness must not classify ompd as an agent"
   [ "$(fm_agent_process_classify_name comp)" != agent ] || fail "tmux liveness must not classify comp as an agent"
   pass "session lock and tmux liveness: omp is anchored, decoys stay out"
+}
+
+test_bun_script_identity_ignores_model_arguments() {
+  local bin script out markers claude_marker omp_marker
+  bin="$TMP_ROOT/bun-scripts"
+  mkdir -p "$bin"
+  ln -s "$(command -v bash)" "$bin/bun"
+  ln -s "$(command -v bash)" "$bin/codex"
+  cat > "$bin/omp" <<'SH'
+#!/usr/bin/env bash
+comm=$(ps -o comm= -p "$$")
+args=$(ps -o args= -p "$$")
+printf 'comm=%s\nargs=%s\n' "$(basename -- "$comm")" "$args"
+printf 'ancestry=%s\n' "$(bash "$HARNESS" ancestry "$$")"
+printf 'own=%s\n' "$(bash "$HARNESS")"
+. "$LOCK_LIB"
+if fm_harness_process_matches "$comm" "$args"; then
+  printf 'lock=matched claude=%s\n' "$FM_HARNESS_IS_CLAUDE"
+else
+  printf 'lock=unmatched claude=%s\n' "$FM_HARNESS_IS_CLAUDE"
+fi
+SH
+  cp "$bin/omp" "$bin/ompd"
+  cp "$bin/omp" "$bin/runner"
+  for script in omp ompd runner; do
+    for markers in plain inherited marked; do
+      claude_marker='' omp_marker=''
+      [ "$markers" = plain ] || claude_marker=1
+      [ "$markers" != marked ] || omp_marker=omp
+      # A real named parent keeps negative ancestry assertions independent of
+      # whichever harness runs the suite. The trailing no-op prevents exec.
+      # shellcheck disable=SC2016 # expansions belong to the named parent shell
+      out=$(env -u PI_CODING_AGENT -u CURSOR_AGENT -u CURSOR_INVOKED_AS \
+        -u GEMINI_CLI -u GROK_AGENT -u ATLASSIAN_AGENT_TYPE -u ROVODEV_CLI \
+        -u FM_SUPERVISION_ACTOR CLAUDECODE="$claude_marker" FM_OMP_HARNESS="$omp_marker" \
+        HARNESS="$HARNESS" LOCK_LIB="$ROOT/bin/fm-session-lock-lib.sh" \
+        "$bin/codex" -c '"$@"; :' _ \
+        "$bin/bun" "$bin/$script" --model anthropic/claude-opus-5-5 --thinking high)
+      assert_contains "$out" "comm=bun" "fixture must expose a real bun-named comm"
+      assert_contains "$out" "$bin/bun $bin/$script --model anthropic/claude-opus-5-5" \
+        "fixture must expose the script as argv[1] and the misleading model argument"
+      if [ "$script" = omp ]; then
+        assert_contains "$out" "ancestry=comm omp" "bun's exact omp entry must provide structural omp ancestry"
+        assert_contains "$out" "own=omp" "$markers markers must not rename bun-hosted omp"
+        assert_contains "$out" "lock=matched claude=0" "bun-hosted omp must hold the lock without being Claude"
+      else
+        assert_contains "$out" "lock=unmatched claude=0" "bun's non-harness entry must not match names in later arguments"
+        assert_contains "$out" "ancestry=comm codex" "bun's non-harness entry must not hide the real parent harness"
+        assert_contains "$out" "own=codex" "model arguments and leaked markers must not rename the real parent harness"
+      fi
+    done
+  done
+  pass "bun script identity: exact omp entry wins over model names and inherited markers; decoys stay out"
 }
 
 # --- 2. Launch ---------------------------------------------------------------
@@ -965,6 +1020,7 @@ EOF
 
 test_detection_anchored_name_and_marker_precedence
 test_lock_identity_and_liveness_classification
+test_bun_script_identity_ignores_model_arguments
 test_spawn_launch_line_and_worker_wiring
 test_spawn_model_validation_scoped_to_listed_providers
 test_secondmate_launch_relies_on_discovery
