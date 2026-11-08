@@ -161,7 +161,7 @@ How Calm handles that shared slot depends on whether Calm was already on when th
 - `.claude/mods/firstmate-calm/lib/fm-calm-preservation.ts` owns the shared substantive mid-turn text rule, which Pi imports through its tracked symlink.
 - `.pi/extensions/lib/fm-calm-operational-user-layout.ts` owns the zero-height operational-user row adapter.
 - `.pi/extensions/lib/fm-calm-pending-operational-layout.ts` owns the queued-row adapter and its session capability check.
-- `.pi/extensions/lib/fm-calm-working-ship.ts` owns Pi's animated working presentation over the sprite geometry both harnesses share in `.claude/mods/firstmate-calm/lib/fm-calm-working-ship-sprite.ts`.
+- `.pi/extensions/lib/fm-calm-working-ship.ts` owns the animated working presentation Pi and OMP render over the sprite geometry shared with Claude Code in `.claude/mods/firstmate-calm/lib/fm-calm-working-ship-sprite.ts`.
 
 ### Pi regression entry points
 
@@ -239,7 +239,7 @@ Without that exact value, the mod is a complete no-op, even if Claude Code's rol
 ### Toggling Calm on Claude Code
 
 With the flag on, the mod registers `/calm`.
-It toggles the same per-home preference Pi's `/calm` uses, so one choice applies on both harnesses.
+It toggles the same per-home preference Pi's `/calm` uses, so one choice applies on Pi, OMP, and Claude Code.
 The toggle answers with a transient "Calm on" or "Calm off" notice under the prompt rather than a transcript row.
 A preference that cannot be written leaves the current choice unchanged, and the notice says so.
 The mod reads the preference before the first row draws.
