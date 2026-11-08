@@ -1,0 +1,6 @@
+                          encrypted relay link — a teammate runs `/join <link>` to watch tool
+                                  calls stream and prompt the agent from their own omp
+ Calm on
++-- pi > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > (sub) >-4%--------------:|--1M---+
++-                                                                                                                    -+
+calm file: on

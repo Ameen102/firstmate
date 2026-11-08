@@ -1,0 +1,14 @@
+                                            ████████████
+                                               ██  ██       ▄▀▀▄ █▀▄▀▄ █▀▀▄
+                                               ██  ██       ▀▄▄▀ █ █ █ █▄▄▀
+                                               ▒▒  ██                  █
+                                                   ██       v18.18.0
+                         Tip: Pair up live: `/collab` shares your session through an end-to-end
+                          encrypted relay link — a teammate runs `/join <link>` to watch tool
+                                  calls stream and prompt the agent from their own omp
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+ OK
+ Use the bash tool to run: sleep 6 && echo second. Then reply with just OK2.
+ OK2
++-- pi > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > S0.18 >-4%-|1M-< ⏱️ SLEEP: Ru… --+
++-                                                                                                                    -+

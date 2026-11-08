@@ -1,0 +1,48 @@
+=== t+2s
+ Calm on
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+  Esc
+  ◿│◣
+▁╲▁▁▁╱▁▁▁▁▁▁▂▂▃▃▄▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁
++-- - 1s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > (sub) >-4%-------------|--1M---+
++-                                                                                                                    -+
+=== t+4s
+ Calm on
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+  Esc Running sleep then echo
+    ◿│◣
+▁▁▁╲▁▁▁╱▁▁▁▁▁▂▂▂▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▂▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂▂▂
++-- / 3s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > (sub) >-4%-------------|--1M---+
++-                                                                                                                    -+
+=== t+6s
+ Calm on
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+  Esc Running sleep then echo
+      ◿│◣
+▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▁▂▂▃▃▄▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂
++-- / 5s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > S0.15 >-4%-|1M-< ⏱️ SLEEP: … --+
++-                                                                                                                    -+
+=== t+8s
+ Calm on
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+  Esc Running sleep then echo
+         ◿│◣
+▂▂▁▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▄▃
++-- \ 7s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > S0.15 >-4%-|1M-< ⏱️ SLEEP: … --+
++-                                                                                                                    -+
+=== t+10s
+ Calm on
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+  Esc Running sleep then echo
+           ◿│◣
+▃▃▂▂▂▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▁▂▂▃▃▄▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄
++-- - 10s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > S0.15 >-4%-|1M-< ⏱️ SLEEP:… --+
++-                                                                                                                    -+
+=== t+12s
+ Calm on
+ Use the bash tool to run: sleep 12 && echo done. Then reply with just OK.
+  Esc Running sleep then echo
+              ◿│◣
+▄▃▃▃▂▂▂▁▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄
++-- - 12s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > S0.15 >-4%-|1M-< ⏱️ SLEEP:… --+
++-                                                                                                                    -+

@@ -1,0 +1,12 @@
+calm file before restart: on
+ New version 18.18.2 is available. Run: omp update
+------------------------------------------------------------------------------------------------------------------------
++-- pi > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > (sub) >-4%--------------:|--1M---+
++-                                                                                                                    -+
+=== during turn after restart
+ Use the bash tool to run: sleep 8. Then reply with just OK4.
+  Esc Sleeping eight seconds
+      ◿│◣
+▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▁▂▂▃▃▄▄▄▄▄▄▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▃▃▃▂
++-- - 4s > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YGGP7E1A94TTQK2WY3EKTG > @ detached > S0.15 >-4%-|1M-< ⏳ SLEEP: … --+
++-                                                                                                                    -+
