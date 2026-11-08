@@ -1,7 +1,7 @@
 # Calm mode
 
 Calm is Firstmate's conversation-only transcript presentation toggle.
-This page is for operators who turn Calm on and need to know what it hides and keeps visible on Pi and on Claude Code, and which file owns each part of that behavior.
+This page is for operators who turn Calm on and need to know what it hides and keeps visible on Pi, OMP, and Claude Code, and which file owns each part of that behavior.
 
 ## Harness support and default
 
@@ -9,14 +9,15 @@ This page is for operators who turn Calm on and need to know what it hides and k
 | --- | --- |
 | Pi | Fully supported. |
 | Claude Code | Available behind that harness's default-off early-access function-hooks flag, as the [Claude Code](#claude-code) section below describes. |
+| OMP | Supported-hook approximation for the interactive main agent, with the [OMP](#omp) limitations below. |
 
 Calm is off by default.
-The last `/calm` choice persists for the effective Firstmate home across session starts and resumes on either harness.
-Both harnesses keep that choice in the one shared preference file that [`configuration.md`](configuration.md#calm-preference-configcalm) owns.
+The last `/calm` choice persists for the effective Firstmate home across session starts and resumes on all three harnesses.
+They keep that choice in the one shared preference file that [`configuration.md`](configuration.md#calm-preference-configcalm) owns.
 
 ## Shared preservation rule for assistant text
 
-Across both harnesses, Calm evaluates each settled assistant text block from a model step that stopped to call tools, or that exhausted its token limit while carrying tool calls.
+Across all three harnesses, Calm evaluates each settled assistant text block from a model step that stopped to call tools, or that exhausted its token limit while carrying tool calls.
 Calm hides such a block only in the first case below:
 
 | Settled block | Result |
@@ -171,6 +172,36 @@ tests/fm-pi-primary-types.test.sh
 tests/fm-calm-pi-queue-retention-live-e2e.test.sh
 FM_PI_LIVE_E2E=1 tests/fm-pi-primary-live-e2e.test.sh
 ```
+
+## OMP
+
+The tracked `.omp/extensions/fm-calm.ts` extension is auto-discovered alongside Firstmate's OMP watcher and turn-end extensions.
+Run `/reload` or restart OMP after adding it, then use `/calm` in the interactive main agent to toggle presentation.
+
+Calm sets runtime-only overrides for `display.hideToolActivity`, `hideThinkingBlock`, and `extensionRenderers.assistantText`.
+It hides tool activity, thinking blocks, and settled mid-turn narration governed by the [shared preservation rule](#shared-preservation-rule-for-assistant-text).
+The text renderer imports that rule directly from `.claude/mods/firstmate-calm/lib/fm-calm-preservation.ts`.
+OMP segments display messages, so the extension remembers original tool-use classification by timestamp without changing the messages.
+Streaming text, substantive blocks, genuine final replies, and failed or aborted replies remain visible.
+Session storage, model context, and exports retain the hidden content.
+
+Turning Calm off or shutting down restores the pre-Calm effective settings, including any pre-existing runtime overrides.
+The toggle does not rewrite OMP's configuration.
+If a native visibility key changes a persisted setting during Calm, turning Calm off still restores the original effective value for the current session.
+
+OMP exposes neither a user-message display filter nor an API to hide or replace the stock working row.
+Firstmate operational user messages therefore stay visible, and there is no Calm sailboat on OMP.
+The native live `Thinking…` header can also remain visible.
+
+### Startup visibility caveat
+
+OMP 18.18 attaches its live visibility listener after `session_start`.
+Starting with Calm already on can hide narration while leaving previously visible tool or thinking rows on screen.
+Run `/calm` twice as separate commands (off, then on) to refresh those rows using runtime-only settings.
+The startup notice also names the applicable default visibility keys, `Ctrl+Shift+O` for tools and `Ctrl+T` for thinking, but those native keys persist their choices in OMP configuration.
+Prefer the double-toggle when keeping that configuration unchanged.
+
+Portable regression: `bash tests/fm-calm-omp-extension.test.sh` exercises presentation boundaries and settings restoration without OMP or a model.
 
 ## Claude Code
 
