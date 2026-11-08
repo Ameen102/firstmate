@@ -1,0 +1,5 @@
+lock acquired: harness pid 77018
+rc=0
+--- state/.lock:
+77018
+--- harness pid: 77018 bun /Users/ameen/.bun/bin/omp --model anthropic/claude-opus-5-5 --thinking high
