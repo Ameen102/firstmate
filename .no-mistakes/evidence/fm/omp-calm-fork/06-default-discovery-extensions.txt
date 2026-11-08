@@ -1,0 +1,50 @@
++- Extension Control Center -----------------------------------------------------------------------------------------------------------------------------------+
+|  ALL (487)    Agent Dirs (.agent/.agents)    Claude Code    Claude Code Marketplace    Builtin Defaults    OpenCode    OpenAI Codex    Cursor    AGENTS.md   |
+|    CLAUDE.md    Skillshare    OMP Extension Packages    Agent Plugins    Gemini CLI    Windsurf    Cline    GitHub Copilot    VS Code                        |
+|  Custom context files    Managed Skills (auto-learn)    MCP Config    SSH Config                                                                             |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Search:                                                                        | 21st-dev-builder-v2                                                         |
+|                                                                                |                                                                             |
+| TL Extension Modules (4)                                                     █ | [ ] Disabled (~/ config not enabled)                                        |
+|    [x] fm-calm                   01M6YC2T0X2Q81KS5PMECWJBJJ                  █ |                                                                             |
+|    [x] fm-primary-omp-watch      01M6YC2T0X2Q81KS5PMECWJBJJ                  █ | Build websites and web apps using 21st.dev — the largest marketplace of     |
+|    [x] fm-primary-turnend-guard  01M6YC2T0X2Q81KS5PMECWJBJJ                  │ | shadcn/ui-based React Tailwind components with 1400+ components. Use when   |
+|    [x] fm-calm-omp                                                           │ | user mentions "21st.dev", "21st", "ใช้ 21st", "จาก 21st", "build with        |
+| SK Skills (435)                                                              │ |   … 9 more (Ctrl+O to expand)                                               |
+|    [ ] 21st-dev-builder-v2                                                   │ |                                                                             |
+|    [ ] agent-browser                                                         │ | Origin:                                                                     |
+|    [ ] agentskillshub                                                        │ |   via Claude Code (User)                                                    |
+|    [ ] analytics-data-analysis                                               │ |   ~/.claude/skills/21st-dev-builder-v2/SKILL.md                             |
+|    [ ] apify-ultimate-scraper                                                │ |                                                                             |
+|    [ ] ask-matt                  hidden                                      │ | Instruction                                                                 |
+|    [ ] audience-intelligence                                                 │ | ────────────────────────────────────────                                    |
+|    [ ] audience-research                                                     │ | # 21st.dev Web Builder v2                                                   |
+|    [ ] baoyu-translate                                                       │ |                                                                             |
+|    [ ] brand-analyzer                                                        │ | Build production-ready websites using [21st.dev](https://21st.dev) — the    |
+|    [ ] browser                                                               │ | largest open-source registry of React UI components. You are an expert      |
+|    [ ] browser-harness                                                       │ | at discovering, analyzing, selecting, and integrating 21st.dev              |
+|    [ ] business-intelligence                                                 │ | components to create polished, cohesive web applications.                   |
+|    [ ] claude-handoff            hidden                                      │ |                                                                             |
+|    [ ] code-review                                                           │ | This skill makes you exceptionally good at:                                 |
+|    [ ] codebase-design                                                       │ | - **Live discovery** — Always fetching the latest components from           |
+|    [ ] competitive-analysis                                                  │ | 21st.dev before building                                                    |
+|    [ ] csv-data-visualizer                                                   │ | - **Smart analysis** — Evaluating which components best fit the user's      |
+|    [ ] customer-research                                                     │ | needs                                                                       |
+|    [ ] data-analysis                                                         │ | - **Design coherence** — Maintaining visual consistency across              |
+|    [ ] data-jupyter-python                                                   │ | components from different authors                                           |
+|    [ ] data-storytelling                                                     │ | - **Full-stack composition** — Building complete multi-page                 |
+|    [ ] data-visualization                                                    │ | applications, not just isolated pages                                       |
+|    [ ] design-an-interface                                                   │ |                                                                             |
+|    [ ] design-dashboards         hidden                                      │ | ## Core Knowledge                                                           |
+|    [ ] design-taste-frontend                                                 │ |                                                                             |
+|    [ ] diagnosing-bugs                                                       │ | ### What is 21st.dev?                                                       |
+|    [ ] docx                                                                  │ | An open-source community registry (the "npm for design engineers") with     |
+|    [ ] domain-modeling                                                       │ | 1400+ React components. Unlike npm packages, components are installed as    |
+|    [ ] dummyout                  hidden                                      │ | full source code you own and can customize. Built on shadcn/ui              |
+|    [ ] edit-article              hidden                                      │ | philosophy.                                                                 |
+|    [ ] emblem-market-research                                                │ |                                                                             |
+|    [ ] engineering-skills                                                    │ |   … 691 more (Ctrl+O to expand)                                             |
+|    [ ] fastapi                                                               │ |                                                                             |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|  Up/Down: navigate · Space: toggle · Left/Right: provider · PgUp/PgDn: inspector · Ctrl+O: expand · Esc: close                                               |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+

@@ -1,0 +1,50 @@
+ Warning: Fallback chain for role 'default' references unknown model: google-antigravity/gemini-3.1-pro
+
+
+                                                                ████████████
+                                                                   ██  ██       ▄▀▀▄ █▀▄▀▄ █▀▀▄
+                                                                   ██  ██       ▀▄▄▀ █ █ █ █▄▄▀
+                                                                   ▒▒  ██                  █
+                                                                       ██       v18.18.0
+
+                                            Tip: Try starting your prompt with a ->, and writing a list (1. Do X, 2.
+                                                                             Do Y)
+
+
+ Test: first write exactly the short sentence "Listing docs now." then call the bash tool with ls docs | head -3. After that write exactly "Checking date."
+ then call bash with date +%Y. Finally reply with a final answer of two lines: line 1 "FINAL REPLY", line 2 the year. Do nothing else.
+
+
+ FINAL REPLY
+ 2026
+
+
+ Test 2: first write exactly "Short step." then call bash with echo a. Then write a two-line note exactly: line 1 "MULTI LINE NOTE", line 2 "second line kept",
+ then call bash with echo b. Finally reply "SECOND FINAL". Do nothing else.
+
+
+ MULTI LINE NOTE
+ second line kept
+
+ SECOND FINAL
+
+ Calm on; if startup rows remain, run /calm twice, or press Ctrl+T (thinking).
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Update Available
+ New version 18.18.2 is available. Run: omp update
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
++-- pi > [med] Opus 5.5 > [wt] 263a936a3c0b/01M6YC2T0X2Q81KS5PMECWJBJJ > @ detached > S0.28 >-4%-----------------:|---1M-< 📂 DOCS: List docs and check year --+
++-                                                                                                                                                            -+
+
+
+
+
+
+
+
+
+
+
+
