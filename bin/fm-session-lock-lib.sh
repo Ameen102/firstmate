@@ -101,7 +101,10 @@ fm_ps_ppid() {  # <pid> -> parent pid
 #      argv[0] in `ps -o comm=`, while procps on Linux reports the kernel exec
 #      name and ignores argv[0] entirely, so a version-named Claude Code binary
 #      is identified by its install path on macOS and by argv[0] on Linux.
-#   3. a bare interpreter (node, python) running a harness script path.
+#   3. a bare interpreter (node, python) running a harness script path, or bun
+#      running a harness entry (omp installs as ~/.bun/bin/omp, so its comm is
+#      bun); bun's script path is matched by exact component, never by the
+#      loose regex, because argv carries the model id (anthropic/claude-...).
 #   4. Cursor's own structural identity, owned by bin/fm-cursor-lib.sh.
 FM_HARNESS_IS_CLAUDE=0
 fm_harness_process_matches() {  # <comm> <args>
@@ -122,6 +125,16 @@ fm_harness_process_matches() {  # <comm> <args>
     *node*|*python*)
       if printf '%s' "$args" | grep -qE "$FM_HARNESS_RE"; then
         case "$args" in *claude*) FM_HARNESS_IS_CLAUDE=1 ;; esac
+        return 0
+      fi
+      ;;
+  esac
+  case "$(basename -- "$comm")" in
+    bun)
+      local script=${args#* }
+      script=${script%% *}
+      if [ "$script" != "$args" ] && name=$(fm_harness_path_name "$script"); then
+        case "$name" in claude) FM_HARNESS_IS_CLAUDE=1 ;; esac
         return 0
       fi
       ;;
